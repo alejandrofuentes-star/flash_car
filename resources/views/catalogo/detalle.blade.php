@@ -50,10 +50,6 @@
                             <span class="input_form_f_b fs-6 p-1">{{ $vehicle->year ?? '—' }}</span>
                         </div>
                         <div class="col-6 col-sm-6 col-md-4 fila_form_f_b py-2">
-                            <span class="label_form_f_b fs-6 p-1"><b>Placa</b></span>
-                            <span class="input_form_f_b fs-6 p-1">{{ $vehicle->plate_number ?? '—' }}</span>
-                        </div>
-                        <div class="col-6 col-sm-6 col-md-4 fila_form_f_b py-2">
                             <span class="label_form_f_b fs-6 p-1"><b>Transmisión</b></span>
                             <span class="input_form_f_b fs-6 p-1">{{ $vehicle->transmission == 'automatic' ? 'Automático' : 'Manual' }}</span>
                         </div>

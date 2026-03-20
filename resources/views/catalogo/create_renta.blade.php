@@ -80,8 +80,15 @@
                         <select class="input_form_f_b fs-6 p-1" name="ciudad" required>
                             <option value="">-- Selecciona una ciudad --</option>
                             <option value="CDMX" {{ old('ciudad') == 'CDMX' ? 'selected' : '' }}>CDMX</option>
-                            <option value="Puebla" {{ old('ciudad') == 'Puebla' ? 'selected' : '' }}>Puebla</option>
+                            <option value="Guadalajara" {{ old('ciudad') == 'Guadalajara' ? 'selected' : '' }}>Guadalajara</option>
                             <option value="Querétaro" {{ old('ciudad') == 'Querétaro' ? 'selected' : '' }}>Querétaro</option>
+                            <option value="Monterrey" {{ old('ciudad') == 'Monterrey' ? 'selected' : '' }}>Monterrey</option>
+                            <option value="Los Cabos" {{ old('ciudad') == 'Los Cabos' ? 'selected' : '' }}>Los Cabos</option>
+                            <option value="Cancún" {{ old('ciudad') == 'Cancún' ? 'selected' : '' }}>Cancún</option>
+                            <option value="León" {{ old('ciudad') == 'León' ? 'selected' : '' }}>León</option>
+                            <option value="San Miguel de Allende" {{ old('ciudad') == 'San Miguel de Allende' ? 'selected' : '' }}>San Miguel de Allende</option>
+                            <option value="Tijuana" {{ old('ciudad') == 'Tijuana' ? 'selected' : '' }}>Tijuana</option>
+                            <option value="Mérida" {{ old('ciudad') == 'Mérida' ? 'selected' : '' }}>Mérida</option>
                         </select>
                     </div>
                     <div class="col-12 col-md-4 fila_form_f_b py-2">
