@@ -11,7 +11,7 @@ class Vehicle extends Model
     protected $fillable = [
         'name', 'category_id', 'slug', 'image_path', 'passengers',
         'fuel_capacity', 'brand', 'model', 'year', 'plate_number',
-        'transmission', 'available', 'active',
+        'transmission', 'available', 'active','city','mileage','next_verification',
     ];
 
     protected $casts = [
@@ -84,5 +84,15 @@ class Vehicle extends Model
     public function getFormattedFuelCapacityAttribute()
     {
         return number_format($this->fuel_capacity, 1) . ' L';
+    }
+
+    public function rentas()
+    {
+        return $this->hasMany(Renta::class);
+    }
+
+    public function images()
+    {
+        return $this->hasMany(VehicleImage::class)->orderBy('orden');
     }
 }

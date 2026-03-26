@@ -9,158 +9,197 @@
         <div class="space_principal">
         <!--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
         <div class="container">
-
             <div class="col-12 d-flex align-items-center justify-content-start flex-wrap rounded cont_base my-2">
 
-                <div class="col-12 d-flex align-items-start justify-content-center flex-column p-2 bg_gris_8">
-                    <h1 class="fs-6 text_uppcase">Solicitud de Renta: {{ $vehicle->name }}</h1>
-                    <div class="col-4 col-sm-4 col-md-2 col-lg-1">
-                        <a class="boton_forms b_sm rounded link_decoration_none display_flex_center_center" href="{{ route('catalogo.detalle', $vehicle->id) }}">← Volver</a>
+                {{-- INDICADOR DE ETAPAS --}}
+                <div class="col-12 d-flex align-items-center justify-content-center p-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="etapa_circulo activa" id="circulo_1">1</div>
+                        <span class="fs-6 fw-bold" id="label_1">Datos Personales</span>
+                        <div class="etapa_linea"></div>
+                        <div class="etapa_circulo" id="circulo_2">2</div>
+                        <span class="fs-6 text-muted" id="label_2">Fechas y Lugares</span>
+                        <div class="etapa_linea"></div>
+                        <div class="etapa_circulo" id="circulo_3">3</div>
+                        <span class="fs-6 text-muted" id="label_3">Método de Pago</span>
                     </div>
                 </div>
 
-                {{-- Info del vehículo --}}
-                <div class="col-12 bg_amarillo d-flex align-items-center justify-content-start p-2">
-                    <p class="text-dark fs-6 m-0"><b>Vehículo Seleccionado</b></p>
-                </div>
-                <div class="col-12 d-flex align-items-center justify-content-start flex-wrap p-2">
-                    <div class="col-12 col-md-3 p-1">
-                        @if($vehicle->image_path)
-                            <img src="{{ Storage::url($vehicle->image_path) }}" alt="{{ $vehicle->name }}" width="100%" class="rounded">
-                        @else
-                            <img src="{{ asset('./img/sin_url_auto.png') }}" alt="Sin imagen" width="100%" class="rounded">
-                        @endif
-                    </div>
-                    <div class="col-12 col-md-9 d-flex align-items-center justify-content-start flex-wrap p-1">
-                        <div class="col-6 fila_form_f_b py-2">
-                            <span class="label_form_f_b fs-6 p-1"><b>Vehículo</b></span>
-                            <span class="input_form_f_b fs-6 p-1">{{ $vehicle->name }}</span>
-                        </div>
-                        <div class="col-6 fila_form_f_b py-2">
-                            <span class="label_form_f_b fs-6 p-1"><b>Categoría</b></span>
-                            <span class="input_form_f_b fs-6 p-1">{{ $vehicle->category->name ?? '—' }}</span>
-                        </div>
-                        <div class="col-6 fila_form_f_b py-2">
-                            <span class="label_form_f_b fs-6 p-1"><b>Precio por día</b></span>
-                            <span class="input_form_f_b fs-6 p-1">{{ $vehicle->category->formatted_price_per_day ?? '—' }}</span>
-                        </div>
-                        <div class="col-6 fila_form_f_b py-2">
-                            <span class="label_form_f_b fs-6 p-1"><b>Transmisión</b></span>
-                            <span class="input_form_f_b fs-6 p-1">{{ $vehicle->transmission == 'automatic' ? 'Automático' : 'Manual' }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <form method="POST" action="{{ route('rentas.store') }}" class="col-12 d-flex align-items-center justify-content-start flex-wrap">
+                {{-- FORM ENVUELVE TODO --}}
+                <form method="POST" action="{{ route('rentas.store') }}" id="formRenta" class="col-12">
                 @csrf
                 <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
                 <input type="hidden" name="total_dias" id="total_dias" value="0">
                 <input type="hidden" name="costo_total" id="costo_total_input" value="0">
                 <input type="hidden" id="precio_dia" value="{{ $vehicle->category->price_per_day ?? 0 }}">
 
-                {{-- Datos del cliente --}}
-                <div class="col-12 bg_amarillo d-flex align-items-center justify-content-start p-2">
-                    <p class="text-dark fs-6 m-0"><b>Datos del Cliente</b></p>
-                </div>
-                <div class="col-12 d-flex align-items-center justify-content-start flex-wrap p-1">
-                    <div class="col-12 col-md-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Nombre Completo *</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="text" name="nombre_completo" value="{{ old('nombre_completo') }}" placeholder="Ej: Juan García López" required>
-                    </div>
-                    <div class="col-12 col-md-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Teléfono *</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="tel" name="telefono" value="{{ old('telefono') }}" placeholder="Ej: 5512345678" required>
-                    </div>
-                    <div class="col-12 col-md-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Correo Electrónico *</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="email" name="correo" value="{{ old('correo') }}" placeholder="Ej: correo@ejemplo.com" required>
-                    </div>
-                    <div class="col-12 col-md-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Ciudad *</b></label>
-                        <select class="input_form_f_b fs-6 p-1" name="ciudad" required>
-                            <option value="">-- Selecciona una ciudad --</option>
-                            <option value="CDMX" {{ old('ciudad') == 'CDMX' ? 'selected' : '' }}>CDMX</option>
-                            <option value="Guadalajara" {{ old('ciudad') == 'Guadalajara' ? 'selected' : '' }}>Guadalajara</option>
-                            <option value="Querétaro" {{ old('ciudad') == 'Querétaro' ? 'selected' : '' }}>Querétaro</option>
-                            <option value="Monterrey" {{ old('ciudad') == 'Monterrey' ? 'selected' : '' }}>Monterrey</option>
-                            <option value="Los Cabos" {{ old('ciudad') == 'Los Cabos' ? 'selected' : '' }}>Los Cabos</option>
-                            <option value="Cancún" {{ old('ciudad') == 'Cancún' ? 'selected' : '' }}>Cancún</option>
-                            <option value="León" {{ old('ciudad') == 'León' ? 'selected' : '' }}>León</option>
-                            <option value="San Miguel de Allende" {{ old('ciudad') == 'San Miguel de Allende' ? 'selected' : '' }}>San Miguel de Allende</option>
-                            <option value="Tijuana" {{ old('ciudad') == 'Tijuana' ? 'selected' : '' }}>Tijuana</option>
-                            <option value="Mérida" {{ old('ciudad') == 'Mérida' ? 'selected' : '' }}>Mérida</option>
-                        </select>
-                    </div>
-                    <div class="col-12 col-md-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>No. de Pasajeros *</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="number" name="num_pasajeros" value="{{ old('num_pasajeros') }}" min="1" max="{{ $vehicle->passengers }}" placeholder="Máx: {{ $vehicle->passengers }}" required>
-                    </div>
-                </div>
+                    {{-- DOS COLUMNAS --}}
+                    <div class="col-12 d-flex align-items-start justify-content-start flex-wrap p-2">
 
-                {{-- Entrega --}}
-                <div class="col-12 bg_amarillo d-flex align-items-center justify-content-start p-2">
-                    <p class="text-dark fs-6 m-0"><b>Entrega del Vehículo</b></p>
-                </div>
-                <div class="col-12 d-flex align-items-center justify-content-start flex-wrap p-1">
-                    <div class="col-12 col-md-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Fecha de Entrega *</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="date" id="fecha_entrega" name="fecha_entrega" value="{{ old('fecha_entrega') }}" min="{{ date('Y-m-d') }}" required>
-                    </div>
-                    <div class="col-12 col-md-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Hora de Entrega *</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="time" name="hora_entrega" value="{{ old('hora_entrega') }}" required>
-                    </div>
-                    <div class="col-12 col-md-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Lugar de Entrega *</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="text" name="lugar_entrega" value="{{ old('lugar_entrega') }}" placeholder="Ej: Aeropuerto CDMX" required>
-                    </div>
-                </div>
+                        {{-- COLUMNA IZQUIERDA: Etapas --}}
+                        <div class="col-12 col-md-8 pe-md-3">
 
-                {{-- Devolución --}}
-                <div class="col-12 bg_amarillo d-flex align-items-center justify-content-start p-2">
-                    <p class="text-dark fs-6 m-0"><b>Devolución del Vehículo</b></p>
-                </div>
-                <div class="col-12 d-flex align-items-center justify-content-start flex-wrap p-1">
-                    <div class="col-12 col-md-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Fecha de Devolución *</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="date" id="fecha_devolucion" name="fecha_devolucion" value="{{ old('fecha_devolucion') }}" min="{{ date('Y-m-d', strtotime('+1 day')) }}" required>
-                    </div>
-                    <div class="col-12 col-md-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Hora de Devolución *</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="time" name="hora_devolucion" value="{{ old('hora_devolucion') }}" required>
-                    </div>
-                    <div class="col-12 col-md-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Lugar de Devolución *</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="text" name="lugar_devolucion" value="{{ old('lugar_devolucion') }}" placeholder="Ej: Oficina Puebla Centro" required>
-                    </div>
-                </div>
+                            {{-- ETAPA 1: Datos Personales --}}
+                            <div id="etapa_1">
+                                <div class="col-12 bg_amarillo d-flex align-items-center justify-content-start p-2 rounded-top">
+                                    <p class="text-dark fs-6 m-0"><b>① Datos Personales</b></p>
+                                </div>
+                                <div class="col-12 d-flex align-items-center justify-content-start flex-wrap p-1 border rounded-bottom mb-3">
+                                    <div class="col-12 col-md-6 fila_form_f_b py-2">
+                                        <label class="label_form_f_b fs-6 p-1"><b>Nombre Completo *</b></label>
+                                        <input class="input_form_f_b fs-6 p-1" type="text" name="nombre_completo" value="{{ old('nombre_completo') }}" placeholder="Ej: Juan García López" required>
+                                    </div>
+                                    <div class="col-12 col-md-6 fila_form_f_b py-2">
+                                        <label class="label_form_f_b fs-6 p-1"><b>Teléfono *</b></label>
+                                        <input class="input_form_f_b fs-6 p-1" type="tel" name="telefono" value="{{ old('telefono') }}" placeholder="Ej: 5512345678" required>
+                                    </div>
+                                    <div class="col-12 col-md-6 fila_form_f_b py-2">
+                                        <label class="label_form_f_b fs-6 p-1"><b>Correo Electrónico *</b></label>
+                                        <input class="input_form_f_b fs-6 p-1" type="email" name="correo" value="{{ old('correo') }}" placeholder="Ej: correo@ejemplo.com" required>
+                                    </div>
+                                    <div class="col-12 col-md-6 fila_form_f_b py-2">
+                                        <label class="label_form_f_b fs-6 p-1"><b>No. de Pasajeros *</b></label>
+                                        <input class="input_form_f_b fs-6 p-1" type="number" name="num_pasajeros" value="{{ old('num_pasajeros') }}" min="1" max="{{ $vehicle->passengers }}" placeholder="Máx: {{ $vehicle->passengers }}" required>
+                                    </div>
+                                    <div class="col-12 col-md-6 fila_form_f_b py-2">
+                                        <label class="label_form_f_b fs-6 p-1"><b>Ciudad *</b></label>
+                                        <select class="input_form_f_b fs-6 p-1" name="ciudad" required>
+                                            <option value="">-- Selecciona una ciudad --</option>
+                                            @foreach($cities as $city)
+                                                <option value="{{ $city }}" {{ old('ciudad') == $city ? 'selected' : '' }}>{{ $city }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-12 d-flex justify-content-end p-2">
+                                        <a class="boton_link_xxl b_sm rounded link_decoration_none display_flex_center_center" href="{{ route('catalogo.detalle', $vehicle->id) }}">← Volver</a>
+                                        <button type="button" class="boton_link_xxl rounded" onclick="irEtapa(2)">Siguiente →</button>
+                                    </div>
+                                </div>
+                            </div>
 
-                {{-- Resumen de costo --}}
-                <div class="col-12 bg_amarillo d-flex align-items-center justify-content-start p-2">
-                    <p class="text-dark fs-6 m-0"><b>Resumen de Costo</b></p>
-                </div>
-                <div class="col-12 d-flex align-items-center justify-content-start flex-wrap p-2">
-                    <div class="col-6 col-md-3 fila_form_f_b py-2">
-                        <span class="label_form_f_b fs-6 p-1"><b>Total de días</b></span>
-                        <span class="input_form_f_b fs-6 p-1" id="resumen_dias">— días</span>
-                    </div>
-                    <div class="col-6 col-md-3 fila_form_f_b py-2">
-                        <span class="label_form_f_b fs-6 p-1"><b>Precio por día</b></span>
-                        <span class="input_form_f_b fs-6 p-1">${{ number_format($vehicle->category->price_per_day ?? 0, 2) }}</span>
-                    </div>
-                    <div class="col-12 col-md-3 fila_form_f_b py-2">
-                        <span class="label_form_f_b fs-6 p-1"><b>Costo Total</b></span>
-                        <span class="input_form_f_b fs-6 p-1" id="resumen_costo" style="font-weight:700; color:var(--primary);">$0.00</span>
-                    </div>
-                </div>
+                            {{-- ETAPA 2: Fechas y Lugares --}}
+                            <div id="etapa_2" style="display:none;">
+                                <div class="col-12 bg_amarillo d-flex align-items-center justify-content-start p-2 rounded-top">
+                                    <p class="text-dark fs-6 m-0"><b>② Fechas y Lugares</b></p>
+                                </div>
+                                <div class="col-12 d-flex align-items-center justify-content-start flex-wrap p-1 border rounded-bottom mb-3">
+                                    <div class="col-12 bg_gris_8 p-2 mb-2">
+                                        <p class="fs-6 m-0"><b>Entrega del Vehículo</b></p>
+                                    </div>
+                                    <div class="col-12 col-md-4 fila_form_f_b py-2">
+                                        <label class="label_form_f_b fs-6 p-1"><b>Fecha de Entrega *</b></label>
+                                        <input class="input_form_f_b fs-6 p-1" type="date" id="fecha_entrega" name="fecha_entrega" value="{{ old('fecha_entrega') }}" min="{{ date('Y-m-d') }}" required>
+                                    </div>
+                                    <div class="col-12 col-md-4 fila_form_f_b py-2">
+                                        <label class="label_form_f_b fs-6 p-1"><b>Hora de Entrega *</b></label>
+                                        <input class="input_form_f_b fs-6 p-1" type="time" name="hora_entrega" value="{{ old('hora_entrega') }}" required>
+                                    </div>
+                                    <div class="col-12 col-md-4 fila_form_f_b py-2">
+                                        <label class="label_form_f_b fs-6 p-1"><b>Lugar de Entrega *</b></label>
+                                        <input class="input_form_f_b fs-6 p-1" type="text" name="lugar_entrega" value="{{ old('lugar_entrega') }}" placeholder="Ej: Aeropuerto CDMX" required>
+                                    </div>
+                                    <div class="col-12 bg_gris_8 p-2 mb-2 mt-2">
+                                        <p class="fs-6 m-0"><b>Devolución del Vehículo</b></p>
+                                    </div>
+                                    <div class="col-12 col-md-4 fila_form_f_b py-2">
+                                        <label class="label_form_f_b fs-6 p-1"><b>Fecha de Devolución *</b></label>
+                                        <input class="input_form_f_b fs-6 p-1" type="date" id="fecha_devolucion" name="fecha_devolucion" value="{{ old('fecha_devolucion') }}" min="{{ date('Y-m-d', strtotime('+1 day')) }}" required>
+                                    </div>
+                                    <div class="col-12 col-md-4 fila_form_f_b py-2">
+                                        <label class="label_form_f_b fs-6 p-1"><b>Hora de Devolución *</b></label>
+                                        <input class="input_form_f_b fs-6 p-1" type="time" name="hora_devolucion" value="{{ old('hora_devolucion') }}" required>
+                                    </div>
+                                    <div class="col-12 col-md-4 fila_form_f_b py-2">
+                                        <label class="label_form_f_b fs-6 p-1"><b>Lugar de Devolución *</b></label>
+                                        <input class="input_form_f_b fs-6 p-1" type="text" name="lugar_devolucion" value="{{ old('lugar_devolucion') }}" placeholder="Ej: Oficina Puebla Centro" required>
+                                    </div>
+                                    <div class="col-12 d-flex justify-content-between p-2">
+                                        <button type="button" class="boton_link_xxl rounded" onclick="irEtapa(1)">← Anterior</button>
+                                        <button type="button" class="boton_link_xxl rounded" onclick="irEtapa(3)">Siguiente →</button>
+                                    </div>
+                                </div>
+                            </div>
 
-                {{-- Botones --}}
-                <div class="col-12 py-3 d-flex align-items-center justify-content-center">
-                    <a href="{{ route('catalogo.detalle', $vehicle->id) }}" class="boton_link_lg rounded">Cancelar</a>
-                    <button type="submit" class="boton_link_xxl rounded">Enviar Solicitud</button>
-                </div>
+                            {{-- ETAPA 3: Método de Pago --}}
+                            <div id="etapa_3" style="display:none;">
+                                <div class="col-12 bg_amarillo d-flex align-items-center justify-content-start p-2 rounded-top">
+                                    <p class="text-dark fs-6 m-0"><b>③ Método de Pago</b></p>
+                                </div>
+                                <div class="col-12 d-flex align-items-center justify-content-start flex-wrap p-1 border rounded-bottom mb-3">
+                                    <div class="col-12 p-2">
+                                        <label class="label_form_f_b fs-6 p-1"><b>Selecciona tu método de pago *</b></label>
+                                        <div class="d-flex flex-wrap gap-3 mt-2">
+                                            <label class="d-flex align-items-center gap-2 border rounded p-3 shadow-sm" style="cursor:pointer; min-width:140px;">
+                                                <input type="radio" name="metodo_pago" value="efectivo" required>
+                                                <span class="fs-6">💵 Efectivo</span>
+                                            </label>
+                                            <label class="d-flex align-items-center gap-2 border rounded p-3 shadow-sm" style="cursor:pointer; min-width:140px;">
+                                                <input type="radio" name="metodo_pago" value="tarjeta">
+                                                <span class="fs-6">💳 Tarjeta</span>
+                                            </label>
+                                            <label class="d-flex align-items-center gap-2 border rounded p-3 shadow-sm" style="cursor:pointer; min-width:140px;">
+                                                <input type="radio" name="metodo_pago" value="transferencia">
+                                                <span class="fs-6">🏦 Transferencia</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 d-flex justify-content-between p-2 mt-2">
+                                        <button type="button" class="boton_link_xxl rounded" onclick="irEtapa(2)">← Anterior</button>
+                                        <button type="submit" class="boton_link_xxl rounded">Enviar Solicitud</button>
+                                    </div>
+                                </div>
+                            </div>
 
-                </form>
+                        </div>{{-- fin col-md-8 --}}
+
+                        {{-- COLUMNA DERECHA: Calculadora --}}
+                        <div class="col-12 col-md-4">
+                            <div class="rounded border shadow-sm p-3" style="top:80px;">
+
+                                @if($vehicle->image_path)
+                                    <img src="{{ Storage::url($vehicle->image_path) }}" alt="{{ $vehicle->name }}" width="100%" class="rounded mb-2">
+                                @else
+                                    <img src="{{ asset('./img/sin_url_auto.png') }}" alt="Sin imagen" width="100%" class="rounded mb-2">
+                                @endif
+
+                                <h5 class="fs-5 mb-0"><b>{{ $vehicle->name }}</b></h5>
+                                <p class="text-muted fs-6 mb-2">{{ $vehicle->brand }} {{ $vehicle->model }} {{ $vehicle->year }}</p>
+
+                                @if($vehicle->category)
+                                    <span class="badge bg_amarillo text-dark mb-3">{{ $vehicle->category->name }}</span>
+                                @endif
+
+                                <div class="border-top pt-3 mt-2">
+                                    <p class="fs-6 m-0 mb-2"><b>💰 Resumen de Costo</b></p>
+                                    <div class="d-flex justify-content-between py-1 border-bottom">
+                                        <span class="text-muted fs-6">Precio por día</span>
+                                        <b class="fs-6">${{ number_format($vehicle->category->price_per_day ?? 0, 2) }}</b>
+                                    </div>
+                                    <div class="d-flex justify-content-between py-1 border-bottom">
+                                        <span class="text-muted fs-6">Total de días</span>
+                                        <b class="fs-6" id="resumen_dias">—</b>
+                                    </div>
+                                    <div class="d-flex justify-content-between py-2 mt-1">
+                                        <span class="fs-6"><b>Costo Total</b></span>
+                                        <b class="fs-4" id="resumen_costo" style="color:var(--primary);">$0.00</b>
+                                    </div>
+                                </div>
+
+                                @if($vehicle->category)
+                                <div class="border-top pt-2 mt-1">
+                                    <div class="d-flex justify-content-between py-1">
+                                        <span class="text-muted fs-6">Garantía</span>
+                                        <b class="fs-6">{{ $vehicle->category->formatted_warranty }}</b>
+                                    </div>
+                                </div>
+                                @endif
+
+                            </div>
+                        </div>{{-- fin col-md-4 --}}
+
+                    </div>{{-- fin row dos columnas --}}
+
+                </form>{{-- fin form --}}
 
                 @if($errors->any())
                     <div class="messenger_alert">

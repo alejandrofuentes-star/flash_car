@@ -58,3 +58,22 @@ window.addEventListener('load', function () {
         fechaDevolucion.addEventListener('change', calcularCosto);
     }
 });
+
+let etapaActual = 1;
+
+function irEtapa(n) {
+    document.getElementById('etapa_' + etapaActual).style.display = 'none';
+    document.getElementById('etapa_' + n).style.display = 'block';
+
+    for (let i = 1; i <= 3; i++) {
+        const c = document.getElementById('circulo_' + i);
+        const l = document.getElementById('label_' + i);
+        c.classList.remove('activa', 'completada');
+        l.classList.remove('fw-bold', 'text-muted');
+        if (i < n) { c.classList.add('completada'); c.innerHTML = '✓'; l.classList.add('text-muted'); }
+        else if (i === n) { c.classList.add('activa'); c.innerHTML = i; l.classList.add('fw-bold'); }
+        else { c.innerHTML = i; l.classList.add('text-muted'); }
+    }
+
+    etapaActual = n;
+}

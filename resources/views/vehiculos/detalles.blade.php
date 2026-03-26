@@ -81,6 +81,18 @@
                         <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $vehicle->plate_number ?? 'No especificado' }}" readonly>
                     </div>
                     <div class="col-6 col-sm-6 col-md-4 fila_form_f_b py-2">
+                        <label class="label_form_f_b fs-6 p-1"><b>Ciudad</b></label>
+                        <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $vehicle->city ?? 'No especificado' }}" readonly>
+                    </div>
+                    <div class="col-6 col-sm-6 col-md-4 fila_form_f_b py-2">
+                        <label class="label_form_f_b fs-6 p-1"><b>Kilometraje</b></label>
+                        <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $vehicle->mileage ? number_format($vehicle->mileage) . ' km' : 'No especificado' }}" readonly>
+                    </div>
+                    <div class="col-6 col-sm-6 col-md-4 fila_form_f_b py-2">
+                        <label class="label_form_f_b fs-6 p-1"><b>Próxima Verificación</b></label>
+                        <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $vehicle->next_verification ? \Carbon\Carbon::parse($vehicle->next_verification)->format('d/m/Y') : 'No especificado' }}" readonly>
+                    </div>
+                    <div class="col-6 col-sm-6 col-md-4 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Estado de Disponibilidad</b></label>
                         @if($vehicle->available)
                             <span class="cuenta_activa">Disponible para rentar</span>
@@ -147,10 +159,39 @@
                     @endif
                 </div>
 
+                {{-- GALERÍA DE FOTOS --}}
+                @if($vehicle->images->count() > 0)
+                <div class="col-12 bg_amarillo d-flex align-items-center justify-content-start flex-wrap p-2">
+                    <p class="text-dark fs-6 m-0"><b>Galería de Fotos</b></p>
+                    <small class="text-dark ms-2">({{ $vehicle->images->count() }} foto(s))</small>
+                </div>
+                <div class="col-12 d-flex align-items-start justify-content-start flex-wrap p-2">
+                    @foreach($vehicle->images as $image)
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 p-1">
+                        <img src="{{ Storage::url($image->image_path) }}"
+                            alt="Foto galería"
+                            width="100%"
+                            class="rounded shadow-sm"
+                            style="cursor:pointer;"
+                            onclick="abrirFoto('{{ Storage::url($image->image_path) }}')">
+                    </div>
+                    @endforeach
+                </div>
+                @endif
+
+                {{-- Modal para ver foto ampliada --}}
+                <div id="modalFoto" onclick="cerrarFoto()"
+                    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+                        background:rgba(0,0,0,0.85); z-index:9999;
+                        align-items:center; justify-content:center; cursor:pointer;">
+                    <img id="modalFotoImg" src="" alt="Foto ampliada"
+                        style="max-width:90%; max-height:90%; border-radius:8px; box-shadow:0 0 30px rgba(0,0,0,0.5);">
+                </div>
             </div>
         </div>
         <!--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
         </div>
     </div>
 </div>
+<script src="{{ asset('js/fotos_galeria.js') }}"></script>
 @endsection

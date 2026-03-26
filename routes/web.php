@@ -22,9 +22,14 @@ Route::get('/catalogo/{id}', [VehicleController::class, 'detalle'])->name('catal
 Route::get('/rentar/{vehicleId}', [RentaController::class, 'create'])->name('reservaciones.create');
 Route::post('/rentar', [RentaController::class, 'store'])->name('rentas.store');
 
+Route::get('/buscar', [VehicleController::class, 'buscar'])->name('catalogo.buscar');
+
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'login'])->middleware('guest');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+Route::post('/vehiculos/{id}/images', [VehicleController::class, 'uploadImages'])->name('vehiculos.images.upload');
+Route::delete('/vehiculos/images/{id}', [VehicleController::class, 'deleteImage'])->name('vehiculos.images.delete');
 
 // ============================================================
 // RUTAS AUTENTICADAS

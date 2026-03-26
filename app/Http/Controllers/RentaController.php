@@ -11,7 +11,14 @@ class RentaController extends Controller
     public function create($vehicleId)
     {
         $vehicle = Vehicle::with('category')->where('active', 1)->findOrFail($vehicleId);
-        return view('catalogo.create_renta', compact('vehicle'));
+        $cities = Vehicle::whereNotNull('city')
+        ->where('city', '!=', '')
+        ->where('active', 1)
+        ->distinct()
+        ->pluck('city')
+        ->sort()
+        ->values();
+        return view('catalogo.create_renta', compact('vehicle', 'cities'));
     }
 
     public function store(Request $request)

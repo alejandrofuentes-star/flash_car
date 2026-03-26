@@ -29,7 +29,7 @@
                     {{-- Imagen --}}
                     <div class="col-12 col-sm-12 col-md-4 col-lg-3 d-flex align-items-center justify-content-center flex-column p-2">
                         <div id="imagePreview">
-                            <img id="preview" src="{{ asset('./img/sin_url_auto.png') }}" alt="Vista previa" width="100%">
+                            <img id="preview" src="{{ asset('./img/sin_url_auto.jpg') }}" alt="Vista previa" width="100%">
                         </div>
                         <div class="fila_form_f_b py-2 col-12">
                             <label class="label_form_f_b fs-6 p-1"><b>Imagen del Vehículo</b></label>
@@ -39,11 +39,11 @@
                     </div>
 
                     <div class="col-12 col-sm-12 col-md-8 col-lg-9 d-flex align-items-center justify-content-start flex-wrap">
-                        <div class="col-6 fila_form_f_b py-2">
+                        <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
                             <label class="label_form_f_b fs-6 p-1"><b>Nombre del Vehículo *</b></label>
                             <input class="input_form_f_b fs-6 p-1" type="text" name="name" value="{{ old('name') }}" placeholder="Ej: Toyota Corolla 2024" required autofocus>
                         </div>
-                        <div class="col-6 fila_form_f_b py-2">
+                        <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
                             <label class="label_form_f_b fs-6 p-1"><b>Categoría *</b></label>
                             <select class="input_form_f_b fs-6 p-1" name="category_id" required>
                                 <option value="">-- Selecciona una categoría --</option>
@@ -54,13 +54,13 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-6 fila_form_f_b py-2">
+                        <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
                             <label class="label_form_f_b fs-6 p-1"><b>Pasajeros *</b></label>
-                            <input class="input_form_f_b fs-6 p-1" type="number" name="passengers" value="{{ old('passengers') }}" min="1" max="50" required>
+                            <input class="input_form_f_b fs-6 p-1" type="number" name="passengers" value="{{ old('passengers') }}" min="1" max="50" placeholder="Pasajeros" required>
                         </div>
-                        <div class="col-6 fila_form_f_b py-2">
+                        <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
                             <label class="label_form_f_b fs-6 p-1"><b>Combustible (L) *</b></label>
-                            <input class="input_form_f_b fs-6 p-1" type="number" name="fuel_capacity" value="{{ old('fuel_capacity') }}" step="0.1" min="0" required>
+                            <input class="input_form_f_b fs-6 p-1" type="number" name="fuel_capacity" value="{{ old('fuel_capacity') }}" step="0.1" min="0" placeholder="Litros" required>
                         </div>
                     </div>
                 </div>
@@ -69,28 +69,40 @@
                     <p class="text-dark fs-6 m-0"><b>Detalles del Vehículo</b></p>
                 </div>
                 <div class="col-12 d-flex align-items-center justify-content-start flex-wrap p-1">
-                    <div class="col-4 fila_form_f_b py-2">
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Marca</b></label>
                         <input class="input_form_f_b fs-6 p-1" type="text" name="brand" value="{{ old('brand') }}" placeholder="Ej: Toyota, Honda, Ford">
                     </div>
-                    <div class="col-4 fila_form_f_b py-2">
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Modelo</b></label>
                         <input class="input_form_f_b fs-6 p-1" type="text" name="model" value="{{ old('model') }}" placeholder="Ej: Corolla, Civic, Mustang">
                     </div>
-                    <div class="col-4 fila_form_f_b py-2">
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Año</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="number" name="year" value="{{ old('year') }}" min="1900" max="{{ date('Y') + 1 }}">
+                        <input class="input_form_f_b fs-6 p-1" type="number" name="year" value="{{ old('year') }}" min="1900" max="{{ date('Y') + 1 }}" placeholder="Año">
                     </div>
-                    <div class="col-4 fila_form_f_b py-2">
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Número de Placa</b></label>
                         <input class="input_form_f_b fs-6 p-1" type="text" name="plate_number" value="{{ old('plate_number') }}" placeholder="ABC-1234">
                     </div>
-                    <div class="col-4 fila_form_f_b py-2">
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Transmisión *</b></label>
                         <select class="input_form_f_b fs-6 p-1" name="transmission" required>
                             <option value="automatic" {{ old('transmission') == 'automatic' ? 'selected' : '' }}>Automático</option>
                             <option value="manual" {{ old('transmission') == 'manual' ? 'selected' : '' }}>Manual</option>
                         </select>
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
+                        <label class="label_form_f_b fs-6 p-1"><b>Ciudad</b></label>
+                        <input class="input_form_f_b fs-6 p-1" type="text" name="city" value="{{ old('city', $vehicle->city ?? '') }}" placeholder="Ej: Ciudad de México">
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-4col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
+                        <label class="label_form_f_b fs-6 p-1"><b>Kilometraje</b></label>
+                        <input class="input_form_f_b fs-6 p-1" type="number" name="mileage" value="{{ old('mileage', $vehicle->mileage ?? '') }}" placeholder="Ej: 15000" min="0">
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
+                        <label class="label_form_f_b fs-6 p-1"><b>Próxima Verificación</b></label>
+                        <input class="input_form_f_b fs-6 p-1" type="date" name="next_verification" value="{{ old('next_verification', $vehicle->next_verification ?? '') }}">
                     </div>
                 </div>
 

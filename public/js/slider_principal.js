@@ -46,3 +46,46 @@ function resetTimer() {
     clearInterval(autoSlide);
     autoSlide = setInterval(() => moveSlide(1), 5000);
 }
+
+//scripts fechas busqueda
+const hoy = new Date().toISOString().split('T')[0];
+const fechaEntrega = document.querySelector('input[name="fecha_entrega"]');
+const fechaDevolucion = document.querySelector('input[name="fecha_devolucion"]');
+
+// No permitir fechas pasadas
+fechaEntrega.min = hoy;
+fechaDevolucion.min = hoy;
+
+// Al cambiar fecha entrega, la devolución debe ser mayor
+fechaEntrega.addEventListener('change', function() {
+    const nextDay = new Date(this.value);
+    nextDay.setDate(nextDay.getDate() + 1);
+    fechaDevolucion.min = nextDay.toISOString().split('T')[0];
+    
+    // Limpiar devolución si es menor o igual a entrega
+    if (fechaDevolucion.value && fechaDevolucion.value <= this.value) {
+        fechaDevolucion.value = '';
+    }
+});
+
+//filtro en el catalogo
+function normalizar(str) {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}
+
+const filtroCategoria = document.getElementById('filtro_category');
+const filtroTransmision = document.getElementById('filtro_transmission');
+
+function filtrarVehiculos() {
+    const category = normalizar(filtroCategoria.value);
+    const transmission = filtroTransmision.value;
+
+    document.querySelectorAll('.tarjeta_vehiculo').forEach(card => {
+        const matchCategory = !category || normalizar(card.dataset.category) === category;
+        const matchTransmission = !transmission || card.dataset.transmission === transmission;
+        card.style.display = matchCategory && matchTransmission ? '' : 'none';
+    });
+}
+
+filtroCategoria.addEventListener('change', filtrarVehiculos);
+filtroTransmision.addEventListener('change', filtrarVehiculos);

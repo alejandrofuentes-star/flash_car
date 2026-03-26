@@ -27,7 +27,54 @@ class VehicleController extends Controller
                            ->orderBy('available', 'desc')
                            ->orderBy('name', 'asc')
                            ->get();
-        return view('catalogo.index', compact('vehicles'));
+
+        $cities = Vehicle::whereNotNull('city')
+                            ->where('city', '!=', '')
+                            ->where('active', 1)
+                            ->distinct()
+                            ->pluck('city')
+                            ->sort()
+                            ->values();
+                            
+        $categories = \App\Models\Category::where('active', 1)->orderBy('name')->get();
+
+        return view('catalogo.index', compact('vehicles','cities', 'categories'));
+    }
+
+    public function buscar(Request $request)
+    {
+        $city            = $request->city;
+        $fecha_entrega   = $request->fecha_entrega;
+        $fecha_devolucion = $request->fecha_devolucion;
+
+
+        $vehicles = Vehicle::with('category')
+            ->where('active', 1)
+            ->where('available', 1)
+            // Filtrar por ciudad si se seleccionó
+            ->when($city, fn($q) => $q->where('city', $city))
+            // Excluir autos que ya tienen renta en ese rango de fechas
+            ->when($fecha_entrega && $fecha_devolucion, function($q) use ($fecha_entrega, $fecha_devolucion) {
+                $q->whereDoesntHave('rentas', function($r) use ($fecha_entrega, $fecha_devolucion) {
+                    $r->whereIn('estado', ['pendiente', 'confirmada'])
+                    ->where('fecha_entrega', '<=', $fecha_devolucion)
+                    ->where('fecha_devolucion', '>=', $fecha_entrega);
+                });
+            })
+            ->orderBy('name', 'asc')
+            ->get();
+
+        $cities = Vehicle::whereNotNull('city')
+            ->where('city', '!=', '')
+            ->where('active', 1)
+            ->distinct()
+            ->pluck('city')
+            ->sort()
+            ->values();
+
+        $categories = \App\Models\Category::where('active', 1)->orderBy('name')->get();
+
+        return view('catalogo.index', compact('vehicles', 'cities', 'city', 'categories', 'fecha_entrega', 'fecha_devolucion'));
     }
 
     public function create()
@@ -51,6 +98,9 @@ class VehicleController extends Controller
             'transmission' => 'required|in:manual,automatic',
             'available'    => 'boolean',
             'active'       => 'boolean',
+            'city'         => 'nullable|string|max:100',
+            'mileage'      => 'nullable|integer|min:0',
+            'next_verification' => 'nullable|date',
         ]);
 
         if ($request->hasFile('image')) {
@@ -87,12 +137,14 @@ class VehicleController extends Controller
     {
         $vehicle = Vehicle::with('category')->findOrFail($id);
         return view('vehiculos.detalles', compact('vehicle'));
+        $vehicle = Vehicle::with(['category', 'images'])->findOrFail($id);
     }
 
     public function detalle($id)
     {
         $vehicle = Vehicle::with('category')->where('active', 1)->findOrFail($id);
         return view('catalogo.detalle', compact('vehicle'));
+        $vehicle = Vehicle::with(['category', 'images'])->findOrFail($id);
     }
 
     public function edit($id)
@@ -119,6 +171,9 @@ class VehicleController extends Controller
             'transmission' => 'required|in:manual,automatic',
             'available'    => 'boolean',
             'active'       => 'boolean',
+            'city'              => 'nullable|string|max:100',
+            'mileage'           => 'nullable|integer|min:0',
+            'next_verification' => 'nullable|date',
         ]);
 
         if ($request->hasFile('image')) {
@@ -155,6 +210,8 @@ class VehicleController extends Controller
 
         return redirect()->route('vehiculos.index')
             ->with('success', 'Vehículo actualizado exitosamente');
+
+        $vehicle = Vehicle::with('images')->findOrFail($id);
     }
 
     public function destroy($id)
@@ -165,5 +222,56 @@ class VehicleController extends Controller
 
         return redirect()->route('vehiculos.index')
             ->with('success', "Vehículo '{$vehicleName}' eliminado exitosamente");
+    }
+
+    // Subir fotos de galería
+    public function uploadImages(Request $request, $id)
+    {
+        $vehicle = Vehicle::findOrFail($id);
+
+        $request->validate([
+            'images.*' => 'image|mimes:jpeg,jpg,png,gif,webp|max:2048',
+            'images'   => 'max:5',
+        ]);
+
+        // Verificar que no supere 5 fotos en total
+        $totalActual = $vehicle->images()->count();
+        $nuevas      = count($request->file('images') ?? []);
+
+        if ($totalActual + $nuevas > 5) {
+            return back()->with('error', "Solo puedes tener máximo 5 fotos. Ya tienes {$totalActual}.");
+        }
+
+        foreach ($request->file('images') as $image) {
+            $imageName = time() . '_' . rand(1000, 9999) . '.webp';
+            $imagePath = 'vehicles/gallery/' . $imageName;
+
+            $manager = new ImageManager(new Driver());
+            $img     = $manager->read($image->getRealPath());
+            $img->cover(800, 500);
+
+            Storage::disk('public')->put($imagePath, $img->toWebp(80)->toString());
+
+            $vehicle->images()->create([
+                'image_path' => $imagePath,
+                'orden'      => $totalActual + $nuevas,
+            ]);
+        }
+
+        return back()->with('success', 'Fotos agregadas correctamente.');
+    }
+
+    // Eliminar foto de galería
+    public function deleteImage($id)
+    {
+        $image = \App\Models\VehicleImage::findOrFail($id);
+
+        if (Storage::disk('public')->exists($image->image_path)) {
+            Storage::disk('public')->delete($image->image_path);
+        }
+
+        $image->delete();
+
+        return back()->with('success', 'Foto eliminada correctamente.');
     }
 }
