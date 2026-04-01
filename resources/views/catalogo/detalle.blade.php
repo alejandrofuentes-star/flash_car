@@ -174,15 +174,15 @@
 </div>
 <script>
     const fotosGaleria = @json($vehicle->images->map(fn($i) => Storage::url($i->image_path)));
-let fotoSeleccionada = 0;
+    let fotoSeleccionada = 0;
 
-function seleccionarFoto(index) {
-    fotoSeleccionada = index;
-    document.getElementById('imgPrincipal').src = fotosGaleria[index];
-    document.querySelectorAll('.miniatura_galeria').forEach((m, i) => {
-        m.style.border = i === index ? '3px solid #f5c518' : '3px solid transparent';
-    });
-}
+    function seleccionarFoto(index) {
+        fotoSeleccionada = index;
+        document.getElementById('imgPrincipal').src = fotosGaleria[index];
+        document.querySelectorAll('.miniatura_galeria').forEach((m, i) => {
+            m.style.border = i === index ? '3px solid #f5c518' : '3px solid transparent';
+        });
+    }
 </script>
 @include('layout.footer')
 @endsection

@@ -8,17 +8,16 @@ use Illuminate\Http\Request;
 
 class RentaController extends Controller
 {
-    public function create($vehicleId)
+    public function create($vehicle_id)
     {
-        $vehicle = Vehicle::with('category')->where('active', 1)->findOrFail($vehicleId);
-        $cities = Vehicle::whereNotNull('city')
-        ->where('city', '!=', '')
-        ->where('active', 1)
-        ->distinct()
-        ->pluck('city')
-        ->sort()
-        ->values();
-        return view('catalogo.create_renta', compact('vehicle', 'cities'));
+        $vehicle = Vehicle::with('category')->findOrFail($vehicle_id);
+        
+        $states = \App\Models\State::with('deliveryPoints')
+            ->where('active', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('catalogo.create_renta', compact('vehicle', 'states'));
     }
 
     public function store(Request $request)
@@ -67,5 +66,47 @@ class RentaController extends Controller
         $renta->update(['estado' => $request->estado]);
 
         return back()->with('success', 'Estado actualizado correctamente');
+    }
+
+    public function edit($id)
+    {
+        $renta = Renta::with(['vehicle.category'])->findOrFail($id);
+        
+        $states = \App\Models\State::with('deliveryPoints')
+            ->where('active', true)
+            ->orderBy('name')
+            ->get();
+
+        $vehicles = Vehicle::where('active', 1)->orderBy('name')->get();
+
+        return view('rentas.edit', compact('renta', 'states', 'vehicles'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $renta = Renta::findOrFail($id);
+
+        $validated = $request->validate([
+            'vehicle_id'       => 'required|exists:vehicles,id',
+            'nombre_completo'  => 'required|string|max:255',
+            'telefono'         => 'required|string|max:20',
+            'correo'           => 'required|email|max:100',
+            'ciudad'           => 'required|string|max:100',
+            'fecha_entrega'    => 'required|date',
+            'hora_entrega'     => 'required',
+            'lugar_entrega'    => 'required|string|max:255',
+            'fecha_devolucion' => 'required|date|after:fecha_entrega',
+            'hora_devolucion'  => 'required',
+            'lugar_devolucion' => 'required|string|max:255',
+            'num_pasajeros'    => 'required|integer|min:1',
+            'total_dias'       => 'required|integer|min:1',
+            'costo_total'      => 'required|numeric|min:0',
+            'estado'           => 'required|in:pendiente,confirmada,cancelada,completada',
+        ]);
+
+        $renta->update($validated);
+
+        return redirect()->route('rentas.show', $renta->id)
+            ->with('success', 'Renta actualizada correctamente.');
     }
 }

@@ -15,6 +15,7 @@
         <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('dashboard') }}"><i class="bi bi-house-fill"></i><b> Inicio</b></a>
         <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('users.index') }}"><i class="bi bi-people-fill"></i> Usuarios</a>
         <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('vehiculos.index') }}"><i class="bi bi-car-front-fill"></i> Autos</a>
+        <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('states.index') }}"><i class="bi bi-geo-alt-fill"></i> Ubicaciones</a>
         <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('rentas.index') }}"><i class="bi bi-clipboard-check-fill"></i> Rentas</a>
 
         {{-- Solo visible para super_admin --}}

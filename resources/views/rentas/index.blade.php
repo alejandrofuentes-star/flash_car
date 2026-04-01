@@ -45,8 +45,9 @@
                             <span class="badge bg-secondary">Completada</span>
                         @endif
                     </div>
-                    <div class="col-6 col-sm-6 col-md-6 col-lg-2 px-1 my-1">
+                    <div class="col-6 col-sm-6 col-md-6 col-lg-2 px-1 my-1 d-flex align-items-center justify-content-start">
                         <a href="{{ route('rentas.show', $renta->id) }}" class="boton_link_sm b_sm rounded link_decoration_none display_flex_center_center">Ver</a>
+                        <a href="{{ route('rentas.edit', $renta->id) }}" class="boton_link_lg rounded">Editar</a>
                     </div>
                 </div>
                 @empty

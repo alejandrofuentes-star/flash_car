@@ -8,6 +8,7 @@ use App\Http\Controllers\RentaController;
 use App\Http\Controllers\SystemController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\StateController;
 
 // ============================================================
 // RUTAS PÚBLICAS
@@ -59,6 +60,14 @@ Route::middleware('auth')->group(function () {
     // Rentas
     Route::get('/rentas', [RentaController::class, 'index'])->name('rentas.index');
     Route::get('/rentas/{id}', [RentaController::class, 'show'])->name('rentas.show');
+    Route::get('/rentas/{id}/edit', [RentaController::class, 'edit'])->name('rentas.edit');
+    Route::put('/rentas/{id}', [RentaController::class, 'update'])->name('rentas.update');
+
+    Route::resource('states', StateController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::patch('/states/{state}/toggle', [StateController::class, 'toggleActive'])->name('states.toggle');
+    Route::post('/states/{state}/points', [StateController::class, 'storePoint'])->name('states.points.store');
+    Route::delete('/points/{point}', [StateController::class, 'destroyPoint'])->name('states.points.destroy');
+    Route::patch('/points/{point}/toggle', [StateController::class, 'togglePoint'])->name('states.points.toggle');
 });
 
 // ============================================================

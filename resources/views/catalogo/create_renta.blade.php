@@ -63,10 +63,12 @@
                                     </div>
                                     <div class="col-12 col-md-6 fila_form_f_b py-2">
                                         <label class="label_form_f_b fs-6 p-1"><b>Ciudad *</b></label>
-                                        <select class="input_form_f_b fs-6 p-1" name="ciudad" required>
+                                        <select class="input_form_f_b fs-6 p-1" name="ciudad" id="select_estado" required>
                                             <option value="">-- Selecciona una ciudad --</option>
-                                            @foreach($cities as $city)
-                                                <option value="{{ $city }}" {{ old('ciudad') == $city ? 'selected' : '' }}>{{ $city }}</option>
+                                            @foreach($states as $state)
+                                                <option value="{{ $state->name }}" {{ old('ciudad') == $state->name ? 'selected' : '' }}>
+                                                    {{ $state->name }}
+                                                </option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -96,7 +98,9 @@
                                     </div>
                                     <div class="col-12 col-md-4 fila_form_f_b py-2">
                                         <label class="label_form_f_b fs-6 p-1"><b>Lugar de Entrega *</b></label>
-                                        <input class="input_form_f_b fs-6 p-1" type="text" name="lugar_entrega" value="{{ old('lugar_entrega') }}" placeholder="Ej: Aeropuerto CDMX" required>
+                                        <select class="input_form_f_b fs-6 p-1" name="lugar_entrega" id="select_entrega" required>
+                                            <option value="">-- Primero selecciona ciudad --</option>
+                                        </select>
                                     </div>
                                     <div class="col-12 bg_gris_8 p-2 mb-2 mt-2">
                                         <p class="fs-6 m-0"><b>Devolución del Vehículo</b></p>
@@ -111,7 +115,9 @@
                                     </div>
                                     <div class="col-12 col-md-4 fila_form_f_b py-2">
                                         <label class="label_form_f_b fs-6 p-1"><b>Lugar de Devolución *</b></label>
-                                        <input class="input_form_f_b fs-6 p-1" type="text" name="lugar_devolucion" value="{{ old('lugar_devolucion') }}" placeholder="Ej: Oficina Puebla Centro" required>
+                                        <select class="input_form_f_b fs-6 p-1" name="lugar_devolucion" id="select_devolucion" required>
+                                            <option value="">-- Primero selecciona ciudad --</option>
+                                        </select>
                                     </div>
                                     <div class="col-12 d-flex justify-content-between p-2">
                                         <button type="button" class="boton_link_xxl rounded" onclick="irEtapa(1)">← Anterior</button>
@@ -219,4 +225,28 @@
 </div>
 @include('layout.footer')
 <script src="{{ asset('js/formulario_renta.js') }}"></script>
+
+<script>
+    const statesData = @json($states->map(fn($s) => [
+        'name'   => $s->name,
+        'points' => $s->deliveryPoints->where('active', true)->map(fn($p) => $p->name)->values()
+    ]));
+
+    document.getElementById('select_estado').addEventListener('change', function() {
+        const selected = this.value;
+        const state    = statesData.find(s => s.name === selected);
+        const points   = state ? state.points : [];
+
+        ['select_entrega', 'select_devolucion'].forEach(id => {
+            const sel = document.getElementById(id);
+            sel.innerHTML = '<option value="">-- Selecciona un punto --</option>';
+            points.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p;
+                opt.textContent = p;
+                sel.appendChild(opt);
+            });
+        });
+    });
+</script>
 @endsection

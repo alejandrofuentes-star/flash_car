@@ -84,9 +84,13 @@
                     <p class="text-dark fs-6 m-0"><b>Vehículo</b></p>
                 </div>
                 <div class="col-12 d-flex align-items-center justify-content-start flex-wrap p-1">
-                    <div class="col-12 col-md-6 fila_form_f_b py-2">
+                    <div class="col-12 col-md-3 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Vehículo</b></label>
                         <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $renta->vehicle->name ?? '—' }}" readonly>
+                    </div>
+                    <div class="col-12 col-md-3 fila_form_f_b py-2">
+                        <label class="label_form_f_b fs-6 p-1"><b>Categoría</b></label>
+                        <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $renta->vehicle->category->name ?? '—' }}" readonly>
                     </div>
                 </div>
 
