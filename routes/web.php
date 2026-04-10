@@ -32,6 +32,10 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::post('/vehiculos/{id}/images', [VehicleController::class, 'uploadImages'])->name('vehiculos.images.upload');
 Route::delete('/vehiculos/images/{id}', [VehicleController::class, 'deleteImage'])->name('vehiculos.images.delete');
 
+Route::get('/faqs', function() {
+    return view('catalogo.faqs');
+})->name('faqs');
+
 // ============================================================
 // RUTAS AUTENTICADAS
 // ============================================================

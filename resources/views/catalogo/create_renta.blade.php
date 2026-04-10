@@ -13,15 +13,21 @@
 
                 {{-- INDICADOR DE ETAPAS --}}
                 <div class="col-12 d-flex align-items-center justify-content-center p-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="etapa_circulo activa" id="circulo_1">1</div>
-                        <span class="fs-6 fw-bold" id="label_1">Datos Personales</span>
-                        <div class="etapa_linea"></div>
-                        <div class="etapa_circulo" id="circulo_2">2</div>
-                        <span class="fs-6 text-muted" id="label_2">Fechas y Lugares</span>
-                        <div class="etapa_linea"></div>
-                        <div class="etapa_circulo" id="circulo_3">3</div>
-                        <span class="fs-6 text-muted" id="label_3">Método de Pago</span>
+                    <div class="col-12 d-flex align-items-center justify-content-center flex-wrap">
+                        <div class="col-12 col-sm-12 col-md-4 col-lg-3 d-flex align-items-center justify-content-start py-1">
+                            <div class="mx-2 etapa_circulo activa" id="circulo_1">1</div>
+                            <span class="fs-6 fw-bold" id="label_1">Datos Personales</span>
+                            <div class="mx-2 etapa_linea"></div>
+                        </div>
+                        <div class="col-12 col-sm-12 col-md-4 col-lg-3 d-flex align-items-center justify-content-start py-1">
+                            <div class="mx-2 etapa_circulo" id="circulo_2">2</div>
+                            <span class="fs-6 text-muted" id="label_2">Fechas y Lugares</span>
+                            <div class="mx-2 etapa_linea"></div>
+                        </div>
+                        <div class="col-12 col-sm-12 col-md-4 col-lg-3 d-flex align-items-center justify-content-start py-1">
+                            <div class="mx-2 etapa_circulo" id="circulo_3">3</div>
+                            <span class="fs-6 text-muted" id="label_3">Pago</span>
+                        </div>
                     </div>
                 </div>
 
@@ -32,6 +38,8 @@
                 <input type="hidden" name="total_dias" id="total_dias" value="0">
                 <input type="hidden" name="costo_total" id="costo_total_input" value="0">
                 <input type="hidden" id="precio_dia" value="{{ $vehicle->category->price_per_day ?? 0 }}">
+                <input type="hidden" id="precio_semana"  value="{{ $vehicle->category->price_per_week ?? 0 }}">
+                <input type="hidden" id="precio_mes"     value="{{ $vehicle->category->price_per_month ?? 0 }}">
 
                     {{-- DOS COLUMNAS --}}
                     <div class="col-12 d-flex align-items-start justify-content-start flex-wrap p-2">
@@ -72,6 +80,10 @@
                                             @endforeach
                                         </select>
                                     </div>
+                                    <div class="col-12 col-md-6 fila_form_f_b py-2">
+                                        <label class="label_form_f_b fs-6 p-1"><b>Categoría</b></label>
+                                        <span class="input_form_f_b fs-6 p-1">{{ $vehicle->category->name ?? '—' }}</span>
+                                    </div>
                                     <div class="col-12 d-flex justify-content-end p-2">
                                         <a class="boton_link_xxl b_sm rounded link_decoration_none display_flex_center_center" href="{{ route('catalogo.detalle', $vehicle->id) }}">← Volver</a>
                                         <button type="button" class="boton_link_xxl rounded" onclick="irEtapa(2)">Siguiente →</button>
@@ -90,7 +102,7 @@
                                     </div>
                                     <div class="col-12 col-md-4 fila_form_f_b py-2">
                                         <label class="label_form_f_b fs-6 p-1"><b>Fecha de Entrega *</b></label>
-                                        <input class="input_form_f_b fs-6 p-1" type="date" id="fecha_entrega" name="fecha_entrega" value="{{ old('fecha_entrega') }}" min="{{ date('Y-m-d') }}" required>
+                                        <input class="input_form_f_b fs-6 p-1" type="date" id="fecha_entrega" name="fecha_entrega" value="{{ old('fecha_entrega') }}" required>
                                     </div>
                                     <div class="col-12 col-md-4 fila_form_f_b py-2">
                                         <label class="label_form_f_b fs-6 p-1"><b>Hora de Entrega *</b></label>
@@ -169,14 +181,14 @@
                                 @endif
 
                                 <h5 class="fs-5 mb-0"><b>{{ $vehicle->name }}</b></h5>
-                                <p class="text-muted fs-6 mb-2">{{ $vehicle->brand }} {{ $vehicle->model }} {{ $vehicle->year }}</p>
+                                <p class="text-muted fs-6 mb-2">{{ $vehicle->brand }} {{ $vehicle->model }} {{ $vehicle->year }} ó similar</p>
 
                                 @if($vehicle->category)
                                     <span class="badge bg_amarillo text-dark mb-3">{{ $vehicle->category->name }}</span>
                                 @endif
 
                                 <div class="border-top pt-3 mt-2">
-                                    <p class="fs-6 m-0 mb-2"><b>💰 Resumen de Costo</b></p>
+                                    <p class="fs-6 m-0 mb-2"><b>Resumen de Costo</b></p>
                                     <div class="d-flex justify-content-between py-1 border-bottom">
                                         <span class="text-muted fs-6">Precio por día</span>
                                         <b class="fs-6">${{ number_format($vehicle->category->price_per_day ?? 0, 2) }}</b>
@@ -184,6 +196,10 @@
                                     <div class="d-flex justify-content-between py-1 border-bottom">
                                         <span class="text-muted fs-6">Total de días</span>
                                         <b class="fs-6" id="resumen_dias">—</b>
+                                    </div>
+                                    <div class="d_flex_center_between py-1 border-bottom" id="row_cargo_extra" style="display:none">
+                                        <span class="text-muted fs-6">Cargo por hora extra</span>
+                                        <b class="fs-6 text-danger" id="texto_cargo_extra"></b>
                                     </div>
                                     <div class="d-flex justify-content-between py-2 mt-1">
                                         <span class="fs-6"><b>Costo Total</b></span>
@@ -225,7 +241,6 @@
 </div>
 @include('layout.footer')
 <script src="{{ asset('js/formulario_renta.js') }}"></script>
-
 <script>
     const statesData = @json($states->map(fn($s) => [
         'name'   => $s->name,

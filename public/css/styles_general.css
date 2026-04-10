@@ -7,11 +7,12 @@
 :root
 {
     /*colores en RGB*/
-    color:rgb(255, 243, 138);
+    color:rgb(255, 230, 0);
     --color_negro:0,0,0;
     --color_blanco:255,255,255;
     --color_amarillo:248,230,72;
     --color_amarillo_bajo:255, 243, 138;
+    --color_amarillo_fuerte:255, 230, 0;
     --color_gris_1:50,50,50;
     --color_gris_2:70,70,70;
     --color_gris_3:90,90,90;
@@ -35,6 +36,7 @@
     --gris_10:rgb(var(--color_gris_10));
     --amarillo:rgb(var(--color_amarillo));
     --amarillo_bajo:rgb(var(--color_amarillo_bajo));
+    --amarillo_fuerte:rgb(var(--color_amarillo_fuerte));
     /*opacidades*/
     --opacity_10:0.1;
     --opacity_20:0.2;
@@ -59,6 +61,21 @@ body
     font-size: 16px;
 }
 /*xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*/
+/*estilos temporales*/
+.linea_degradada_mundial
+{
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(to right, #00000000, #ffffff, #ffffff00);
+}
+.img_fondo_mundial
+{
+    background-image: url(../img/img_fondo_mundial.png);
+    background-position: center;
+    background-size:100%;
+    background-repeat: no-repeat;
+}
+/*xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*/
 /*login*/
 .img_fondo_login
 {
@@ -68,6 +85,10 @@ body
 }
 /*xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*/
 /*estilos rapidos*/
+.border_img_custom
+{
+    border: 5px solid white;
+}
 .display_flex_center_center
 {
     display: flex;
@@ -102,7 +123,7 @@ body
 }
 .text_uppcase
 {
-    text-transform: uppercase;
+    text-transform: uppercase !important;
 }
 .text_break
 {
@@ -195,6 +216,10 @@ body
 .bg_gris_10
 {
     background-color: var(--gris_10);
+}
+.bg_gris_custom
+{
+    background-color: rgb(240,240,240);
 }
 
 .bg_amarillo
@@ -937,7 +962,7 @@ body
 {
     width: 100%;
     height: 2px;
-    background: linear-gradient(to right, #ffffff, var(--amarillo_bajo), #ffffff);
+    background: linear-gradient(to right, #ffffff00, var(--amarillo_bajo), #ffffff00);
 }
 #imgPrincipal
 {
@@ -965,6 +990,41 @@ body
     width: 40px; height: 3px;
     background: #e0e0e0;
     border-radius: 2px;
+}
+
+.link_contactos
+{
+    border: 2px solid white;
+    background-color: var(--gris_6);
+    color: black;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.link_contactos i
+{
+    margin: 0 5px;
+    color: var(--amarillo_fuerte);
+}
+.link_contactos:hover
+{
+    background-color: black;
+}
+.link_contactos:hover
+{
+    color: white;
+}
+
+.h_cuatom_faqs
+{
+    height: 70vh;
+    background-image: url(../img/fondo_faqs.jpg);
+    background-position: center;
+    background-size: cover;
+}
+.border_faq
+{
+    border: 1px solid rgb(210,210,210);
+    background-color: rgb(250,250,250);
 }
 /*xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*/
 /*footer*/

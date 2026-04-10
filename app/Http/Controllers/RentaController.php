@@ -17,7 +17,9 @@ class RentaController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('catalogo.create_renta', compact('vehicle', 'states'));
+        $categories = \App\Models\Category::where('active', 1)->orderBy('name')->get();
+
+        return view('catalogo.create_renta', compact('vehicle', 'states', 'categories'));
     }
 
     public function store(Request $request)
