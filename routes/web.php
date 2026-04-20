@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\VehicleController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\SystemController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\StateController;
+use App\Http\Controllers\SliderController;
 
 // ============================================================
 // RUTAS PÚBLICAS
@@ -40,7 +42,7 @@ Route::get('/faqs', function() {
 // RUTAS AUTENTICADAS
 // ============================================================
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', function () { return view('dashboard'); })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Usuarios - rutas estáticas ANTES que las dinámicas
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
@@ -78,6 +80,12 @@ Route::middleware('auth')->group(function () {
 // RUTAS ADMIN Y SUPER ADMIN
 // ============================================================
 Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
+    // Slider
+    Route::get('/slider', [SliderController::class, 'index'])->name('slider.index');
+    Route::post('/slider', [SliderController::class, 'store'])->name('slider.store');
+    Route::patch('/slider/{id}/toggle', [SliderController::class, 'toggle'])->name('slider.toggle');
+    Route::post('/slider/reorder', [SliderController::class, 'reorder'])->name('slider.reorder');
+    Route::delete('/slider/{id}', [SliderController::class, 'destroy'])->name('slider.destroy');
     // Usuarios
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
     Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
@@ -95,6 +103,7 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
 
     // Rentas
     Route::put('/rentas/{id}/estado', [RentaController::class, 'updateEstado'])->name('rentas.estado');
+    Route::post('/rentas/{id}/reenviar-correo', [RentaController::class, 'reenviarCorreo'])->name('rentas.reenviarCorreo');
 });
 
 // ============================================================

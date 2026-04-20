@@ -2,6 +2,10 @@
 
 @section('title', 'Flash Car')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/styles_pagina_principal.css') }}">
+@endpush
+
 @section('content')
 @include('layout.header_user')
 <!--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
@@ -13,34 +17,24 @@
 
         {{-- IMÁGENES ESCRITORIO (ocultas en móvil) --}}
         <div class="slider_track d-none d-md-block">
-            <div class="slide active">
-                <img src="{{ asset('./img/slider/desktop_1.jpg') }}" alt="Slide 1">
-            </div>
-            <div class="slide">
-                <img src="{{ asset('./img/slider/desktop_2.jpg') }}" alt="Slide 2">
-            </div>
-            <div class="slide">
-                <img src="{{ asset('./img/slider/desktop_3.jpg') }}" alt="Slide 3">
-            </div>
-            <div class="slide">
-                <img src="{{ asset('./img/slider/desktop_4.jpg') }}" alt="Slide 4">
-            </div>
+            @forelse($sliderDesktop as $i => $slide)
+                <div class="slide {{ $i === 0 ? 'active' : '' }}">
+                    <img src="{{ Storage::url($slide->image_path) }}" alt="Slide {{ $i + 1 }}">
+                </div>
+            @empty
+                <div class="slide active" style="background:#000; width:100%; height:100vh; display:block;"></div>
+            @endforelse
         </div>
 
         {{-- IMÁGENES MÓVIL (ocultas en escritorio) --}}
         <div class="slider_track d-block d-md-none">
-            <div class="slide active">
-                <img src="{{ asset('./img/slider/mobile_1.jpg') }}" alt="Slide 1">
-            </div>
-            <div class="slide">
-                <img src="{{ asset('./img/slider/mobile_2.jpg') }}" alt="Slide 2">
-            </div>
-            <div class="slide">
-                <img src="{{ asset('./img/slider/mobile_3.jpg') }}" alt="Slide 3">
-            </div>
-            <div class="slide">
-                <img src="{{ asset('./img/slider/mobile_4.jpg') }}" alt="Slide 4">
-            </div>
+            @forelse($sliderMobile as $i => $slide)
+                <div class="slide {{ $i === 0 ? 'active' : '' }}">
+                    <img src="{{ Storage::url($slide->image_path) }}" alt="Slide {{ $i + 1 }}">
+                </div>
+            @empty
+                <div class="slide active" style="background:#000; width:100%; height:100vh; display:block;"></div>
+            @endforelse
         </div>
 
         {{-- Flechas --}}
@@ -54,43 +48,42 @@
     </div>
     <div class="col-12 d-flex align-items-center justify-content-center cont_principal_slider">
         <div class="col-12 d-flex align-items-center justify-content-center flex-wrap">
-            <div class="col-12 col-sm-12 col-md-12 col-lg-5 d-flex align-items-center justify-content-center flex-column p-3">
-                <div class="col-11 col-sm-11 col-md-8 rounded bg_negro_opa_70 blur_5 p-3">
-                    <h1 class="text-white fs-2">Renta de autos en minutos</h1>
-                    <p class="text-white m-0 fs-6 pb-3">Entrega en aeropuerto - Seguro incluido - Sin filas</p>
-                    <form class="col-12" action="{{ route('catalogo.buscar') }}#catalogo" method="GET">
-                        <div class="col-12 d-flex align-items-center justify-content-center p-1">
-                            <select class="w_100 input_busqueda rounded px-2" name="city" id="">
-                                <option value="">Seleccione Ciudad</option>
+            <div class="col-12 col-sm-12 col-md-12 col-lg-5 p-3">
+                <div class="hero_form_card">
+                    <h1 class="hero_titulo">Renta un auto en minutos</h1>
+                    <p class="hero_subtitulo">Encuentra el auto ideal para tu próximo viaje</p>
+                    <form action="{{ route('catalogo.buscar') }}#catalogo" method="GET">
+                        <div class="hero_input_wrap mb-2">
+                            <i class="bi bi-geo-alt-fill hero_input_icon"></i>
+                            <select class="hero_input" name="city">
+                                <option value="">Ciudad</option>
                                 @foreach($cities as $city)
                                     <option value="{{ $city }}">{{ $city }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-12 d-flex align-items-center justify-content-center">
-                            <div class="col-6 p-1">
-                                <input class="w_100 input_busqueda rounded px-2" type="date" name="fecha_entrega" placeholder="Fecha entrega">
+                        <div class="d-flex gap-2 mb-2">
+                            <div class="hero_input_wrap flex-1">
+                                <i class="bi bi-calendar-event hero_input_icon"></i>
+                                <input class="hero_input" type="date" name="fecha_entrega">
                             </div>
-                            <div class="col-6 p-1">
-                                <input class="w_100 input_busqueda rounded px-2" type="date" name="fecha_devolucion" placeholder="Fecha devolución">
+                            <div class="hero_input_wrap flex-1">
+                                <i class="bi bi-calendar-check hero_input_icon"></i>
+                                <input class="hero_input" type="date" name="fecha_devolucion">
                             </div>
                         </div>
-                        <div class="col-12 d-flex align-items-center justify-content-center p-1">
-                            <button type="submit" class="boton_clientes_principal my-3">
-                                <div class="boton_cliente_interno">
-                                    <div class="animacion"></div>
-                                </div>
-                                <div class="boton_cliente_texto">
-                                    Buscar
-                                </div>
-                            </button>
-                        </div>
+                        <button type="submit" class="hero_btn">
+                            <i class="bi bi-search me-2"></i> BUSCAR AUTOS
+                        </button>
                     </form>
+                    <div class="hero_badges">
+                        <span class="hero_badge"><i class="bi bi-airplane-fill"></i> Entrega en aeropuerto</span>
+                        <span class="hero_badge"><i class="bi bi-shield-check-fill"></i> Seguro incluido</span>
+                        <span class="hero_badge"><i class="bi bi-lightning-charge-fill"></i> Sin filas</span>
+                    </div>
                 </div>
             </div>
-            <div class="col-12 col-sm-12 col-md-12 col-lg-7 d-flex align-items-center justify-content-center flex-column">
-                
-            </div>
+            <div class="col-12 col-sm-12 col-md-12 col-lg-7"></div>
         </div>
     </div>
 </div>
@@ -132,115 +125,132 @@
     </div>  
 </section>
 <!--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
-<!--segunda sección-->
+<!--segunda sección - pasos-->
 <section>
-    <div class="py-5">
+    <div class="py-5 bg-white">
         <div class="container">
-            <div class="row bg">
-                <div class="col-12 d-flex align-items-center justify-content-center flex-column">
-                    <h2 class="fs-3 text-center text_uppcase">Rentar un auto ahora es facil, rapido y seguro</h2>
+            <div class="col-12 d-flex align-items-center justify-content-center flex-column mb-4">
+                <h2 class="fs-3 fw-bold text-center">Rentar un auto ahora es fácil, rápido y seguro</h2>
+                <div class="linea_degradada my-2"></div>
+            </div>
+            <div class="col-12 d-flex align-items-center justify-content-center flex-wrap">
+
+                <div class="paso_item">
+                    <div class="paso_numero">1</div>
+                    <div class="paso_icono">
+                        <img src="{{ asset('./img/icono_reservar.png') }}" height="110px" alt="reservar">
+                    </div>
+                    <p class="paso_titulo">Reserva en línea</p>
+                    <p class="paso_desc">Elige tu auto, fechas y lugar de entrega desde cualquier dispositivo.</p>
                 </div>
-                <div class="col-12 d-flex align-items-center justify-content-center flex-wrap py-3">
-                    <div class="col-12 col-sm-12 col-md-4 d-flex align-items-center justify-content-center flex-column">
-                        <img src="{{ asset('./img/icono_reservar.png') }}" height="100px" alt="icono reservar">
-                        <p class="fs-5"><b>Reserva en linea</b></p>
+
+                <div class="paso_flecha d-none d-md-flex">&#10132;</div>
+
+                <div class="paso_item">
+                    <div class="paso_numero">2</div>
+                    <div class="paso_icono">
+                        <img src="{{ asset('./img/icono_contrato.png') }}" height="110px" alt="recoge">
                     </div>
-                    <div class="col-12 col-sm-12 col-md-4 d-flex align-items-center justify-content-center flex-column">
-                        <img src="{{ asset('./img/icono_contrato.png') }}" height="100px" alt="icono reservar">
-                        <p class="fs-5"><b>Recoge tu auto</b></p>
-                    </div>
-                    <div class="col-12 col-sm-12 col-md-4 d-flex align-items-center justify-content-center flex-column">
-                        <img src="{{ asset('./img/icono_disfruta.png') }}" height="100px" alt="icono reservar">
-                        <p class="fs-5"><b>Disfruta de tu viaje</b></p>
-                    </div>
+                    <p class="paso_titulo">Recoge tu auto</p>
+                    <p class="paso_desc">Recíbelo en el punto acordado con toda la documentación lista.</p>
                 </div>
+
+                <div class="paso_flecha d-none d-md-flex">&#10132;</div>
+
+                <div class="paso_item">
+                    <div class="paso_numero">3</div>
+                    <div class="paso_icono">
+                        <img src="{{ asset('./img/icono_disfruta.png') }}" height="110px" alt="disfruta">
+                    </div>
+                    <p class="paso_titulo">Disfruta de tu viaje</p>
+                    <p class="paso_desc">Maneja sin preocupaciones con seguro incluido y kilometraje ilimitado.</p>
+                </div>
+
             </div>
         </div>
-    </div>  
+    </div>
 </section>
 <!--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
 <!--catálogo-->
 <div class="py-5 bg-light" id="catalogo">
     <div class="container">
-        <div class="col-12 d-flex align-items-center justify-content-center flex-column">
-            <h2 class="fs-2 text-center text_uppcase"><b>Conoce nuestros vehículos</b></h2>
+        {{-- ENCABEZADO SECCIÓN --}}
+        <div class="col-12 d-flex align-items-center justify-content-center flex-column mb-3">
+            <h2 class="fs-2 text-center"><b>Elige tu auto ideal</b></h2>
             <div class="linea_degradada my-1"></div>
-            <p class="fs-5 text-center">Elige la opción ideal para ti: Renta por día, renta por mes, renta con chofer o vehículos blindados para tu máxima seguridad.</p>
-            <div class="col-12 d-flex align-items-center justify-content-center py-2">
-                <select class="shadow-sm input_busqueda w_200_px rounded px-2 m-1" id="filtro_category">
-                    <option value="">Categoría</option>
-                    @foreach($categories as $category)
-                        <option value="{{ strtolower($category->name) }}">{{ $category->name }}</option>
-                    @endforeach
-                </select>
-                <select class="shadow-sm input_busqueda w_200_px rounded px-2 m-1" id="filtro_transmission">
-                    <option value="">Transmisión</option>
-                    <option value="manual">Manual</option>
-                    <option value="automatic">Automatico</option>
-                </select>
-            </div>
         </div>
-        {{-- GRID DE TARJETAS --}}
-        <div id="catalogo_grid" class="row row-cols-1 row-cols-sm-2 row-cols-md-2 row-cols-lg-4 g-3 my-2">
+
+        {{-- FILTROS --}}
+        <div class="col-12 d-flex align-items-center justify-content-center flex-wrap py-2 mb-2" style="gap:8px;">
+            <select class="shadow-sm input_busqueda rounded px-2" style="height:40px; min-width:160px;" id="filtro_category">
+                <option value="">Categoría</option>
+                @foreach($categories as $category)
+                    <option value="{{ strtolower($category->name) }}">{{ $category->name }}</option>
+                @endforeach
+            </select>
+            <select class="shadow-sm input_busqueda rounded px-2" style="height:40px; min-width:160px;" id="filtro_transmission">
+                <option value="">Transmisión</option>
+                <option value="manual">Manual</option>
+                <option value="automatic">Automático</option>
+            </select>
+        </div>
+
+        {{-- GRID DE TARJETAS HORIZONTAL --}}
+        <div id="catalogo_grid" class="row row-cols-1 row-cols-md-2 g-3 my-1">
 
             @forelse($vehicles as $vehicle)
             <div class="col tarjeta_vehiculo" data-category="{{ strtolower($vehicle->category->name ?? '') }}" data-transmission="{{ $vehicle->transmission }}">
-                
-                <div class="card h-100 shadow-sm rounded">
+                <div class="tarjeta_catalogo">
 
                     {{-- IMAGEN --}}
-                    <div style="height: auto; overflow: hidden;">
+                    <div class="tarjeta_catalogo_img">
                         @if($vehicle->image_path)
-                            <img src="{{ Storage::url($vehicle->image_path) }}"
-                                alt="{{ $vehicle->name }}"
-                                class="card-img-top"
-                                style="width:100%; height:auto;">
+                            <img src="{{ Storage::url($vehicle->image_path) }}" alt="{{ $vehicle->name }}">
                         @else
-                            <img src="{{ asset('./img/sin_url_auto.png') }}"
-                                alt="Sin imagen"
-                                class="card-img-top"
-                                style="width:100%; height:auto;">
+                            <img src="{{ asset('./img/sin_url_auto.png') }}" alt="Sin imagen">
                         @endif
                     </div>
 
                     {{-- CONTENIDO --}}
-                    <div class="card-body d-flex flex-column">
-                        
-                        {{-- Disponibilidad --}}
-                        <div class="mb-1">
+                    <div class="tarjeta_catalogo_body">
+                        <div>
+                            {{-- Disponibilidad --}}
                             @if($vehicle->available)
-                                <span class="badge bg-success">Disponible</span>
+                                <span class="badge bg-success badge_disponible">Disponible</span>
                             @else
-                                <span class="badge bg-danger">No disponible</span>
+                                <span class="badge bg-danger badge_disponible">No disponible</span>
                             @endif
+
+                            {{-- Nombre --}}
+                            <h5 class="fw-bold mt-1 mb-0 fs-5">{{ $vehicle->name }}</h5>
+                            <p class="text-muted mb-2" style="font-size:0.8rem;">
+                                {{ $vehicle->brand }} {{ $vehicle->model }}{{ $vehicle->year ? ' '.$vehicle->year : '' }} — o similar
+                            </p>
+
+                            {{-- Info --}}
+                            <p class="mb-1" style="font-size:0.8rem;">
+                                <i class="icon_target bi bi-tag-fill"></i> {{ $vehicle->category->name ?? '—' }}
+                                &nbsp;·&nbsp;
+                                <i class="icon_target bi bi-gear-wide"></i> {{ $vehicle->transmission == 'automatic' ? 'Automático' : 'Manual' }}
+                            </p>
                         </div>
-                        
-                        {{-- Nombre --}}
-                        <h5 class="card-title fs-4 mb-1">{{ $vehicle->name }}</h5>
-                        
-                        {{-- Marca, Modelo, Año --}}
-                        <p class="card-text text-muted mb-1 fs-6" style="font-size: 0.85rem;">
-                            {{ $vehicle->brand }} {{ $vehicle->model }}
-                            @if($vehicle->year) — {{ $vehicle->year }} @endif
-                        </p>
-                        <p class="fs-6 m-0">o similar</p>
-                        
-                        {{-- Detalles --}}
-                        <ul class="list-unstyled mb-2" style="font-size: 0.85rem;">
-                            <li class="fs-6"><i class="icon_target bi bi-tag-fill"></i> Categoría: <b>{{ strtolower($vehicle->category->name ?? '') }}</b></li>
-                            <li data-transmission="{{ $vehicle->transmission }}" class="fs-6"><i class="icon_target bi bi-gear-wide"></i> Transmisión: <b>{{ $vehicle->transmission == 'automatic' ? 'Automático' : 'Manual' }}</b></li>
+
+                        <div>
+                            {{-- Precio --}}
                             @if($vehicle->category)
-                            <li><b class="fs-4">{{ $vehicle->category->formatted_price_per_day }} <span class="fs-6"> /día</span></b></li>
+                            <p class="tarjeta_precio mb-2">
+                                {{ $vehicle->category->formatted_price_per_day }}
+                                <span>/día</span>
+                            </p>
                             @endif
-                        </ul>
-                        {{-- Botón --}}
-                        <div class="mt-auto">
-                            <a href="{{ route('catalogo.detalle', $vehicle->id) }}"
-                                class="boton_forms rounded link_decoration_none display_flex_center_center">
-                                Ver más detalles
+
+                            {{-- Botón --}}
+                            <a href="{{ route('catalogo.detalle', $vehicle->id) }}" class="boton_reservar">
+                                RESERVAR AHORA
                             </a>
                         </div>
                     </div>
+
                 </div>
             </div>
             @empty

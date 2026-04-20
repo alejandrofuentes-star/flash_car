@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\RentaSolicitada;
 use App\Models\Renta;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class RentaController extends Controller
 {
@@ -41,7 +43,15 @@ class RentaController extends Controller
             'costo_total'      => 'required|numeric|min:0',
         ]);
 
-        Renta::create($validated);
+        $renta = Renta::create($validated);
+        $renta->load('vehicle');
+
+        try {
+            Mail::to($renta->correo)->send(new RentaSolicitada($renta));
+            $renta->update(['mail_enviado' => true, 'mail_enviado_at' => now()]);
+        } catch (\Throwable $e) {
+            \Log::error('Error enviando correo de renta: ' . $e->getMessage());
+        }
 
         return redirect()->route('inicio')
             ->with('success', '¡Tu solicitud de renta fue enviada correctamente! Pronto nos pondremos en contacto contigo.');
@@ -49,7 +59,7 @@ class RentaController extends Controller
 
     public function index()
     {
-        $rentas = Renta::with('vehicle')->orderBy('created_at', 'desc')->get();
+        $rentas = Renta::with('vehicle')->orderBy('created_at', 'desc')->paginate(15);
         return view('rentas.index', compact('rentas'));
     }
 
@@ -57,6 +67,20 @@ class RentaController extends Controller
     {
         $renta = Renta::with('vehicle')->findOrFail($id);
         return view('rentas.show', compact('renta'));
+    }
+
+    public function reenviarCorreo($id)
+    {
+        $renta = Renta::with('vehicle')->findOrFail($id);
+
+        try {
+            Mail::to($renta->correo)->send(new RentaSolicitada($renta));
+            $renta->update(['mail_enviado' => true, 'mail_enviado_at' => now()]);
+            return back()->with('success', 'Correo reenviado correctamente a ' . $renta->correo);
+        } catch (\Throwable $e) {
+            \Log::error('Error reenviando correo renta #' . $id . ': ' . $e->getMessage());
+            return back()->with('error', 'No se pudo enviar el correo: ' . $e->getMessage());
+        }
     }
 
     public function updateEstado(Request $request, $id)

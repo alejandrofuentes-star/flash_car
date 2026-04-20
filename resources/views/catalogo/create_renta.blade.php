@@ -2,6 +2,10 @@
 
 @section('title', 'Rentar - ' . $vehicle->name)
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/styles_pagina_principal.css') }}">
+@endpush
+
 @section('content')
 @include('layout.header_user')
 <div class="bg-light">
@@ -24,18 +28,21 @@
                             <span class="fs-6 text-muted" id="label_2">Fechas y Lugares</span>
                             <div class="mx-2 etapa_linea"></div>
                         </div>
+                        {{-- ETAPA 3 oculta temporalmente hasta integrar pasarela de pagos
                         <div class="col-12 col-sm-12 col-md-4 col-lg-3 d-flex align-items-center justify-content-start py-1">
                             <div class="mx-2 etapa_circulo" id="circulo_3">3</div>
                             <span class="fs-6 text-muted" id="label_3">Pago</span>
                         </div>
+                        --}}
                     </div>
                 </div>
 
                 {{-- FORM ENVUELVE TODO --}}
-                <form method="POST" action="{{ route('rentas.store') }}" id="formRenta" class="col-12">
+                <form method="POST" action="{{ route('rentas.store') }}" id="formRenta" class="col-12" novalidate>
                 @csrf
                 <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
                 <input type="hidden" name="total_dias" id="total_dias" value="0">
+                <input type="hidden" name="metodo_pago" value="pendiente">
                 <input type="hidden" name="costo_total" id="costo_total_input" value="0">
                 <input type="hidden" id="precio_dia" value="{{ $vehicle->category->price_per_day ?? 0 }}">
                 <input type="hidden" id="precio_semana"  value="{{ $vehicle->category->price_per_week ?? 0 }}">
@@ -59,7 +66,36 @@
                                     </div>
                                     <div class="col-12 col-md-6 fila_form_f_b py-2">
                                         <label class="label_form_f_b fs-6 p-1"><b>Teléfono *</b></label>
-                                        <input class="input_form_f_b fs-6 p-1" type="tel" name="telefono" value="{{ old('telefono') }}" placeholder="Ej: 5512345678" required>
+                                        <input type="hidden" name="telefono" id="telefono_completo">
+                                        <div class="d-flex" style="gap:4px;">
+                                            <select id="codigo_pais" class="input_form_f_b fs-6 p-1" style="width:140px; flex-shrink:0;">
+                                                <option value="+52"  data-min="10" data-max="10" data-ph="5512345678">🇲🇽 +52</option>
+                                                <option value="+1"   data-min="10" data-max="10" data-ph="2025551234">🇺🇸 +1</option>
+                                                <option value="+1-CA" data-min="10" data-max="10" data-ph="4165551234">🇨🇦 +1</option>
+                                                <option value="+54"  data-min="10" data-max="10" data-ph="1123456789">🇦🇷 +54</option>
+                                                <option value="+55"  data-min="10" data-max="11" data-ph="11987654321">🇧🇷 +55</option>
+                                                <option value="+56"  data-min="9"  data-max="9"  data-ph="912345678">🇨🇱 +56</option>
+                                                <option value="+57"  data-min="10" data-max="10" data-ph="3001234567">🇨🇴 +57</option>
+                                                <option value="+51"  data-min="9"  data-max="9"  data-ph="912345678">🇵🇪 +51</option>
+                                                <option value="+58"  data-min="10" data-max="10" data-ph="4121234567">🇻🇪 +58</option>
+                                                <option value="+593" data-min="9"  data-max="9"  data-ph="991234567">🇪🇨 +593</option>
+                                                <option value="+502" data-min="8"  data-max="8"  data-ph="51234567">🇬🇹 +502</option>
+                                                <option value="+503" data-min="8"  data-max="8"  data-ph="71234567">🇸🇻 +503</option>
+                                                <option value="+504" data-min="8"  data-max="8"  data-ph="91234567">🇭🇳 +504</option>
+                                                <option value="+505" data-min="8"  data-max="8"  data-ph="81234567">🇳🇮 +505</option>
+                                                <option value="+506" data-min="8"  data-max="8"  data-ph="81234567">🇨🇷 +506</option>
+                                                <option value="+507" data-min="8"  data-max="8"  data-ph="61234567">🇵🇦 +507</option>
+                                                <option value="+53"  data-min="8"  data-max="8"  data-ph="51234567">🇨🇺 +53</option>
+                                                <option value="+34"  data-min="9"  data-max="9"  data-ph="612345678">🇪🇸 +34</option>
+                                                <option value="+44"  data-min="10" data-max="10" data-ph="7911123456">🇬🇧 +44</option>
+                                                <option value="+33"  data-min="9"  data-max="9"  data-ph="612345678">🇫🇷 +33</option>
+                                                <option value="+49"  data-min="10" data-max="11" data-ph="15123456789">🇩🇪 +49</option>
+                                                <option value="+39"  data-min="9"  data-max="10" data-ph="3123456789">🇮🇹 +39</option>
+                                            </select>
+                                            <input class="input_form_f_b fs-6 p-1" type="tel" id="numero_tel" placeholder="5512345678" style="flex:1;" required>
+                                        </div>
+                                        <small id="tel_hint" class="text-muted px-1" style="font-size:0.75rem;">10 dígitos requeridos</small>
+                                        <small id="tel_error" class="text-danger px-1" style="font-size:0.75rem; display:none;"></small>
                                     </div>
                                     <div class="col-12 col-md-6 fila_form_f_b py-2">
                                         <label class="label_form_f_b fs-6 p-1"><b>Correo Electrónico *</b></label>
@@ -133,12 +169,12 @@
                                     </div>
                                     <div class="col-12 d-flex justify-content-between p-2">
                                         <button type="button" class="boton_link_xxl rounded" onclick="irEtapa(1)">← Anterior</button>
-                                        <button type="button" class="boton_link_xxl rounded" onclick="irEtapa(3)">Siguiente →</button>
+                                        <button type="submit" class="boton_link_xxl rounded">Enviar Solicitud</button>
                                     </div>
                                 </div>
                             </div>
 
-                            {{-- ETAPA 3: Método de Pago --}}
+                            {{-- ETAPA 3 oculta temporalmente hasta integrar pasarela de pagos
                             <div id="etapa_3" style="display:none;">
                                 <div class="col-12 bg_amarillo d-flex align-items-center justify-content-start p-2 rounded-top">
                                     <p class="text-dark fs-6 m-0"><b>③ Método de Pago</b></p>
@@ -167,6 +203,7 @@
                                     </div>
                                 </div>
                             </div>
+                            --}}
 
                         </div>{{-- fin col-md-8 --}}
 
@@ -241,6 +278,62 @@
 </div>
 @include('layout.footer')
 <script src="{{ asset('js/formulario_renta.js') }}"></script>
+<script>
+    const selectPais = document.getElementById('codigo_pais');
+    const inputNum   = document.getElementById('numero_tel');
+    const telHint    = document.getElementById('tel_hint');
+    const telError   = document.getElementById('tel_error');
+
+    function getReglas() {
+        const opt = selectPais.options[selectPais.selectedIndex];
+        return { min: parseInt(opt.dataset.min), max: parseInt(opt.dataset.max), ph: opt.dataset.ph };
+    }
+
+    function actualizarHint() {
+        const r = getReglas();
+        inputNum.placeholder   = r.ph;
+        inputNum.value         = '';
+        telError.style.display = 'none';
+        telHint.textContent    = r.min === r.max
+            ? `${r.min} dígitos requeridos`
+            : `${r.min}–${r.max} dígitos requeridos`;
+    }
+
+    function validarTelefono() {
+        const r      = getReglas();
+        const digits = inputNum.value;
+        if (digits.length < r.min || digits.length > r.max) {
+            telError.textContent   = r.min === r.max
+                ? `El número debe tener exactamente ${r.min} dígitos`
+                : `El número debe tener entre ${r.min} y ${r.max} dígitos`;
+            telError.style.display = 'block';
+            return false;
+        }
+        telError.style.display = 'none';
+        return true;
+    }
+
+    selectPais.addEventListener('change', actualizarHint);
+
+    inputNum.addEventListener('input', function () {
+        const r = getReglas();
+        // Solo dígitos, limitado al máximo del país actual
+        this.value = this.value.replace(/\D/g, '').slice(0, r.max);
+        telHint.textContent = r.min === r.max
+            ? `${this.value.length}/${r.min} dígitos`
+            : `${this.value.length}/${r.max} dígitos`;
+        if (this.value.length > 0) validarTelefono();
+        else telError.style.display = 'none';
+    });
+
+    actualizarHint();
+
+    document.getElementById('formRenta').addEventListener('submit', function (e) {
+        if (!validarTelefono()) { e.preventDefault(); inputNum.focus(); return; }
+        const codigo = selectPais.value.replace('-CA', '');
+        document.getElementById('telefono_completo').value = codigo + inputNum.value;
+    });
+</script>
 <script>
     const statesData = @json($states->map(fn($s) => [
         'name'   => $s->name,

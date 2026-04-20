@@ -2,6 +2,10 @@
 
 @section('title', $vehicle->name . ' - Flash Car')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/styles_pagina_principal.css') }}">
+@endpush
+
 @section('content')
 @include('layout.header_user')
 <div class="bg-light">

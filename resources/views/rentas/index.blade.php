@@ -20,7 +20,8 @@
                     <p class="col-3 col-sm-3 col-md-3 col-lg-2 border_right px-1 text-dark my-1"><b>Fecha entrega</b></p>
                     <p class="col-3 col-sm-3 col-md-3 col-lg-2 border_right px-1 text-dark my-1 text_break"><b>Fecha Devolución</b></p>
                     <p class="col-3 col-sm-3 col-md-6 col-lg-1 border_right px-1 text-dark my-1 box_hidden_movil"><b>Estado</b></p>
-                    <p class="col-3 col-sm-3 col-md-6 col-lg-2 px-1 text-dark my-1 box_hidden_movil"><b>Acciones</b></p>
+                    <p class="col-3 col-sm-3 col-md-6 col-lg-1 border_right px-1 text-dark my-1 box_hidden_movil"><b>Correo</b></p>
+                    <p class="col-3 col-sm-3 col-md-6 col-lg-1 px-1 text-dark my-1 box_hidden_movil"><b>Acciones</b></p>
                 </div>
                  @forelse($rentas as $renta)
                 <div class="col-12 d-flex align-items-center justify-content-start flex-wrap border_gris_2_buttom">
@@ -45,7 +46,20 @@
                             <span class="badge bg-secondary">Completada</span>
                         @endif
                     </div>
-                    <div class="col-6 col-sm-6 col-md-6 col-lg-2 px-1 my-1 d-flex align-items-center justify-content-start">
+                    <div class="col-6 col-sm-6 col-md-6 col-lg-1 px-1 my-1 box_hidden_movil">
+                        @if($renta->mail_enviado)
+                            <i class="bi bi-envelope-check-fill fs-5 text-success"
+                               title="Enviado el {{ $renta->mail_enviado_at?->format('d/m/Y H:i') }}"></i>
+                        @else
+                            <form method="POST" action="{{ route('rentas.reenviarCorreo', $renta->id) }}" class="d-inline">
+                                @csrf
+                                <button type="submit" class="border-0 bg-transparent p-0" title="Reenviar correo a {{ $renta->correo }}">
+                                    <i class="bi bi-envelope-x-fill fs-5 text-danger"></i>
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                    <div class="col-6 col-sm-6 col-md-6 col-lg-1 px-1 my-1 d-flex align-items-center justify-content-start">
                         <a href="{{ route('rentas.show', $renta->id) }}" class="boton_link_sm b_sm rounded link_decoration_none display_flex_center_center">Ver</a>
                         <a href="{{ route('rentas.edit', $renta->id) }}" class="boton_link_lg rounded">Editar</a>
                     </div>
@@ -55,10 +69,26 @@
                         <p colspan="9" class="fs-6 py-4 m-0 text-center text-muted">No hay solicitudes de renta registradas.</p>
                     </div>
                 @endforelse
+                @if($rentas->hasPages())
+                <div class="col-12 d-flex align-items-center justify-content-between flex-wrap px-2 py-2 border-top">
+                    <p class="text-muted fs-6 m-0">
+                        Mostrando {{ $rentas->firstItem() }}–{{ $rentas->lastItem() }} de {{ $rentas->total() }} solicitudes
+                    </p>
+                    {{ $rentas->links('pagination::bootstrap-5') }}
+                </div>
+                @endif
+
                 @if(session('success'))
                     <div class="messenger_alert">
                         <div class="dialog_alert messenger py-2 px-4 rounded">
                             <div class="fs-6 text-white"><b>{{ session('success') }}</b></div>
+                        </div>
+                    </div>
+                @endif
+                @if(session('error'))
+                    <div class="messenger_alert">
+                        <div class="dialog_alert messenger py-2 px-4 rounded" style="background:#dc3545;">
+                            <div class="fs-6 text-white"><b>{{ session('error') }}</b></div>
                         </div>
                     </div>
                 @endif

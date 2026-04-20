@@ -17,6 +17,9 @@
         <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('vehiculos.index') }}"><i class="bi bi-car-front-fill"></i> Autos</a>
         <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('states.index') }}"><i class="bi bi-geo-alt-fill"></i> Ubicaciones</a>
         <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('rentas.index') }}"><i class="bi bi-clipboard-check-fill"></i> Rentas</a>
+        @if(Auth::user()->hasAdminAccess())
+        <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('slider.index') }}"><i class="bi bi-images"></i> Slider</a>
+        @endif
 
         {{-- Solo visible para super_admin --}}
         @if(Auth::user()->role === 'super_admin')

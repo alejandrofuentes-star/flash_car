@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Vehicle;
 use App\Models\Category;
+use App\Models\SliderImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -38,7 +39,10 @@ class VehicleController extends Controller
                             
         $categories = \App\Models\Category::where('active', 1)->orderBy('name')->get();
 
-        return view('catalogo.index', compact('vehicles','cities', 'categories'));
+        $sliderDesktop = SliderImage::desktop()->active()->orderBy('orden')->get();
+        $sliderMobile  = SliderImage::mobile()->active()->orderBy('orden')->get();
+
+        return view('catalogo.index', compact('vehicles', 'cities', 'categories', 'sliderDesktop', 'sliderMobile'));
     }
 
     public function buscar(Request $request)
@@ -74,7 +78,10 @@ class VehicleController extends Controller
 
         $categories = \App\Models\Category::where('active', 1)->orderBy('name')->get();
 
-        return view('catalogo.index', compact('vehicles', 'cities', 'city', 'categories', 'fecha_entrega', 'fecha_devolucion'));
+        $sliderDesktop = SliderImage::desktop()->active()->orderBy('orden')->get();
+        $sliderMobile  = SliderImage::mobile()->active()->orderBy('orden')->get();
+
+        return view('catalogo.index', compact('vehicles', 'cities', 'city', 'categories', 'fecha_entrega', 'fecha_devolucion', 'sliderDesktop', 'sliderMobile'));
     }
 
     public function create()
