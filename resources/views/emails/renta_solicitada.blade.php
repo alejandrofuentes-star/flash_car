@@ -134,7 +134,7 @@
                     <td style="background:#111;padding:20px 32px;text-align:center;">
                         <p style="margin:0;font-size:13px;color:#aaa;">
                             ¿Tienes dudas? Contáctanos en
-                            <a href="mailto:contacto@flashcar.mx" style="color:#f5c400;text-decoration:none;">contacto@flashcar.mx</a>
+                            <a href="mailto:flashcar@rentadeautos.site" style="color:#f5c400;text-decoration:none;">flashcar@rentadeautos.site</a>
                         </p>
                         <p style="margin:8px 0 0;font-size:12px;color:#666;">© {{ date('Y') }} Flash Car · Querétaro, México</p>
                     </td>

@@ -154,11 +154,11 @@
                 <div class="col-12 d-flex align-items-center justify-content-start flex-wrap p-1">
                     <div class="col-6 col-md-4 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Fecha de Solicitud</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $renta->created_at->format('d/m/Y H:i:s') }}" readonly>
+                        <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $renta->created_at->timezone('America/Mexico_City')->format('d/m/Y H:i:s') }}" readonly>
                     </div>
                     <div class="col-6 col-md-4 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Última Actualización</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $renta->updated_at->format('d/m/Y H:i:s') }}" readonly>
+                        <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $renta->updated_at->timezone('America/Mexico_City')->format('d/m/Y H:i:s') }}" readonly>
                     </div>
                 </div>
                 @if(session('success'))

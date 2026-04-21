@@ -47,17 +47,19 @@
                         @endif
                     </div>
                     <div class="col-6 col-sm-6 col-md-6 col-lg-1 px-1 my-1 box_hidden_movil">
-                        @if($renta->mail_enviado)
-                            <i class="bi bi-envelope-check-fill fs-5 text-success"
-                               title="Enviado el {{ $renta->mail_enviado_at?->format('d/m/Y H:i') }}"></i>
-                        @else
-                            <form method="POST" action="{{ route('rentas.reenviarCorreo', $renta->id) }}" class="d-inline">
-                                @csrf
+                        <form method="POST" action="{{ route('rentas.reenviarCorreo', $renta->id) }}" class="d-inline">
+                            @csrf
+                            @if($renta->mail_enviado)
+                                <button type="submit" class="border-0 bg-transparent p-0"
+                                        title="Enviado el {{ $renta->mail_enviado_at?->timezone('America/Mexico_City')->format('d/m/Y H:i') }} — clic para reenviar">
+                                    <i class="bi bi-envelope-check-fill fs-5 text-success"></i>
+                                </button>
+                            @else
                                 <button type="submit" class="border-0 bg-transparent p-0" title="Reenviar correo a {{ $renta->correo }}">
                                     <i class="bi bi-envelope-x-fill fs-5 text-danger"></i>
                                 </button>
-                            </form>
-                        @endif
+                            @endif
+                        </form>
                     </div>
                     <div class="col-6 col-sm-6 col-md-6 col-lg-1 px-1 my-1 d-flex align-items-center justify-content-start">
                         <a href="{{ route('rentas.show', $renta->id) }}" class="boton_link_sm b_sm rounded link_decoration_none display_flex_center_center">Ver</a>

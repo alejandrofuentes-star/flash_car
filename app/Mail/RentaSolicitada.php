@@ -26,6 +26,7 @@ class RentaSolicitada extends Mailable
     {
         return new Content(
             view: 'emails.renta_solicitada',
+            text: 'emails.renta_solicitada_text',
         );
     }
 }
