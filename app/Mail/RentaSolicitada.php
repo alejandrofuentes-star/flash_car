@@ -18,7 +18,10 @@ class RentaSolicitada extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '¡Solicitud de renta recibida! — Flash Car',
+            subject: 'Tu solicitud de renta fue recibida - Flash Car',
+            replyTo: [
+                new \Illuminate\Mail\Mailables\Address('flashcar@rentadeautos.site', 'Flash Car'),
+            ],
         );
     }
 

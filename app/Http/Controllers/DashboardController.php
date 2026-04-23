@@ -23,7 +23,7 @@ class DashboardController extends Controller
         // Últimas 8 solicitudes
         $recientes = Renta::with('vehicle')
                         ->orderBy('created_at', 'desc')
-                        ->limit(8)
+                        ->limit(5)
                         ->get();
 
         // Entregas próximas (hoy + 3 días)

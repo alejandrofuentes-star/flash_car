@@ -15,7 +15,7 @@
                 {{-- HEADER --}}
                 <tr>
                     <td style="background:#f5c400;padding:28px 32px;text-align:center;">
-                        <p style="margin:0;font-size:26px;font-weight:900;color:#111;letter-spacing:1px;">⚡ FLASH CAR</p>
+                        <p style="margin:0;font-size:26px;font-weight:900;color:#111;letter-spacing:1px;">FLASH CAR</p>
                         <p style="margin:6px 0 0;font-size:13px;color:#333;">Renta de autos — Querétaro, México</p>
                     </td>
                 </tr>
@@ -23,6 +23,8 @@
                 {{-- SALUDO --}}
                 <tr>
                     <td style="padding:32px 32px 0;">
+                        <p style="margin:0 0 6px;font-size:12px;color:#999;letter-spacing:0.5px;text-transform:uppercase;">No. de solicitud</p>
+                        <p style="margin:0 0 20px;font-size:20px;font-weight:900;color:#111;letter-spacing:1px;">#{{ str_pad($renta->id, 5, '0', STR_PAD_LEFT) }}</p>
                         <p style="margin:0;font-size:22px;font-weight:700;color:#111;">¡Hola, {{ $renta->nombre_completo }}!</p>
                         <p style="margin:10px 0 0;font-size:15px;color:#444;line-height:1.6;">
                             Hemos recibido tu solicitud de renta correctamente. En breve uno de nuestros agentes se pondrá en contacto contigo para confirmar los detalles.
@@ -67,41 +69,49 @@
                         <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
 
                             <tr style="border-bottom:1px solid #eeeeee;">
-                                <td style="padding:10px 0;font-size:14px;color:#666;width:50%;">📅 Fecha de entrega</td>
+                                <td style="padding:10px 0;font-size:14px;color:#666;width:50%;">Fecha de entrega</td>
                                 <td style="padding:10px 0;font-size:14px;color:#111;font-weight:600;text-align:right;">
                                     {{ \Carbon\Carbon::parse($renta->fecha_entrega)->format('d/m/Y') }}
                                     · {{ substr($renta->hora_entrega, 0, 5) }}
                                 </td>
                             </tr>
                             <tr style="border-bottom:1px solid #eeeeee;">
-                                <td style="padding:10px 0;font-size:14px;color:#666;">📍 Lugar de entrega</td>
+                                <td style="padding:10px 0;font-size:14px;color:#666;">Lugar de entrega</td>
                                 <td style="padding:10px 0;font-size:14px;color:#111;font-weight:600;text-align:right;">{{ $renta->lugar_entrega }}</td>
                             </tr>
                             <tr style="border-bottom:1px solid #eeeeee;">
-                                <td style="padding:10px 0;font-size:14px;color:#666;">🔄 Fecha de devolución</td>
+                                <td style="padding:10px 0;font-size:14px;color:#666;">Fecha de devolución</td>
                                 <td style="padding:10px 0;font-size:14px;color:#111;font-weight:600;text-align:right;">
                                     {{ \Carbon\Carbon::parse($renta->fecha_devolucion)->format('d/m/Y') }}
                                     · {{ substr($renta->hora_devolucion, 0, 5) }}
                                 </td>
                             </tr>
                             <tr style="border-bottom:1px solid #eeeeee;">
-                                <td style="padding:10px 0;font-size:14px;color:#666;">📍 Lugar de devolución</td>
+                                <td style="padding:10px 0;font-size:14px;color:#666;">Lugar de devolución</td>
                                 <td style="padding:10px 0;font-size:14px;color:#111;font-weight:600;text-align:right;">{{ $renta->lugar_devolucion }}</td>
                             </tr>
                             <tr style="border-bottom:1px solid #eeeeee;">
-                                <td style="padding:10px 0;font-size:14px;color:#666;">👥 Pasajeros</td>
+                                <td style="padding:10px 0;font-size:14px;color:#666;">Pasajeros</td>
                                 <td style="padding:10px 0;font-size:14px;color:#111;font-weight:600;text-align:right;">{{ $renta->num_pasajeros }}</td>
                             </tr>
                             <tr style="border-bottom:1px solid #eeeeee;">
-                                <td style="padding:10px 0;font-size:14px;color:#666;">📆 Total de días</td>
+                                <td style="padding:10px 0;font-size:14px;color:#666;">Total de dias</td>
                                 <td style="padding:10px 0;font-size:14px;color:#111;font-weight:600;text-align:right;">{{ $renta->total_dias }} día{{ $renta->total_dias > 1 ? 's' : '' }}</td>
                             </tr>
-                            <tr>
-                                <td style="padding:14px 0 4px;font-size:16px;color:#111;font-weight:700;">💰 Costo estimado</td>
+                            <tr style="border-bottom:1px solid #eeeeee;">
+                                <td style="padding:14px 0 4px;font-size:16px;color:#111;font-weight:700;">Costo estimado</td>
                                 <td style="padding:14px 0 4px;font-size:20px;color:#111;font-weight:900;text-align:right;">
                                     ${{ number_format($renta->costo_total, 2) }} MXN
                                 </td>
                             </tr>
+                            @if($renta->vehicle && $renta->vehicle->category)
+                            <tr>
+                                <td style="padding:10px 0;font-size:14px;color:#666;">Garantia requerida</td>
+                                <td style="padding:10px 0;font-size:14px;color:#111;font-weight:600;text-align:right;">
+                                    ${{ number_format($renta->vehicle->category->warranty, 2) }} MXN
+                                </td>
+                            </tr>
+                            @endif
 
                         </table>
                     </td>

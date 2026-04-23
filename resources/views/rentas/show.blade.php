@@ -11,10 +11,13 @@
         <div class="container">
 
             <div class="col-12 d-flex align-items-center justify-content-start flex-wrap rounded cont_base my-2">
-                <div class="col-12 d-flex align-items-start justify-content-center flex-column p-2 bg_gris_8">
-                    <h1 class="fs-6 text_uppcase">Detalle de Renta #{{ $renta->id }}</h1>
-                    <div class="col-4 col-sm-4 col-md-2 col-lg-1">
-                        <a class="boton_forms b_sm rounded link_decoration_none display_flex_center_center" href="{{ route('rentas.index') }}">← Volver</a>
+                <div class="col-12 d-flex align-items-center justify-content-between flex-wrap p-2 bg_gris_8">
+                    <h1 class="fs-6 text_uppcase m-0">Renta #{{ $renta->id }}</h1>
+                    <div class="d-flex gap-2">
+                        <a class="boton_link_xxl rounded link_decoration_none display_flex_center_center" style="width:auto; padding:0 14px;" href="{{ route('rentas.index') }}">← Volver</a>
+                        <a class="boton_link_xxl rounded link_decoration_none display_flex_center_center" style="width:auto; padding:0 14px;" href="{{ route('rentas.edit', $renta->id) }}">
+                            <i class="bi bi-pencil-fill me-1"></i> Editar
+                        </a>
                     </div>
                 </div>
 

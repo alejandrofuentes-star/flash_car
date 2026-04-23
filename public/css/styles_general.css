@@ -274,7 +274,7 @@ body
 /*header princiapal*/
 .header_principal
 {
-    z-index: 2;
+    z-index: 1030;
     position: fixed;
     top: 0px;
     width: 100%;
@@ -308,7 +308,7 @@ body
 }
 .submenu
 {
-    z-index: 2;
+    z-index: 1050;
     position: fixed;
     top: 62px;
     right:0px;
@@ -378,7 +378,7 @@ body
 
 .click_any_side
 {
-    z-index: 1;
+    z-index: 1035;
     position: fixed;
     top:0px;
     width: 100%;
@@ -442,7 +442,7 @@ body
     }
     .submenu_clientes
     {
-        z-index: 2;
+        z-index: 999;
         position: fixed;
         top: 62px;
         right:0px;
@@ -697,11 +697,11 @@ body
     background-color: rgba(255, 255, 255, 0);
     border: none;
     padding: 0 10px;
-    color: white;
+    color: #111;
 }
 .input_form::placeholder
 {
-    color: white;
+    color: #999;
     opacity: 1;
 }
 .input_form_f_b

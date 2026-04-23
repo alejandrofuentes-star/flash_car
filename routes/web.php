@@ -13,6 +13,16 @@ use App\Http\Controllers\StateController;
 use App\Http\Controllers\SliderController;
 
 // ============================================================
+// CAMBIO DE IDIOMA
+// ============================================================
+Route::get('/lang/{locale}', function ($locale) {
+    if (in_array($locale, ['es', 'en'])) {
+        session(['locale' => $locale]);
+    }
+    return redirect()->back();
+})->name('lang.switch');
+
+// ============================================================
 // RUTAS PÚBLICAS
 // ============================================================
 Route::get('/', function () {

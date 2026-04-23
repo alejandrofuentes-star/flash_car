@@ -6,11 +6,11 @@
 		</div>
 		<div class="w_90 d_flex_center_between d_flex_movil border_top_custom p_2">
 			<div class="w_50 d_flex_center_center_column">
-				<p class="text_color_white p_1 fs_6">Página creada con tecnología de</p>
+				<p class="text_color_white p_1 fs_6">{{ __('footer.created_by') }}</p>
 				<a href="https://neructechnologies.com" target="_blank"><img src="{{ asset('./img/tech-w.webp') }}" width="190px" heigth="40px" alt="logo neruc technologies"></a>
 			</div>
 			<div class="w_50 d_flex_center_center_column">
-				<p class="text_color_white p_1 fs_6">Estrategia de marketing digital</p>
+				<p class="text_color_white p_1 fs_6">{{ __('footer.marketing') }}</p>
 				<a href="https://nerucmarketing.com" target="_blank"><img src="{{ asset('./img/marketing_w.webp') }}" width="161px" heigth="40px" alt="logo neruc marketing"></a>
 			</div>
 		</div>
