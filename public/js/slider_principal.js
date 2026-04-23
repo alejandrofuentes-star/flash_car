@@ -74,18 +74,18 @@ function normalizar(str) {
 }
 
 const filtroCategoria = document.getElementById('filtro_category');
-const filtroTransmision = document.getElementById('filtro_transmission');
+const filtroPassengers = document.getElementById('filtro_passengers');
 
 function filtrarVehiculos() {
     const category = normalizar(filtroCategoria.value);
-    const transmission = filtroTransmision.value;
+    const passengers = filtroPassengers.value;
 
     document.querySelectorAll('.tarjeta_vehiculo').forEach(card => {
         const matchCategory = !category || normalizar(card.dataset.category) === category;
-        const matchTransmission = !transmission || card.dataset.transmission === transmission;
-        card.style.display = matchCategory && matchTransmission ? '' : 'none';
+        const matchPassengers = !passengers || card.dataset.passengers === passengers;
+        card.style.display = matchCategory && matchPassengers ? '' : 'none';
     });
 }
 
 filtroCategoria.addEventListener('change', filtrarVehiculos);
-filtroTransmision.addEventListener('change', filtrarVehiculos);
+filtroPassengers.addEventListener('change', filtrarVehiculos);

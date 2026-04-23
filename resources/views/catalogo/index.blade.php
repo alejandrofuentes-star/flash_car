@@ -48,7 +48,7 @@
     </div>
     <div class="col-12 d-flex align-items-center justify-content-center cont_principal_slider">
         <div class="col-12 d-flex align-items-center justify-content-center flex-wrap">
-            <div class="col-12 col-sm-12 col-md-12 col-lg-5 p-3">
+            <div class="col-12 col-sm-12 col-md-12 col-lg-4 p-3">
                 <div class="hero_form_card">
                     <h1 class="hero_titulo">{{ __('hero.title') }}</h1>
                     <p class="hero_subtitulo">{{ __('hero.subtitle') }}</p>
@@ -83,7 +83,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-sm-12 col-md-12 col-lg-7"></div>
+            <div class="col-12 col-sm-12 col-md-12 col-lg-8"></div>
         </div>
     </div>
 </div>
@@ -171,6 +171,86 @@
     </div>
 </section>
 <!--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
+<!--carrucel infinito-->
+<div class="carrucel_infinito_wrap">
+    <button class="carrucel_btn carrucel_prev" id="carrucel_prev" aria-label="Anterior"><i class="bi bi-chevron-left"></i></button>
+    <div class="carrucel_viewport" id="carrucel_viewport">
+        <div class="carrucel_infinito_track" id="carrucel_track">
+            {{-- 3 clones del final (para loop hacia atrás) --}}
+            <img src="{{ asset('./img/carrucel/flash3.jpg') }}" alt="Flash Car" class="carrucel_infinito_img">
+            <img src="{{ asset('./img/carrucel/flash4.jpg') }}" alt="Flash Car" class="carrucel_infinito_img">
+            <img src="{{ asset('./img/carrucel/flash5.jpg') }}" alt="Flash Car" class="carrucel_infinito_img">
+            {{-- imágenes reales --}}
+            <img src="{{ asset('./img/carrucel/flash1.gif') }}" alt="Flash Car" class="carrucel_infinito_img">
+            <img src="{{ asset('./img/carrucel/flash2.jpg') }}"  alt="Flash Car" class="carrucel_infinito_img">
+            <img src="{{ asset('./img/carrucel/flash3.jpg') }}"  alt="Flash Car" class="carrucel_infinito_img">
+            <img src="{{ asset('./img/carrucel/flash4.jpg') }}"  alt="Flash Car" class="carrucel_infinito_img">
+            <img src="{{ asset('./img/carrucel/flash5.jpg') }}"  alt="Flash Car" class="carrucel_infinito_img">
+            {{-- 3 clones del inicio (para loop hacia adelante) --}}
+            <img src="{{ asset('./img/carrucel/flash1.gif') }}" alt="Flash Car" class="carrucel_infinito_img">
+            <img src="{{ asset('./img/carrucel/flash2.jpg') }}" alt="Flash Car" class="carrucel_infinito_img">
+            <img src="{{ asset('./img/carrucel/flash3.jpg') }}" alt="Flash Car" class="carrucel_infinito_img">
+        </div>
+    </div>
+    <button class="carrucel_btn carrucel_next" id="carrucel_next" aria-label="Siguiente"><i class="bi bi-chevron-right"></i></button>
+</div>
+<script>
+(function () {
+    const viewport      = document.getElementById('carrucel_viewport');
+    const track         = document.getElementById('carrucel_track');
+    const itemsPerView  = 3;
+    const totalReal     = 5;
+    let current         = itemsPerView; // empieza en la primera imagen real
+    let transitioning   = false;
+
+    function itemWidth() { return viewport.offsetWidth / itemsPerView; }
+
+    function moveTo(index, animate) {
+        track.style.transition = animate ? 'transform 0.5s ease' : 'none';
+        track.style.transform  = `translateX(-${index * itemWidth()}px)`;
+    }
+
+    function next() {
+        if (transitioning) return;
+        transitioning = true;
+        current++;
+        moveTo(current, true);
+    }
+
+    function prev() {
+        if (transitioning) return;
+        transitioning = true;
+        current--;
+        moveTo(current, true);
+    }
+
+    track.addEventListener('transitionend', function () {
+        if (current > totalReal + itemsPerView - 1) { current -= totalReal; moveTo(current, false); }
+        if (current < itemsPerView)                 { current += totalReal; moveTo(current, false); }
+        transitioning = false;
+    });
+
+    moveTo(current, false);
+
+    let auto       = 0;
+    let reanudar   = 0;
+
+    function startAuto() { clearInterval(auto); auto = setInterval(next, 5000); }
+    function stopAuto()  { clearInterval(auto); clearTimeout(reanudar); }
+    function scheduleResume() { reanudar = setTimeout(startAuto, 4000); }
+
+    startAuto();
+
+    ['carrucel_prev', 'carrucel_next'].forEach(id => {
+        const btn    = document.getElementById(id);
+        const action = id === 'carrucel_prev' ? prev : next;
+        btn.addEventListener('click',      () => { stopAuto(); action(); scheduleResume(); });
+        btn.addEventListener('touchstart', () => { stopAuto(); action(); scheduleResume(); }, { passive: true });
+    });
+    window.addEventListener('resize', () => moveTo(current, false));
+})();
+</script>
+<!--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
 <!--catálogo-->
 <div class="py-5 bg-light" id="catalogo">
     <div class="container">
@@ -188,10 +268,11 @@
                     <option value="{{ strtolower($category->name) }}">{{ $category->name }}</option>
                 @endforeach
             </select>
-            <select class="shadow-sm input_busqueda rounded px-2" style="height:40px; min-width:160px;" id="filtro_transmission">
-                <option value="">{{ __('catalog.transmission') }}</option>
-                <option value="manual">{{ __('catalog.manual') }}</option>
-                <option value="automatic">{{ __('catalog.automatic') }}</option>
+            <select class="shadow-sm input_busqueda rounded px-2" style="height:40px; min-width:160px;" id="filtro_passengers">
+                <option value="">{{ __('catalog.passengers') }}</option>
+                @foreach($passengers as $p)
+                    <option value="{{ $p }}">{{ $p }} pax</option>
+                @endforeach
             </select>
         </div>
 
@@ -199,7 +280,7 @@
         <div id="catalogo_grid" class="row row-cols-1 row-cols-md-2 g-3 my-1">
 
             @forelse($vehicles as $vehicle)
-            <div class="col tarjeta_vehiculo" data-category="{{ strtolower($vehicle->category->name ?? '') }}" data-transmission="{{ $vehicle->transmission }}">
+            <div class="col tarjeta_vehiculo" data-category="{{ strtolower($vehicle->category->name ?? '') }}" data-passengers="{{ $vehicle->passengers }}">
                 <div class="tarjeta_catalogo">
 
                     {{-- IMAGEN --}}
@@ -310,7 +391,7 @@
     </div>
 </section>
 
-<section>
+<section id="ubicaciones">
     <div class="py-5 bg_gris_custom">
         <div class="container">
             <div class="row">
@@ -356,6 +437,41 @@
     </div>
 </section>
 
+{{-- TÉRMINOS Y CONDICIONES --}}
+<section>
+    <div class="py-5" style="background-color:#e9e9e9;">
+        <div class="container">
+
+            <div style="font-size:0.75rem; line-height:1.6; color:#222;">
+
+                <p class="mb-2">Servicio de renta de vehículos, sin filas ni mostradores, con un proceso completamente digital diseñado para facilitar cada etapa de la experiencia. Desde la reserva hasta la devolución, todo se realiza de forma autónoma: reservas en línea, verificación remota de documentos y un proceso de entrega y devolución optimizado, sin trámites innecesarios. Nuestro modelo está pensado para que puedas rentar un vehículo de manera fácil, rápida y segura, ya sea por día, semana o mes, con atención 24/7 y acompañamiento en cada paso.</p>
+
+                <p class="fw-bold mb-1">Seguro con cobertura amplia incluido:</p>
+                <p class="mb-2">Colisión y Robo al 90%, Daños a terceros, Responsabilidad Civil, Km Ilimitado y Asistencia vial. Adicional a ello en tu primera renta tienes conductor adicional incluido.</p>
+
+                <p class="fw-bold mb-1">Requisitos</p>
+                <p class="mb-2">● INE o pasaporte vigente &nbsp;·&nbsp; ● Licencia de conducir &nbsp;·&nbsp; ● Comprobante de domicilio &nbsp;·&nbsp; ● Forma de pago</p>
+
+                <p class="fw-bold mb-1">Misión</p>
+                <p class="mb-2">Hacer que rentar un auto sea tan fácil como abrir una app: reservas digitales, verificación remota y hand off sin fricción.</p>
+
+                <p class="fw-bold mb-1">Visión</p>
+                <p class="mb-2">Ser la plataforma líder de renta autónoma en LATAM, con robots en aeropuertos clave y experiencia 24/7.</p>
+
+                <p class="fw-bold mb-1">Términos y Condiciones</p>
+                <p class="mb-2">La cobertura del seguro es válida únicamente durante el período de alquiler especificado en el contrato. El arrendatario deberá comunicar cualquier accidente, robo o daño dentro de las 24 horas. FlashCar no se hace responsable de las pertenencias personales dejadas en el vehículo. El arrendatario es responsable de cualquier infracción de tráfico o peajes incurridos durante el período de alquiler. El combustible no está incluido, el vehículo debe devolverse con el mismo nivel de combustible. Cualquier uso no autorizado del vehículo anula la cobertura del seguro. Se requiere una licencia de conducir válida y una identificación oficial para alquilar un vehículo. La asistencia en carretera está disponible las 24/7, pero es posible que no cubra áreas remotas o de alto riesgo.</p>
+
+                <div class="pt-2 border-top mt-2">
+                    <p class="fw-bold mb-1">Aviso de Confidencialidad</p>
+                    <p class="mb-0">Este mensaje de correo electrónico y sus adjuntos pueden contener información confidencial o legalmente privilegiada y está destinado únicamente al uso de los destinatarios. Esta prohibido a las personas o entidades que no sean los destinatarios de este correo cualquier tipo de modificación, copia, distribución, divulgación, retención o uso de la información que contiene. La divulgación no autorizada, difusión, distribución, copia o la adopción de cualquier acción basada en la información aquí contenida, está prohibida. No puede garantizarse que los correos electrónicos estén libres de errores, ya que pueden ser interceptados, enmendados o contener virus. Flash Car no se hace responsable de errores u omisiones en este mensaje y niega cualquier responsabilidad por cualquier daño que surja del uso del correo electrónico y no se responsabiliza por su uso abusivo, contrario a la moral, a las buenas costumbres o a la ley.</p>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</section>
+
 @if(session('success'))
     <div class="messenger_alert">
         <div class="dialog_alert messenger py-2 px-3 rounded">
@@ -363,6 +479,29 @@
         </div>
     </div>
 @endif
+
+@if(session('reserva_ok'))
+<div class="modal fade" id="modalReservaOk" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded shadow">
+            <div class="modal-body text-center py-5 px-4">
+                <i class="bi bi-check-circle-fill text-success" style="font-size:3.5rem;"></i>
+                <h4 class="fw-bold mt-3 mb-2">¡Reservación recibida!</h4>
+                <p class="fs-6 text-muted mb-4">Gracias por reservar con Flash Car, un agente te contactará.</p>
+                <div class="d-flex justify-content-center">
+                    <button type="button" class="boton_link_xxl rounded" style="width:auto; padding:0 20px;" data-bs-dismiss="modal">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    window.addEventListener('load', function () {
+        new bootstrap.Modal(document.getElementById('modalReservaOk')).show();
+    });
+</script>
+@endif
+
 @include('layout.footer')
 <script src="{{ asset('./js/slider_principal.js') }}"></script>
 <script src="{{ asset('./js/contador_mundial.js') }}"></script>

@@ -38,11 +38,12 @@ class VehicleController extends Controller
                             ->values();
                             
         $categories = \App\Models\Category::where('active', 1)->orderBy('name')->get();
+        $passengers = Vehicle::where('active', 1)->distinct()->orderBy('passengers')->pluck('passengers');
 
         $sliderDesktop = SliderImage::desktop()->active()->orderBy('orden')->get();
         $sliderMobile  = SliderImage::mobile()->active()->orderBy('orden')->get();
 
-        return view('catalogo.index', compact('vehicles', 'cities', 'categories', 'sliderDesktop', 'sliderMobile'));
+        return view('catalogo.index', compact('vehicles', 'cities', 'categories', 'passengers', 'sliderDesktop', 'sliderMobile'));
     }
 
     public function buscar(Request $request)
@@ -77,11 +78,12 @@ class VehicleController extends Controller
             ->values();
 
         $categories = \App\Models\Category::where('active', 1)->orderBy('name')->get();
+        $passengers = Vehicle::where('active', 1)->distinct()->orderBy('passengers')->pluck('passengers');
 
         $sliderDesktop = SliderImage::desktop()->active()->orderBy('orden')->get();
         $sliderMobile  = SliderImage::mobile()->active()->orderBy('orden')->get();
 
-        return view('catalogo.index', compact('vehicles', 'cities', 'city', 'categories', 'fecha_entrega', 'fecha_devolucion', 'sliderDesktop', 'sliderMobile'));
+        return view('catalogo.index', compact('vehicles', 'cities', 'city', 'categories', 'passengers', 'fecha_entrega', 'fecha_devolucion', 'sliderDesktop', 'sliderMobile'));
     }
 
     public function create()

@@ -157,7 +157,7 @@
                                     </div>
                                     <div class="col-12 d-flex justify-content-between p-2">
                                         <button type="button" class="boton_link_xxl rounded" onclick="irEtapa(1)">{{ __('form.previous') }}</button>
-                                        <button type="submit" class="boton_link_xxl rounded">{{ __('form.submit') }}</button>
+                                        <button type="submit" class="boton_link_xxl rounded" style="width:auto; padding:0 14px;">{{ __('form.submit') }}</button>
                                     </div>
                                 </div>
                             </div>
@@ -192,6 +192,31 @@
                                 </div>
                             </div>
                             --}}
+
+                            {{-- RECORDATORIO DOCUMENTACIÓN --}}
+                            <div class="col-12 d-flex align-items-start justify-content-start flex-wrap rounded border border-warning bg-warning bg-opacity-10 p-3">
+                                <div class="col-12 mb-2">
+                                    <p class="fs-6 m-0 fw-bold"><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Recuerda presentar tu documentación original y vigente</p>
+                                </div>
+                                <div class="col-12 d-flex align-items-start justify-content-start flex-wrap">
+                                    <div class="col-12 col-sm-6 d-flex align-items-start py-1 px-2">
+                                        <i class="bi bi-circle-fill me-2 mt-1" style="font-size:0.45rem; color:var(--amarillo_fuerte);"></i>
+                                        <span class="fs-6">INE o pasaporte</span>
+                                    </div>
+                                    <div class="col-12 col-sm-6 d-flex align-items-start py-1 px-2">
+                                        <i class="bi bi-circle-fill me-2 mt-1" style="font-size:0.45rem; color:var(--amarillo_fuerte);"></i>
+                                        <span class="fs-6">Licencia de conducir nacional o extranjera</span>
+                                    </div>
+                                    <div class="col-12 col-sm-6 d-flex align-items-start py-1 px-2">
+                                        <i class="bi bi-circle-fill me-2 mt-1" style="font-size:0.45rem; color:var(--amarillo_fuerte);"></i>
+                                        <span class="fs-6">Número de vuelo</span>
+                                    </div>
+                                    <div class="col-12 col-sm-6 d-flex align-items-start py-1 px-2">
+                                        <i class="bi bi-circle-fill me-2 mt-1" style="font-size:0.45rem; color:var(--amarillo_fuerte);"></i>
+                                        <span class="fs-6">Forma de pago</span>
+                                    </div>
+                                </div>
+                            </div>
 
                         </div>{{-- fin col-md-8 --}}
 
@@ -240,6 +265,10 @@
                                     </div>
                                 </div>
                                 @endif
+
+                                <div id="btn_confirmar" class="mt-3" style="display:none;">
+                                    <button type="submit" class="boton_link_xxl rounded w-100" style="width:auto; padding:0 14px;">{{ __('form.submit') }}</button>
+                                </div>
 
                             </div>
                         </div>{{-- fin col-md-4 --}}

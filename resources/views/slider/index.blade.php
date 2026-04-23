@@ -190,28 +190,28 @@
 
                 // Overlay: formulario de búsqueda
                 // Proporciones reales del hero form (.hero_form_card) en pantalla 1440×900:
-                //   Desktop → col-lg-5: ~475px wide (33% de vw), ~342px tall (38% de vh)
-                //             margen izq container: ~150px (10.4% de vw) → 7% del card en preview
+                //   Desktop → col-lg-4: ~29% de vw, padding 18px, inputs 36px, btn 38px
+                //             margen izq container: ~7% del card en preview
                 //   Mobile  → col-12: full width, centrado, posición bottom del slider
                 const formBox = document.createElement('div');
                 const isMobile = type === 'mobile';
 
-                const formW = isMobile ? Math.round(cardW * 0.82) : Math.round(cardW * 0.34);
-                const formH = isMobile ? Math.round(cardH * 0.32) : Math.round(cardH * 0.40);
+                const formW = isMobile ? Math.round(cardW * 0.82) : Math.round(cardW * 0.29);
+                const formH = isMobile ? Math.round(cardH * 0.28) : Math.round(cardH * 0.33);
                 const formLeft = isMobile ? Math.round((cardW - formW) / 2) : Math.round(cardW * 0.07);
                 const formTop  = isMobile ? null : Math.round((cardH - formH) / 2 + headerH / 2);
                 const formBottom = isMobile ? Math.round(cardH * 0.05) : null;
 
-                // Factor de escala para elementos internos (base: form real ~342px alto)
-                const s        = formH / 342;
-                const pad      = Math.max(4, Math.round(14 * s));
-                const titleH   = Math.max(6,  Math.round(34 * s));
-                const subH     = Math.max(4,  Math.round(12 * s));
-                const inputH   = Math.max(6,  Math.round(44 * s));
-                const btnH     = Math.max(6,  Math.round(46 * s));
-                const badgeH   = Math.max(4,  Math.round(16 * s));
-                const gapPx    = Math.max(2,  Math.round(6  * s));
-                const bdrPx    = Math.max(2,  Math.round(6  * s));
+                // Factor de escala para elementos internos (base: form real ~275px alto)
+                const s        = formH / 275;
+                const pad      = Math.max(3, Math.round(9  * s));
+                const titleH   = Math.max(5,  Math.round(26 * s));
+                const subH     = Math.max(3,  Math.round(10 * s));
+                const inputH   = Math.max(5,  Math.round(36 * s));
+                const btnH     = Math.max(5,  Math.round(38 * s));
+                const badgeH   = Math.max(3,  Math.round(14 * s));
+                const gapPx    = Math.max(2,  Math.round(5  * s));
+                const bdrPx    = Math.max(2,  Math.round(5  * s));
 
                 formBox.style.cssText = `
                     position:absolute;

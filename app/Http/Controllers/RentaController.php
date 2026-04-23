@@ -54,7 +54,8 @@ class RentaController extends Controller
         }
 
         return redirect()->route('inicio')
-            ->with('success', '¡Tu solicitud de renta fue enviada correctamente! Pronto nos pondremos en contacto contigo.');
+            ->with('success', '¡Tu solicitud de renta fue enviada correctamente! Pronto nos pondremos en contacto contigo.')
+            ->with('reserva_ok', true);
     }
 
     public function index()

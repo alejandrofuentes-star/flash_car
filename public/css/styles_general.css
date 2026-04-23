@@ -274,7 +274,7 @@ body
 /*header princiapal*/
 .header_principal
 {
-    z-index: 1030;
+    z-index: 1050;
     position: fixed;
     top: 0px;
     width: 100%;
@@ -389,7 +389,7 @@ body
 /*header princiapal de los usuarios*/
 .header_principal_usuarios
 {
-    z-index: 4;
+    z-index: 1050;
     position: fixed;
     top: 0px;
     width: 100%;
@@ -442,7 +442,7 @@ body
     }
     .submenu_clientes
     {
-        z-index: 999;
+        z-index: 1050;
         position: fixed;
         top: 62px;
         right:0px;

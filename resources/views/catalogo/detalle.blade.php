@@ -164,16 +164,30 @@
                     {{-- Incluye --}}
                     <div class="col-12 rounded border p-3 shadow-sm">
                         <p class="fs-6 m-0 mb-2"><b>{{ __('detail.includes') }}</b></p>
-                        <ul class="list-unstyled mb-0 fs-6">
-                            <li>{{ __('detail.insurance') }}</li>
-                            <li>{{ __('detail.airport') }}</li>
-                            <li>{{ __('detail.no_lines') }}</li>
-                            <li>{{ __('detail.guarantee') }}
-                                @if($vehicle->category)
-                                    {{ $vehicle->category->formatted_warranty }}
-                                @else — @endif
-                            </li>
-                        </ul>
+                        <div class="row g-0">
+                            <div class="col-12 col-sm-6">
+                                <ul class="list-unstyled mb-0 fs-6">
+                                    <li>{{ __('detail.insurance') }}</li>
+                                    <li>{{ __('detail.airport') }}</li>
+                                    <li>{{ __('detail.no_lines') }}</li>
+                                    <li>{{ __('detail.guarantee') }}
+                                        @if($vehicle->category)
+                                            {{ $vehicle->category->formatted_warranty }}
+                                        @else — @endif
+                                    </li>
+                                    <li>{{ __('detail.collision') }}</li>
+                                </ul>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <ul class="list-unstyled mb-0 fs-6">
+                                    <li>{{ __('detail.third_party') }}</li>
+                                    <li>{{ __('detail.civil_liability') }}</li>
+                                    <li>{{ __('detail.unlimited_km') }}</li>
+                                    <li>{{ __('detail.roadside') }}</li>
+                                </ul>
+                            </div>
+
+                        </div>
                     </div>
 
                 </div>

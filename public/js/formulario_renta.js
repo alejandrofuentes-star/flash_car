@@ -177,12 +177,16 @@ function irEtapa(n) {
     for (let i = 1; i <= 3; i++) {
         const c = document.getElementById('circulo_' + i);
         const l = document.getElementById('label_' + i);
+        if (!c || !l) continue;
         c.classList.remove('activa', 'completada');
         l.classList.remove('fw-bold', 'text-muted');
-        if (i < n)      { c.classList.add('completada'); c.innerHTML = '✓'; l.classList.add('text-muted'); }
+        if (i < n)        { c.classList.add('completada'); c.innerHTML = '✓'; l.classList.add('text-muted'); }
         else if (i === n) { c.classList.add('activa'); c.innerHTML = i; l.classList.add('fw-bold'); }
-        else            { c.innerHTML = i; l.classList.add('text-muted'); }
+        else              { c.innerHTML = i; l.classList.add('text-muted'); }
     }
 
     etapaActual = n;
+
+    const btnConfirmar = document.getElementById('btn_confirmar');
+    if (btnConfirmar) btnConfirmar.style.display = n === 2 ? 'block' : 'none';
 }
