@@ -86,6 +86,11 @@ class Vehicle extends Model
         return number_format($this->fuel_capacity, 1) . ' L';
     }
 
+    public function states()
+    {
+        return $this->belongsToMany(State::class);
+    }
+
     public function rentas()
     {
         return $this->hasMany(Renta::class);

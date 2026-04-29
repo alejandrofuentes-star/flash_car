@@ -95,10 +95,6 @@
                             <option value="manual" {{ old('transmission', $vehicle->transmission) == 'manual' ? 'selected' : '' }}>Manual</option>
                         </select>
                     </div>
-                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Ciudad</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="text" name="city" value="{{ old('city', $vehicle->city ?? '') }}" placeholder="Ej: Ciudad de México">
-                    </div>
                     <div class="col-12 col-sm-12 col-md-6 col-lg-4col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Kilometraje</b></label>
                         <input class="input_form_f_b fs-6 p-1" type="number" name="mileage" value="{{ old('mileage', $vehicle->mileage ?? '') }}" placeholder="Ej: 15000" min="0">
@@ -106,6 +102,22 @@
                     <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Próxima Verificación</b></label>
                         <input class="input_form_f_b fs-6 p-1" type="date" name="next_verification" value="{{ old('next_verification', $vehicle->next_verification ?? '') }}">
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
+                        <label class="label_form_f_b fs-6 p-1"><b>Ciudades disponibles</b></label>
+                        <div class="input_form_f_b p-2 d-flex flex-wrap">
+                            @php $selectedStates = old('state_ids', $vehicle->states->pluck('id')->toArray()); @endphp
+                            @foreach($states as $state)
+                                <label class="d-flex align-items-center fs-6 me-3 mb-1">
+                                    <input type="checkbox" name="state_ids[]" value="{{ $state->id }}"
+                                        {{ in_array($state->id, $selectedStates) ? 'checked' : '' }}>
+                                    <span class="ms-1">{{ $state->name }}</span>
+                                </label>
+                            @endforeach
+                            @if($states->isEmpty())
+                                <span class="text-muted fs-6">No hay ciudades registradas</span>
+                            @endif
+                        </div>
                     </div>
                 </div>
 

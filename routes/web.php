@@ -165,4 +165,8 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
     Route::post('/system/cache/config', [SystemController::class, 'clearConfig'])->name('system.clearConfig');
     Route::post('/system/cache/routes', [SystemController::class, 'clearRoutes'])->name('system.clearRoutes');
     Route::post('/system/cache/views', [SystemController::class, 'clearViews'])->name('system.clearViews');
+
+    Route::get('/system/migrations', [SystemController::class, 'migrations'])->name('system.migrations');
+    Route::post('/system/migrations/run', [SystemController::class, 'runMigrations'])->name('system.migrations.run');
+    Route::post('/system/migrations/upload', [SystemController::class, 'uploadMigration'])->name('system.migrations.upload');
 });

@@ -81,8 +81,8 @@
                         <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $vehicle->plate_number ?? 'No especificado' }}" readonly>
                     </div>
                     <div class="col-6 col-sm-6 col-md-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Ciudad</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $vehicle->city ?? 'No especificado' }}" readonly>
+                        <label class="label_form_f_b fs-6 p-1"><b>Ciudades</b></label>
+                        <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $vehicle->states->pluck('name')->join(', ') ?: 'No especificado' }}" readonly>
                     </div>
                     <div class="col-6 col-sm-6 col-md-4 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Kilometraje</b></label>

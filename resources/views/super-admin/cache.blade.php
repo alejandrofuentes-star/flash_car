@@ -11,8 +11,11 @@
         <div class="container">
 
             <div class="col-12 d-flex align-items-center justify-content-start flex-wrap rounded cont_base my-2">
-                <div class="col-12 d-flex align-items-start justify-content-center flex-column p-2 bg_gris_8">
+                <div class="col-12 d-flex align-items-start justify-content-between flex-wrap p-2 bg_gris_8">
                     <h1 class="fs-6 text_uppcase">Sistema - Limpieza de Caché</h1>
+                    <a class="boton_forms b_sm rounded link_decoration_none display_flex_center_center" href="{{ route('system.migrations') }}">
+                        <i class="bi bi-database-gear me-1"></i> Migraciones
+                    </a>
                 </div>
 
                 <div class="col-12 bg_amarillo d-flex align-items-center justify-content-start p-2">

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Vehicle;
 use App\Models\Category;
+use App\Models\State;
 use App\Models\SiteStat;
 use App\Models\SliderImage;
 use Illuminate\Http\Request;
@@ -30,14 +31,10 @@ class VehicleController extends Controller
                            ->orderBy('name', 'asc')
                            ->get();
 
-        $cities = Vehicle::whereNotNull('city')
-                            ->where('city', '!=', '')
-                            ->where('active', 1)
-                            ->distinct()
-                            ->pluck('city')
-                            ->sort()
-                            ->values();
-                            
+        $cities = State::whereHas('vehicles', fn($q) => $q->where('active', 1))
+                        ->orderBy('name')
+                        ->pluck('name');
+
         $categories = \App\Models\Category::where('active', 1)->orderBy('name')->get();
         $passengers = Vehicle::where('active', 1)->distinct()->orderBy('passengers')->pluck('passengers');
 
@@ -58,8 +55,7 @@ class VehicleController extends Controller
         $vehicles = Vehicle::with('category')
             ->where('active', 1)
             ->where('available', 1)
-            // Filtrar por ciudad si se seleccionó
-            ->when($city, fn($q) => $q->where('city', $city))
+            ->when($city, fn($q) => $q->whereHas('states', fn($r) => $r->where('name', $city)))
             // Excluir autos que ya tienen renta en ese rango de fechas
             ->when($fecha_entrega && $fecha_devolucion, function($q) use ($fecha_entrega, $fecha_devolucion) {
                 $q->whereDoesntHave('rentas', function($r) use ($fecha_entrega, $fecha_devolucion) {
@@ -71,13 +67,9 @@ class VehicleController extends Controller
             ->orderBy('name', 'asc')
             ->get();
 
-        $cities = Vehicle::whereNotNull('city')
-            ->where('city', '!=', '')
-            ->where('active', 1)
-            ->distinct()
-            ->pluck('city')
-            ->sort()
-            ->values();
+        $cities = State::whereHas('vehicles', fn($q) => $q->where('active', 1))
+            ->orderBy('name')
+            ->pluck('name');
 
         $categories = \App\Models\Category::where('active', 1)->orderBy('name')->get();
         $passengers = Vehicle::where('active', 1)->distinct()->orderBy('passengers')->pluck('passengers');
@@ -92,7 +84,8 @@ class VehicleController extends Controller
     public function create()
     {
         $categories = Category::active()->orderBy('name', 'asc')->get();
-        return view('vehiculos.create', compact('categories'));
+        $states     = State::where('active', 1)->orderBy('name')->get();
+        return view('vehiculos.create', compact('categories', 'states'));
     }
 
     public function store(Request $request)
@@ -110,9 +103,10 @@ class VehicleController extends Controller
             'transmission' => 'required|in:manual,automatic',
             'available'    => 'boolean',
             'active'       => 'boolean',
-            'city'         => 'nullable|string|max:100',
             'mileage'      => 'nullable|integer|min:0',
             'next_verification' => 'nullable|date',
+            'state_ids'    => 'nullable|array',
+            'state_ids.*'  => 'exists:states,id',
         ]);
 
         if ($request->hasFile('image')) {
@@ -139,7 +133,11 @@ class VehicleController extends Controller
         $validated['available'] = $request->has('available');
         $validated['active']    = $request->has('active');
 
+        $stateIds = $validated['state_ids'] ?? [];
+        unset($validated['state_ids']);
+
         $vehicle = Vehicle::create($validated);
+        $vehicle->states()->sync($stateIds);
 
         return redirect()->route('vehiculos.index')
             ->with('success', "Vehículo '{$vehicle->name}' creado exitosamente");
@@ -147,9 +145,8 @@ class VehicleController extends Controller
 
     public function show($id)
     {
-        $vehicle = Vehicle::with('category')->findOrFail($id);
+        $vehicle = Vehicle::with(['category', 'images', 'states'])->findOrFail($id);
         return view('vehiculos.detalles', compact('vehicle'));
-        $vehicle = Vehicle::with(['category', 'images'])->findOrFail($id);
     }
 
     public function detalle($id)
@@ -161,9 +158,10 @@ class VehicleController extends Controller
 
     public function edit($id)
     {
-        $vehicle    = Vehicle::findOrFail($id);
+        $vehicle    = Vehicle::with('states')->findOrFail($id);
         $categories = Category::active()->orderBy('name', 'asc')->get();
-        return view('vehiculos.editar_vehiculo', compact('vehicle', 'categories'));
+        $states     = State::where('active', 1)->orderBy('name')->get();
+        return view('vehiculos.editar_vehiculo', compact('vehicle', 'categories', 'states'));
     }
 
     public function update(Request $request, $id)
@@ -183,9 +181,10 @@ class VehicleController extends Controller
             'transmission' => 'required|in:manual,automatic',
             'available'    => 'boolean',
             'active'       => 'boolean',
-            'city'              => 'nullable|string|max:100',
             'mileage'           => 'nullable|integer|min:0',
             'next_verification' => 'nullable|date',
+            'state_ids'    => 'nullable|array',
+            'state_ids.*'  => 'exists:states,id',
         ]);
 
         if ($request->hasFile('image')) {
@@ -218,12 +217,14 @@ class VehicleController extends Controller
         $validated['available'] = $request->has('available');
         $validated['active']    = $request->has('active');
 
+        $stateIds = $validated['state_ids'] ?? [];
+        unset($validated['state_ids']);
+
         $vehicle->update($validated);
+        $vehicle->states()->sync($stateIds);
 
         return redirect()->route('vehiculos.index')
             ->with('success', 'Vehículo actualizado exitosamente');
-
-        $vehicle = Vehicle::with('images')->findOrFail($id);
     }
 
     public function destroy($id)

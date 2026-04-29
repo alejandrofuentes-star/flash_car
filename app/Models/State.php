@@ -12,4 +12,9 @@ class State extends Model
     {
         return $this->hasMany(DeliveryPoint::class)->orderBy('name');
     }
+
+    public function vehicles()
+    {
+        return $this->belongsToMany(Vehicle::class);
+    }
 }

@@ -26,9 +26,10 @@ Middleware de roles: `role:admin,super_admin` — definido en `app/Http/Middlewa
 ## Modelos principales
 
 ### `Vehicle`
-- Campos: `name`, `brand`, `model`, `year`, `transmission` (enum: manual/automatic), `passengers`, `fuel_capacity`, `available` (bool), `image_path`, `category_id`, `active`
-- Relaciones: `belongsTo(Category)`, `hasMany(VehicleImage)`
+- Campos: `name`, `brand`, `model`, `year`, `transmission` (enum: manual/automatic), `passengers`, `fuel_capacity`, `available` (bool), `image_path`, `category_id`, `active`, `mileage`, `next_verification`, `plate_number`, `slug`
+- Relaciones: `belongsTo(Category)`, `hasMany(VehicleImage)`, `hasMany(Renta)`, `belongsToMany(State)` via pivot `state_vehicle`
 - Accessor: `formatted_fuel_capacity`
+- Las ciudades donde opera un vehículo se gestionan con la pivot `state_vehicle` (no con el campo `city` que queda en desuso)
 
 ### `Category`
 - Campos: `name`, `price_per_day`, `price_per_week`, `price_per_month`, `warranty`, `active`
@@ -50,6 +51,7 @@ Middleware de roles: `role:admin,super_admin` — definido en `app/Http/Middlewa
 ### `State` / `DeliveryPoint`
 - Estado tiene nombre y `active`, con múltiples puntos de entrega (`hasMany(DeliveryPoint)`)
 - Puntos de entrega usados en el formulario de renta (select anidado)
+- Relación: `belongsToMany(Vehicle)` via pivot `state_vehicle` — permite asociar un estado a múltiples vehículos
 
 ### `User`
 - Campos estándar Laravel + `role` (string)
@@ -59,11 +61,12 @@ Middleware de roles: `role:admin,super_admin` — definido en `app/Http/Middlewa
 | Controlador | Ruta base | Notas |
 |---|---|---|
 | `DashboardController` | `/dashboard` | KPIs, rentas recientes, entregas próximas |
-| `VehicleController` | `/vehiculos`, `/catalogo` | `catalogo()` y `buscar()` pasan `$sliderDesktop` y `$sliderMobile` |
+| `VehicleController` | `/vehiculos`, `/catalogo` | `catalogo()` y `buscar()` pasan `$sliderDesktop` y `$sliderMobile`; ciudades via `State::whereHas('vehicles')`; búsqueda via `whereHas('states')` |
 | `RentaController` | `/rentas`, `/rentar` | `store()` envía correo y guarda `mail_enviado`; `reenviarCorreo()` para reenvío manual |
 | `SliderController` | `/slider` | upload, toggle active, reorder, destroy |
 | `CategoryController` | `/categorias` | CRUD categorías |
 | `StateController` | `/states` | CRUD estados + puntos de entrega |
+| `SystemController` | `/system/cache`, `/system/migrations` | Limpieza de caché y gestión de migraciones (solo `super_admin`) |
 | `AuthController` | `/login`, `/logout` | — |
 | `UserController` | `/users` | CRUD usuarios |
 
@@ -115,6 +118,9 @@ resources/views/
 ├── vehiculos/                  ← CRUD vehículos y categorías
 ├── slider/
 │   └── index.blade.php         ← admin slider con vista previa JS (header + hero form proporcionales)
+├── super-admin/
+│   ├── cache.blade.php         ← limpieza de caché (solo super_admin)
+│   └── migrations.blade.php   ← gestión de migraciones: lista estado, ejecutar pendientes, subir archivo (solo super_admin)
 ├── emails/
 │   └── renta_solicitada.blade.php  ← template HTML inline-styled
 └── users/                      ← CRUD usuarios

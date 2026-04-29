@@ -27,6 +27,9 @@
             <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('system.cache') }}">
                 <i class="bi bi-tools"></i> Sistema
             </a>
+            <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('system.migrations') }}">
+                <i class="bi bi-database-gear"></i> Migraciones
+            </a>
         @endif
 
         <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
