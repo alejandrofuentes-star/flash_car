@@ -85,10 +85,10 @@
                                 <img src="{{ asset('./img/logo.webp') }}" height="60px" alt="logo flash car">
                                 <p class="fs-6">{{ __('contact.about') }}</p>
                                 <div class="col-12 d-flex align-items-center justify-content-start flex-wrap">
-                                    <a class="col-6 col-sm-6 col-md-4 link_contactos px-3 m-1 py-1 fs-6 rounded shadow" href=""><i class="bi bi-telephone-fill"></i>1122334455</a>
-                                    <a class="col-6 col-sm-6 col-md-4 link_contactos px-3 m-1 py-1 fs-6 rounded shadow" href=""><i class="bi bi-whatsapp"></i>1122334455</a>
-                                    <a class="col-6 col-sm-6 col-md-4 link_contactos px-3 m-1 py-1 fs-6 rounded shadow" href=""><i class="bi bi-facebook"></i>Flash Car</a>
-                                    <a class="col-6 col-sm-6 col-md-4 link_contactos px-3 m-1 py-1 fs-6 rounded shadow" href=""><i class="bi bi-instagram"></i>Flash Car</a>
+                                    <a class="col-6 col-sm-6 col-md-4 link_contactos px-3 m-1 py-1 fs-6 rounded shadow" href="tel:+52{{ App\Models\SiteSetting::get('telefono') }}"><i class="bi bi-telephone-fill"></i>{{ App\Models\SiteSetting::get('telefono') }}</a>
+                                    <a class="col-6 col-sm-6 col-md-4 link_contactos px-3 m-1 py-1 fs-6 rounded shadow" href="https://wa.me/+52{{ App\Models\SiteSetting::get('whatsapp') }}?text=Me interesa conocer más sobre sus rentas" target="_blank"><i class="bi bi-whatsapp"></i>{{ App\Models\SiteSetting::get('whatsapp') }}</a>
+                                    <a class="col-6 col-sm-6 col-md-4 link_contactos px-3 m-1 py-1 fs-6 rounded shadow" href="{{ App\Models\SiteSetting::get('facebook') }}" target="_blank"><i class="bi bi-facebook"></i>Flash Car</a>
+                                    <a class="col-6 col-sm-6 col-md-4 link_contactos px-3 m-1 py-1 fs-6 rounded shadow" href="{{ App\Models\SiteSetting::get('instagram') }}" target="_blank"><i class="bi bi-instagram"></i>Flash Car</a>
                                 </div>
                             </div>
                             <div class="col-12 col-sm-12 col-md-12 col-lg-6 py-3 d-flex align-items-center justify-content-center">
@@ -104,5 +104,6 @@
         </div>
     </div>
 </div>
+@include('layout.burbujas')
 @include('layout.footer')
 @endsection

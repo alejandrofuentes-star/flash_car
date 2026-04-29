@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\RentaSolicitada;
 use App\Models\Renta;
+use App\Models\SiteStat;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -45,6 +46,8 @@ class RentaController extends Controller
 
         $renta = Renta::create($validated);
         $renta->load('vehicle');
+
+        SiteStat::addOne('total_reservations');
 
         try {
             Mail::to($renta->correo)->send(new RentaSolicitada($renta));

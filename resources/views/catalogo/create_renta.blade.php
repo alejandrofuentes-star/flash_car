@@ -293,6 +293,7 @@
         </div>
     </div>
 </div>
+@include('layout.burbujas')
 @include('layout.footer')
 <script src="{{ asset('js/formulario_renta.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@23.3.2/build/js/intlTelInput.min.js"></script>

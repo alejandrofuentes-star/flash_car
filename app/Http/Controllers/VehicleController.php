@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Vehicle;
 use App\Models\Category;
+use App\Models\SiteStat;
 use App\Models\SliderImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -40,10 +41,11 @@ class VehicleController extends Controller
         $categories = \App\Models\Category::where('active', 1)->orderBy('name')->get();
         $passengers = Vehicle::where('active', 1)->distinct()->orderBy('passengers')->pluck('passengers');
 
-        $sliderDesktop = SliderImage::desktop()->active()->orderBy('orden')->get();
-        $sliderMobile  = SliderImage::mobile()->active()->orderBy('orden')->get();
+        $sliderDesktop      = SliderImage::desktop()->active()->orderBy('orden')->get();
+        $sliderMobile       = SliderImage::mobile()->active()->orderBy('orden')->get();
+        $totalReservaciones = SiteStat::get('total_reservations');
 
-        return view('catalogo.index', compact('vehicles', 'cities', 'categories', 'passengers', 'sliderDesktop', 'sliderMobile'));
+        return view('catalogo.index', compact('vehicles', 'cities', 'categories', 'passengers', 'sliderDesktop', 'sliderMobile', 'totalReservaciones'));
     }
 
     public function buscar(Request $request)
@@ -80,10 +82,11 @@ class VehicleController extends Controller
         $categories = \App\Models\Category::where('active', 1)->orderBy('name')->get();
         $passengers = Vehicle::where('active', 1)->distinct()->orderBy('passengers')->pluck('passengers');
 
-        $sliderDesktop = SliderImage::desktop()->active()->orderBy('orden')->get();
-        $sliderMobile  = SliderImage::mobile()->active()->orderBy('orden')->get();
+        $sliderDesktop      = SliderImage::desktop()->active()->orderBy('orden')->get();
+        $sliderMobile       = SliderImage::mobile()->active()->orderBy('orden')->get();
+        $totalReservaciones = SiteStat::get('total_reservations');
 
-        return view('catalogo.index', compact('vehicles', 'cities', 'city', 'categories', 'passengers', 'fecha_entrega', 'fecha_devolucion', 'sliderDesktop', 'sliderMobile'));
+        return view('catalogo.index', compact('vehicles', 'cities', 'city', 'categories', 'passengers', 'fecha_entrega', 'fecha_devolucion', 'sliderDesktop', 'sliderMobile', 'totalReservaciones'));
     }
 
     public function create()

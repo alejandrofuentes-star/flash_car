@@ -19,6 +19,7 @@
         <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('rentas.index') }}"><i class="bi bi-clipboard-check-fill"></i> Rentas</a>
         @if(Auth::user()->hasAdminAccess())
         <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('slider.index') }}"><i class="bi bi-images"></i> Slider</a>
+        <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('settings.index') }}"><i class="bi bi-sliders"></i> Configuración</a>
         @endif
 
         {{-- Solo visible para super_admin --}}

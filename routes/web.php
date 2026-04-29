@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\StateController;
 use App\Http\Controllers\SliderController;
+use App\Http\Controllers\MaintenanceController;
+use App\Http\Controllers\SettingController;
 
 // ============================================================
 // CAMBIO DE IDIOMA
@@ -47,6 +49,35 @@ Route::delete('/vehiculos/images/{id}', [VehicleController::class, 'deleteImage'
 Route::get('/faqs', function() {
     return view('catalogo.faqs');
 })->name('faqs');
+
+Route::get('/visitantes', function () {
+    $visitors = \Illuminate\Support\Facades\Cache::get('active_visitors', []);
+    $now      = now()->timestamp;
+    $count    = count(array_filter($visitors, fn($t) => ($now - $t) <= 10));
+    return response()->json(['count' => max($count, 1)]);
+})->name('visitantes');
+
+// Heartbeat: mantiene la sesión activa mientras la pestaña está abierta
+Route::get('/heartbeat', function (\Illuminate\Http\Request $request) {
+    if ($request->session()->isStarted()) {
+        $visitors = \Illuminate\Support\Facades\Cache::get('active_visitors', []);
+        $now      = now()->timestamp;
+        $visitors[$request->session()->getId()] = $now;
+        $visitors = array_filter($visitors, fn($t) => ($now - $t) <= 10);
+        \Illuminate\Support\Facades\Cache::put('active_visitors', $visitors, 60);
+    }
+    return response()->noContent();
+})->name('heartbeat');
+
+// Leave: elimina la sesión al cerrar/ocultar la pestaña
+Route::get('/visitantes/leave', function (\Illuminate\Http\Request $request) {
+    if ($request->session()->isStarted()) {
+        $visitors = \Illuminate\Support\Facades\Cache::get('active_visitors', []);
+        unset($visitors[$request->session()->getId()]);
+        \Illuminate\Support\Facades\Cache::put('active_visitors', $visitors, 120);
+    }
+    return response()->noContent();
+})->name('visitantes.leave');
 
 // ============================================================
 // RUTAS AUTENTICADAS
@@ -90,6 +121,10 @@ Route::middleware('auth')->group(function () {
 // RUTAS ADMIN Y SUPER ADMIN
 // ============================================================
 Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
+    // Configuración
+    Route::get('/configuracion', [SettingController::class, 'index'])->name('settings.index');
+    Route::post('/configuracion', [SettingController::class, 'update'])->name('settings.update');
+
     // Slider
     Route::get('/slider', [SliderController::class, 'index'])->name('slider.index');
     Route::post('/slider', [SliderController::class, 'store'])->name('slider.store');
@@ -120,6 +155,8 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
 // RUTAS SOLO SUPER ADMIN
 // ============================================================
 Route::middleware(['auth', 'role:super_admin'])->group(function () {
+    Route::post('/maintenance/toggle', [MaintenanceController::class, 'toggle'])->name('maintenance.toggle');
+
     Route::get('/super-admin', function () { return view('super-admin.index'); })->name('super-admin.index');
     Route::get('/settings', function () { return view('super-admin.settings'); })->name('super-admin.settings');
     Route::get('/system/cache', [SystemController::class, 'index'])->name('system.cache');

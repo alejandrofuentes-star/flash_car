@@ -1,8 +1,8 @@
 <footer>
 	<div class="w_100 d_flex_center_center bg_color_background">
 		<div class="w_90 d_flex_center_center p_2">
-			<a class="button_custom_footer bg_telefono_footer" title="abrir app para hacer llamadas" href="" target="_self"><i class="bi bi-telephone-forward-fill"></i></a>
-			<a class="button_custom_footer bg_whatsapp_footer" title="abrir app para mandar mensajes" href="" target="_self"><i class="bi bi-whatsapp"></i></a>
+			<a class="button_custom_footer bg_telefono_footer" title="abrir app para hacer llamadas" href="tel:+52{{ App\Models\SiteSetting::get('telefono') }}" target="_self"><i class="bi bi-telephone-forward-fill"></i></a>
+			<a class="button_custom_footer bg_whatsapp_footer" title="abrir app para mandar mensajes" href="https://wa.me/+52{{ App\Models\SiteSetting::get('whatsapp') }}?text=Me interesa conocer más sobre sus rentas" target="_blank"><i class="bi bi-whatsapp"></i></a>
 		</div>
 		<div class="w_90 d_flex_center_between d_flex_movil border_top_custom p_2">
 			<div class="w_50 d_flex_center_center_column">

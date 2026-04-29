@@ -81,6 +81,16 @@
                         <span class="hero_badge"><i class="bi bi-shield-check-fill"></i> {{ __('hero.insurance') }}</span>
                         <span class="hero_badge"><i class="bi bi-lightning-charge-fill"></i> {{ __('hero.no_lines') }}</span>
                     </div>
+                    <div class="d-flex align-items-center justify-content-center mt-2" style="gap:16px;">
+                        <div class="d-flex align-items-center" style="gap:6px;">
+                            <span style="width:8px;height:8px;border-radius:50%;background:#28a745;display:inline-block;flex-shrink:0;animation:pulso_verde 1.5s infinite;"></span>
+                            <span id="contador_visitantes" style="font-size:0.78rem;color:rgba(255,255,255,0.85);">— visitando ahora</span>
+                        </div>
+                        <div class="d-flex align-items-center" style="gap:6px;">
+                            <i class="bi bi-calendar-check-fill" style="font-size:0.78rem;color:rgba(255,255,255,0.7);"></i>
+                            <span style="font-size:0.78rem;color:rgba(255,255,255,0.85);"><b>{{ number_format($totalReservaciones) }}</b> reservaciones realizadas</span>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="col-12 col-sm-12 col-md-12 col-lg-8"></div>
@@ -422,10 +432,10 @@
                         <img src="{{ asset('./img/logo.webp') }}" height="60px" alt="logo flash car">
                         <p class="fs-6">{{ __('contact.about') }}</p>
                         <div class="col-12 d-flex align-items-center justify-content-start flex-wrap">
-                            <a class="col-6 col-sm-6 col-md-4 link_contactos px-3 m-1 py-1 fs-6 rounded shadow" href=""><i class="bi bi-telephone-fill"></i>1122334455</a>
-                            <a class="col-6 col-sm-6 col-md-4 link_contactos px-3 m-1 py-1 fs-6 rounded shadow" href=""><i class="bi bi-whatsapp"></i>1122334455</a>
-                            <a class="col-6 col-sm-6 col-md-4 link_contactos px-3 m-1 py-1 fs-6 rounded shadow" href=""><i class="bi bi-facebook"></i>Flash Car</a>
-                            <a class="col-6 col-sm-6 col-md-4 link_contactos px-3 m-1 py-1 fs-6 rounded shadow" href=""><i class="bi bi-instagram"></i>Flash Car</a>
+                            <a class="col-6 col-sm-6 col-md-4 link_contactos px-3 m-1 py-1 fs-6 rounded shadow" href="tel:+52{{ App\Models\SiteSetting::get('telefono') }}"><i class="bi bi-telephone-fill"></i>{{ App\Models\SiteSetting::get('telefono') }}</a>
+                            <a class="col-6 col-sm-6 col-md-4 link_contactos px-3 m-1 py-1 fs-6 rounded shadow" href="https://wa.me/+52{{ App\Models\SiteSetting::get('whatsapp') }}?text=Me interesa conocer más sobre sus rentas" target="_blank"><i class="bi bi-whatsapp"></i>{{ App\Models\SiteSetting::get('whatsapp') }}</a>
+                            <a class="col-6 col-sm-6 col-md-4 link_contactos px-3 m-1 py-1 fs-6 rounded shadow" href="{{ App\Models\SiteSetting::get('facebook') }}" target="_blank"><i class="bi bi-facebook"></i>Flash Car</a>
+                            <a class="col-6 col-sm-6 col-md-4 link_contactos px-3 m-1 py-1 fs-6 rounded shadow" href="{{ App\Models\SiteSetting::get('instagram') }}" target="_blank"><i class="bi bi-instagram"></i>Flash Car</a>
                         </div>
                     </div>
                     <div class="col-12 col-sm-12 col-md-12 col-lg-6 py-3 d-flex align-items-center justify-content-center">
@@ -502,7 +512,47 @@
 </script>
 @endif
 
+@include('layout.burbujas')
 @include('layout.footer')
 <script src="{{ asset('./js/slider_principal.js') }}"></script>
 <script src="{{ asset('./js/contador_mundial.js') }}"></script>
+<script>
+(function () {
+    var el = document.getElementById('contador_visitantes');
+
+    function actualizarContador() {
+        fetch('/visitantes')
+            .then(function(r){ return r.json(); })
+            .then(function(d){
+                if (el) el.textContent = d.count + ' ' + (d.count === 1 ? 'persona visitando ahora' : 'personas visitando ahora');
+            })
+            .catch(function(){});
+    }
+
+    function heartbeat() {
+        fetch('/heartbeat', { keepalive: true }).catch(function(){});
+    }
+
+    function leave() {
+        navigator.sendBeacon
+            ? navigator.sendBeacon('/visitantes/leave')
+            : fetch('/visitantes/leave', { keepalive: true }).catch(function(){});
+    }
+
+    // Carga inicial
+    actualizarContador();
+
+    // Heartbeat cada 8s para renovar antes del TTL de 10s
+    setInterval(heartbeat, 8000);
+    // Actualización del contador cada 8s
+    setInterval(actualizarContador, 8000);
+
+    // Notificar salida al cerrar o cambiar de pestaña
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden') leave();
+        if (document.visibilityState === 'visible') heartbeat();
+    });
+    window.addEventListener('beforeunload', leave);
+})();
+</script>
 @endsection

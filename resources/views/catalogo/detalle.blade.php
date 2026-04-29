@@ -266,5 +266,6 @@
         if (e.key === 'ArrowRight') modalNav(1);
     });
 </script>
+@include('layout.burbujas')
 @include('layout.footer')
 @endsection

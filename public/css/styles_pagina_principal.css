@@ -247,6 +247,10 @@
 .carrucel_btn:hover { background: rgba(0, 0, 0, 0.85); }
 .carrucel_prev { left: 12px; }
 .carrucel_next { right: 12px; }
+@keyframes pulso_verde {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.4; transform: scale(1.3); }
+}
 /*xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*/
 /*slider principal*/
 .slider_container {
