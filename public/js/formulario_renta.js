@@ -143,6 +143,36 @@ function configurarMinEntrega() {
     });
 }
 
+function validarEtapa2() {
+    let valido = true;
+
+    function marcarError(el) {
+        if (!el) return;
+        el.style.borderColor = '#dc3545';
+        el.style.boxShadow   = 'inset 0 1px 3px rgba(220,53,69,0.18)';
+    }
+    function limpiarError(el) {
+        if (!el) return;
+        el.style.borderColor = '';
+        el.style.boxShadow   = '';
+    }
+
+    const campos = [
+        document.getElementById('fecha_entrega'),
+        document.querySelector('input[name="hora_entrega"]'),
+        document.getElementById('select_entrega'),
+        document.getElementById('fecha_devolucion'),
+        document.querySelector('input[name="hora_devolucion"]'),
+        document.getElementById('select_devolucion'),
+    ];
+
+    campos.forEach(campo => {
+        if (!campo?.value.trim()) { marcarError(campo); valido = false; } else limpiarError(campo);
+    });
+
+    return valido;
+}
+
 // Eventos
 window.addEventListener('load', function () {
     // Preview de imagen
@@ -165,12 +195,59 @@ window.addEventListener('load', function () {
     const horaDevolucionInput = document.querySelector('input[name="hora_devolucion"]');
     if (horaEntregaInput)    horaEntregaInput.addEventListener('change', calcularCosto);
     if (horaDevolucionInput) horaDevolucionInput.addEventListener('change', calcularCosto);
+
+    // Validar etapa 2 antes de enviar
+    const formRenta = document.getElementById('formRenta');
+    if (formRenta) {
+        formRenta.addEventListener('submit', function (e) {
+            if (etapaActual === 2 && !validarEtapa2()) {
+                e.preventDefault();
+            }
+        });
+    }
 });
 
 // Etapas del formulario
 let etapaActual = 1;
 
+function validarEtapa1() {
+    let valido = true;
+
+    function marcarError(el) {
+        if (!el) return;
+        el.style.borderColor = '#dc3545';
+        el.style.boxShadow   = 'inset 0 1px 3px rgba(220,53,69,0.18)';
+    }
+    function limpiarError(el) {
+        if (!el) return;
+        el.style.borderColor = '';
+        el.style.boxShadow   = '';
+    }
+
+    const nombre = document.querySelector('input[name="nombre_completo"]');
+    if (!nombre?.value.trim()) { marcarError(nombre); valido = false; } else limpiarError(nombre);
+
+    const correo = document.querySelector('input[name="correo"]');
+    const emailOk = correo?.value.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.value.trim());
+    if (!emailOk) { marcarError(correo); valido = false; } else limpiarError(correo);
+
+    const pasajeros = document.querySelector('input[name="num_pasajeros"]');
+    if (!pasajeros?.value || parseInt(pasajeros.value) < 1) { marcarError(pasajeros); valido = false; } else limpiarError(pasajeros);
+
+    const ciudad = document.getElementById('select_estado');
+    if (!ciudad?.value) { marcarError(ciudad); valido = false; } else limpiarError(ciudad);
+
+    const numTel = document.getElementById('numero_tel');
+    const itiEl  = numTel?.closest('.iti');
+    const telOk  = typeof validarTelefono === 'function' ? validarTelefono() : !!numTel?.value.trim();
+    if (!telOk) { marcarError(itiEl); valido = false; } else limpiarError(itiEl);
+
+    return valido;
+}
+
 function irEtapa(n) {
+    if (n === 2 && etapaActual === 1 && !validarEtapa1()) return;
+
     document.getElementById('etapa_' + etapaActual).style.display = 'none';
     document.getElementById('etapa_' + n).style.display = 'block';
 

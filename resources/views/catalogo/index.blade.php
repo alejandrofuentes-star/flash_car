@@ -63,13 +63,15 @@
                             </select>
                         </div>
                         <div class="d-flex gap-2 mb-2">
-                            <div class="hero_input_wrap flex-1">
-                                <i class="bi bi-calendar-event hero_input_icon"></i>
-                                <input class="hero_input" type="date" name="fecha_entrega">
+                            <div class="hero_input_wrap flex-1" style="flex-direction:column; align-items:flex-start; height:auto; padding:5px 8px 5px 32px; gap:1px;">
+                                <i class="bi bi-calendar-event hero_input_icon" style="top:50%; transform:translateY(-50%);"></i>
+                                <span style="font-size:0.62rem; color:var(--gris_5); line-height:1.2;">Fecha entrega</span>
+                                <input class="hero_input" type="date" name="fecha_entrega" style="height:20px; padding:0; font-size:0.78rem;">
                             </div>
-                            <div class="hero_input_wrap flex-1">
-                                <i class="bi bi-calendar-check hero_input_icon"></i>
-                                <input class="hero_input" type="date" name="fecha_devolucion">
+                            <div class="hero_input_wrap flex-1" style="flex-direction:column; align-items:flex-start; height:auto; padding:5px 8px 5px 32px; gap:1px;">
+                                <i class="bi bi-calendar-check hero_input_icon" style="top:50%; transform:translateY(-50%);"></i>
+                                <span style="font-size:0.62rem; color:var(--gris_5); line-height:1.2;">Fecha devolución</span>
+                                <input class="hero_input" type="date" name="fecha_devolucion" style="height:20px; padding:0; font-size:0.78rem;">
                             </div>
                         </div>
                         <button type="submit" class="hero_btn">

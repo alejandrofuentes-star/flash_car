@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\NuevaRentaAdmin;
 use App\Mail\RentaSolicitada;
 use App\Models\Renta;
 use App\Models\SiteStat;
@@ -54,6 +55,12 @@ class RentaController extends Controller
             $renta->update(['mail_enviado' => true, 'mail_enviado_at' => now()]);
         } catch (\Throwable $e) {
             \Log::error('Error enviando correo de renta: ' . $e->getMessage());
+        }
+
+        try {
+            Mail::to('flashcarsdmin@gmail.com')->send(new NuevaRentaAdmin($renta));
+        } catch (\Throwable $e) {
+            \Log::error('Error enviando correo admin de renta: ' . $e->getMessage());
         }
 
         return redirect()->route('inicio')

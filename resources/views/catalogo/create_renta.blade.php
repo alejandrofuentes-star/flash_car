@@ -6,17 +6,9 @@
 <link rel="stylesheet" href="{{ asset('css/styles_pagina_principal.css') }}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@23.3.2/build/css/intlTelInput.css">
 <style>
-    .iti { width: 100%; display: block; }
-    .iti__tel-input {
-        width: 100%;
-        box-sizing: border-box;
-        border: none;
-        background: transparent;
-        color: var(--azul_1);
-        font-size: 0.875rem;
-        padding-top: 0.25rem;
-        padding-bottom: 0.25rem;
-    }
+    .iti { width: 100%; display: block; background-color: #f5f6f8; border: 1px solid #e0e3e8; border-radius: 5px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.07); padding: 0.25rem; }
+    .iti__tel-input { width: 100%; box-sizing: border-box; border: none; background: transparent; color: var(--azul_1); font-size: 1rem; box-shadow: none; padding: 0; }
+    .iti__flag-container { top: 50%; transform: translateY(-50%); }
 </style>
 @endpush
 
@@ -73,7 +65,7 @@
                                 <div class="col-12 bg_amarillo d-flex align-items-center justify-content-start p-2 rounded-top">
                                     <p class="text-dark fs-6 m-0"><b>{{ __('form.step1_header') }}</b></p>
                                 </div>
-                                <div class="col-12 d-flex align-items-center justify-content-start flex-wrap p-1 border rounded-bottom mb-3">
+                                <div class="col-12 d-flex align-items-start justify-content-start flex-wrap p-1 border rounded-bottom mb-3">
                                     <div class="col-12 col-md-6 fila_form_f_b py-2">
                                         <label class="label_form_f_b fs-6 p-1"><b>{{ __('form.full_name') }}</b></label>
                                         <input class="input_form_f_b fs-6 p-1" type="text" name="nombre_completo" value="{{ old('nombre_completo') }}" placeholder="{{ __('form.full_name_ph') }}" required>
@@ -295,7 +287,7 @@
 </div>
 @include('layout.burbujas')
 @include('layout.footer')
-<script src="{{ asset('js/formulario_renta.js') }}"></script>
+<script src="{{ asset('js/formulario_renta.js') }}?v=1.1"></script>
 <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@23.3.2/build/js/intlTelInput.min.js"></script>
 <script>
     const inputNum = document.getElementById('numero_tel');
