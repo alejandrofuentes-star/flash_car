@@ -108,6 +108,41 @@
     color: #111;
 }
 .flex-1 { flex: 1; }
+.hero_search_form
+{
+    display: grid;
+    grid-template-columns: minmax(180px, 1.25fr) minmax(145px, 1fr) minmax(145px, 1fr) minmax(170px, 0.8fr);
+    gap: 8px;
+    align-items: stretch;
+}
+.hero_search_form > .hero_input_wrap
+{
+    min-height: 34px;
+}
+.hero_date_field
+{
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 3px 8px 3px 30px;
+    gap: 1px;
+}
+.hero_date_field .hero_input_icon
+{
+    top: 50%;
+    transform: translateY(-50%);
+}
+.hero_date_label
+{
+    font-size: 0.58rem;
+    color: var(--gris_5);
+    line-height: 1.2;
+}
+.hero_date_input
+{
+    height: 17px;
+    padding: 0;
+    font-size: 0.74rem;
+}
 .hero_btn
 {
     width: 100%;
@@ -122,6 +157,27 @@
     cursor: pointer;
     transition: background 0.3s;
     margin-top: 4px;
+}
+.hero_btn_inline
+{
+    height: 34px;
+    min-height: 34px;
+    margin-top: 0;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.76rem;
+    line-height: 1;
+    letter-spacing: 0;
+    text-align: center;
+    white-space: nowrap;
+}
+.hero_btn_inline i
+{
+    flex-shrink: 0;
+    margin-right: 0 !important;
 }
 .hero_btn:hover { background: var(--amarillo_fuerte); }
 .hero_badges
@@ -141,6 +197,16 @@
     padding: 4px 10px;
 }
 .hero_badge i { color: var(--amarillo); margin-right: 4px; }
+.hero_stat_badge
+{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    padding-left: 0;
+    padding-right: 0;
+}
 
 /*xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*/
 /*sección pasos*/
@@ -331,6 +397,8 @@
     position: absolute;
     top: 0px;
     height: 100%;
+    align-items: flex-end !important;
+    padding-bottom: 28px;
 }
 .input_busqueda
 {
@@ -343,6 +411,32 @@
     {
         display: flex;
         align-items: flex-end !important;
+        padding-bottom: 22px;
+    }
+}
+@media (max-width: 991px)
+{
+    .hero_search_form
+    {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .hero_field_city,
+    .hero_btn_inline
+    {
+        grid-column: 1 / -1;
+    }
+}
+@media (max-width: 576px)
+{
+    .hero_search_form
+    {
+        grid-template-columns: 1fr;
+    }
+    .hero_field_city,
+    .hero_date_field,
+    .hero_btn_inline
+    {
+        grid-column: 1 / -1;
     }
 }
 /*xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*/

@@ -1,5 +1,5 @@
 @push('styles')
-<link rel="stylesheet" href="https://css.neruc.app/css/css_whatsapp_n_one.css">
+<link rel="stylesheet" href="https://css.neruc.app/css/css_whatsapp_n_one.css?v=1.1">
 @endpush
 
 @php

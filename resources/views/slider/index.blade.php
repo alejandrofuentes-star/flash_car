@@ -183,10 +183,18 @@
                 img.style.cssText = 'width:100%; height:100%; object-fit:cover; display:block;';
 
                 // Overlay: header — proporción real 70px / viewport
-                const headerH = Math.round((70 / window.innerHeight) * cardH);
+                const headerH = Math.max(12, Math.round(cardH * 0.078));
                 const header = document.createElement('div');
-                header.style.cssText = `position:absolute; top:0; left:0; width:100%; height:${headerH}px; background:rgba(255,255,255,0.92); display:flex; align-items:center; padding:0 8px; box-shadow:0 1px 4px rgba(0,0,0,0.2);`;
-                header.innerHTML = `<div style="width:28px;height:28px;background:#f5c400;border-radius:50%;margin-right:6px;"></div><div style="flex:1;height:4px;background:#ddd;border-radius:2px;"></div><div style="width:20px;height:20px;background:#eee;border-radius:50%;margin-left:6px;"></div>`;
+                header.style.cssText = `position:absolute; top:0; left:0; width:100%; height:${headerH}px; background:rgba(255,255,255,0.94); display:flex; align-items:center; justify-content:space-between; padding:0 ${Math.max(5, Math.round(cardW * 0.035))}px; box-shadow:0 1px 4px rgba(0,0,0,0.18); box-sizing:border-box;`;
+                header.innerHTML = `
+                    <div style="width:${Math.max(34, Math.round(cardW * 0.13))}px;height:${Math.max(8, Math.round(headerH * 0.42))}px;background:#111;border-radius:2px;position:relative;">
+                        <div style="position:absolute;left:0;top:0;width:28%;height:100%;background:#f5c400;border-radius:2px 0 0 2px;"></div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:${Math.max(3, Math.round(cardW * 0.01))}px;">
+                        <div style="width:${Math.max(22, Math.round(cardW * 0.08))}px;height:${Math.max(3, Math.round(headerH * 0.14))}px;background:#d8d8d8;border-radius:999px;"></div>
+                        <div style="width:${Math.max(9, Math.round(headerH * 0.42))}px;height:${Math.max(9, Math.round(headerH * 0.42))}px;background:#f5c400;border-radius:50%;"></div>
+                    </div>
+                `;
 
                 // Overlay: formulario de búsqueda
                 // Proporciones reales del hero form (.hero_form_card) en pantalla 1440×900:
@@ -196,31 +204,35 @@
                 const formBox = document.createElement('div');
                 const isMobile = type === 'mobile';
 
-                const formW = isMobile ? Math.round(cardW * 0.82) : Math.round(cardW * 0.29);
-                const formH = isMobile ? Math.round(cardH * 0.28) : Math.round(cardH * 0.33);
-                const formLeft = isMobile ? Math.round((cardW - formW) / 2) : Math.round(cardW * 0.07);
-                const formTop  = isMobile ? null : Math.round((cardH - formH) / 2 + headerH / 2);
-                const formBottom = isMobile ? Math.round(cardH * 0.05) : null;
+                const formW      = isMobile ? Math.round(cardW * 0.82) : Math.round(cardW * 0.64);
+                const formH      = isMobile ? Math.round(cardH * 0.30) : Math.round(cardH * 0.34);
+                const formLeft   = Math.round((cardW - formW) / 2);
+                const formBottom = Math.max(6, Math.round(cardH * 0.045));
 
-                // Factor de escala para elementos internos (base: form real ~275px alto)
-                const s        = formH / 275;
-                const pad      = Math.max(3, Math.round(9  * s));
-                const titleH   = Math.max(5,  Math.round(26 * s));
-                const subH     = Math.max(3,  Math.round(10 * s));
-                const inputH   = Math.max(5,  Math.round(36 * s));
-                const btnH     = Math.max(5,  Math.round(38 * s));
-                const badgeH   = Math.max(3,  Math.round(14 * s));
-                const gapPx    = Math.max(2,  Math.round(5  * s));
-                const bdrPx    = Math.max(2,  Math.round(5  * s));
+                const s          = Math.max(0.45, Math.min(1, formW / 930));
+                const pad        = Math.max(5,  Math.round(18 * s));
+                const titleH     = Math.max(6,  Math.round(24 * s));
+                const subH       = Math.max(3,  Math.round(10 * s));
+                const inputH     = Math.max(7,  Math.round(34 * s));
+                const btnH       = inputH;
+                const badgeH     = Math.max(5,  Math.round(18 * s));
+                const gapPx      = Math.max(3,  Math.round(8  * s));
+                const bdrPx      = Math.max(3,  Math.round(8  * s));
+                const smallFont  = Math.max(4,  Math.round(10 * s));
+                const buttonFont = Math.max(4,  Math.round(11 * s));
+                const dotSize    = Math.max(3,  Math.round(8  * s));
+                const formGrid   = isMobile
+                    ? `display:grid;grid-template-columns:1fr;gap:${gapPx}px;`
+                    : `display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) minmax(0,1fr) minmax(0,0.95fr);gap:${gapPx}px;`;
 
                 formBox.style.cssText = `
                     position:absolute;
-                    ${isMobile ? `bottom:${formBottom}px;` : `top:${formTop}px;`}
+                    bottom:${formBottom}px;
                     left:${formLeft}px;
                     width:${formW}px;
                     height:${formH}px;
-                    background:rgba(0,0,0,0.65);
-                    backdrop-filter:blur(3px);
+                    background:rgba(0,0,0,0.60);
+                    backdrop-filter:blur(4px);
                     border-radius:${bdrPx * 2}px;
                     padding:${pad}px;
                     display:flex;
@@ -229,18 +241,37 @@
                     box-sizing:border-box;
                 `;
                 formBox.innerHTML = `
-                    <div style="background:rgba(255,255,255,0.92);border-radius:${bdrPx}px;height:${titleH}px;width:72%;"></div>
-                    <div style="background:rgba(255,255,255,0.45);border-radius:${bdrPx}px;height:${subH}px;width:52%;"></div>
-                    <div style="background:#fff;border-radius:${bdrPx}px;height:${inputH}px;"></div>
-                    <div style="display:flex;gap:${gapPx}px;">
-                        <div style="flex:1;background:#fff;border-radius:${bdrPx}px;height:${inputH}px;"></div>
-                        <div style="flex:1;background:#fff;border-radius:${bdrPx}px;height:${inputH}px;"></div>
+                    <div style="background:rgba(255,255,255,0.92);border-radius:${bdrPx}px;height:${titleH}px;width:42%;"></div>
+                    <div style="background:rgba(255,255,255,0.45);border-radius:${bdrPx}px;height:${subH}px;width:28%;"></div>
+                    <div style="${formGrid}">
+                        <div style="height:${inputH}px;background:#fff;border-radius:${bdrPx}px;position:relative;box-sizing:border-box;padding-left:${Math.max(8, Math.round(30 * s))}px;">
+                            <div style="position:absolute;left:${Math.max(3, Math.round(10 * s))}px;top:50%;transform:translateY(-50%);width:${Math.max(4, Math.round(10 * s))}px;height:${Math.max(4, Math.round(10 * s))}px;border-radius:50%;border:1px solid #777;"></div>
+                        </div>
+                        <div style="height:${inputH}px;background:#fff;border-radius:${bdrPx}px;box-sizing:border-box;padding:${Math.max(2, Math.round(3 * s))}px ${Math.max(3, Math.round(8 * s))}px ${Math.max(2, Math.round(3 * s))}px ${Math.max(8, Math.round(30 * s))}px;">
+                            <div style="height:${Math.max(2, Math.round(7 * s))}px;width:55%;background:#9b9b9b;border-radius:999px;margin-bottom:${Math.max(1, Math.round(2 * s))}px;"></div>
+                            <div style="height:${Math.max(2, Math.round(9 * s))}px;width:76%;background:#222;border-radius:999px;"></div>
+                        </div>
+                        <div style="height:${inputH}px;background:#fff;border-radius:${bdrPx}px;box-sizing:border-box;padding:${Math.max(2, Math.round(3 * s))}px ${Math.max(3, Math.round(8 * s))}px ${Math.max(2, Math.round(3 * s))}px ${Math.max(8, Math.round(30 * s))}px;">
+                            <div style="height:${Math.max(2, Math.round(7 * s))}px;width:62%;background:#9b9b9b;border-radius:999px;margin-bottom:${Math.max(1, Math.round(2 * s))}px;"></div>
+                            <div style="height:${Math.max(2, Math.round(9 * s))}px;width:82%;background:#222;border-radius:999px;"></div>
+                        </div>
+                        <div style="height:${btnH}px;background:#f5c400;border-radius:${bdrPx}px;display:flex;align-items:center;justify-content:center;gap:${Math.max(2, Math.round(5 * s))}px;font-size:${buttonFont}px;font-weight:800;color:#111;letter-spacing:0;white-space:nowrap;">
+                            <span style="width:${Math.max(4, Math.round(9 * s))}px;height:${Math.max(4, Math.round(9 * s))}px;border:1px solid #111;border-radius:50%;display:inline-block;"></span>
+                            <span>RESERVAR</span>
+                        </div>
                     </div>
-                    <div style="background:#f5c400;border-radius:${bdrPx}px;height:${btnH}px;"></div>
-                    <div style="display:flex;gap:${gapPx}px;flex-wrap:wrap;">
-                        <div style="height:${badgeH}px;width:${Math.round(formW*0.28)}px;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);border-radius:${badgeH}px;"></div>
-                        <div style="height:${badgeH}px;width:${Math.round(formW*0.21)}px;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);border-radius:${badgeH}px;"></div>
-                        <div style="height:${badgeH}px;width:${Math.round(formW*0.24)}px;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);border-radius:${badgeH}px;"></div>
+                    <div style="display:flex;gap:${gapPx}px;flex-wrap:wrap;align-items:center;font-size:${smallFont}px;color:rgba(255,255,255,0.85);line-height:1;">
+                        <div style="height:${badgeH}px;width:${Math.round(formW*0.18)}px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:${badgeH}px;"></div>
+                        <div style="height:${badgeH}px;width:${Math.round(formW*0.16)}px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:${badgeH}px;"></div>
+                        <div style="height:${badgeH}px;width:${Math.round(formW*0.15)}px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:${badgeH}px;"></div>
+                        <div style="display:flex;align-items:center;gap:${Math.max(2, Math.round(5 * s))}px;height:${badgeH}px;">
+                            <span style="width:${dotSize}px;height:${dotSize}px;border-radius:50%;background:#28a745;display:inline-block;"></span>
+                            <span style="width:${Math.round(formW*0.16)}px;height:${Math.max(2, Math.round(7 * s))}px;background:rgba(255,255,255,0.72);border-radius:999px;display:inline-block;"></span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:${Math.max(2, Math.round(5 * s))}px;height:${badgeH}px;">
+                            <span style="width:${dotSize}px;height:${dotSize}px;border-radius:50%;border:1px solid rgba(255,255,255,0.7);display:inline-block;"></span>
+                            <span style="width:${Math.round(formW*0.17)}px;height:${Math.max(2, Math.round(7 * s))}px;background:rgba(255,255,255,0.72);border-radius:999px;display:inline-block;"></span>
+                        </div>
                     </div>
                 `;
 

@@ -3,7 +3,7 @@
 @section('title', 'Flash Car')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/styles_pagina_principal.css') }}">
+<link rel="stylesheet" href="{{ asset('css/styles_pagina_principal.css') }}?v=1.6">
 @endpush
 
 @section('content')
@@ -48,12 +48,12 @@
     </div>
     <div class="col-12 d-flex align-items-center justify-content-center cont_principal_slider">
         <div class="col-12 d-flex align-items-center justify-content-center flex-wrap">
-            <div class="col-12 col-sm-12 col-md-12 col-lg-4 p-3">
+            <div class="col-11 col-sm-10 col-md-10 col-lg-9 col-xl-8 p-3">
                 <div class="hero_form_card">
                     <h1 class="hero_titulo">{{ __('hero.title') }}</h1>
                     <p class="hero_subtitulo">{{ __('hero.subtitle') }}</p>
-                    <form action="{{ route('catalogo.buscar') }}#catalogo" method="GET">
-                        <div class="hero_input_wrap mb-2">
+                    <form action="{{ route('catalogo.buscar') }}#catalogo" method="GET" class="hero_search_form">
+                        <div class="hero_input_wrap hero_field_city">
                             <i class="bi bi-geo-alt-fill hero_input_icon"></i>
                             <select class="hero_input" name="city">
                                 <option value="">{{ __('hero.city') }}</option>
@@ -62,40 +62,35 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="d-flex gap-2 mb-2">
-                            <div class="hero_input_wrap flex-1" style="flex-direction:column; align-items:flex-start; height:auto; padding:5px 8px 5px 32px; gap:1px;">
-                                <i class="bi bi-calendar-event hero_input_icon" style="top:50%; transform:translateY(-50%);"></i>
-                                <span style="font-size:0.62rem; color:var(--gris_5); line-height:1.2;">Fecha entrega</span>
-                                <input class="hero_input" type="date" name="fecha_entrega" style="height:20px; padding:0; font-size:0.78rem;">
-                            </div>
-                            <div class="hero_input_wrap flex-1" style="flex-direction:column; align-items:flex-start; height:auto; padding:5px 8px 5px 32px; gap:1px;">
-                                <i class="bi bi-calendar-check hero_input_icon" style="top:50%; transform:translateY(-50%);"></i>
-                                <span style="font-size:0.62rem; color:var(--gris_5); line-height:1.2;">Fecha devolución</span>
-                                <input class="hero_input" type="date" name="fecha_devolucion" style="height:20px; padding:0; font-size:0.78rem;">
-                            </div>
+                        <div class="hero_input_wrap hero_date_field">
+                            <i class="bi bi-calendar-event hero_input_icon"></i>
+                            <span class="hero_date_label">Fecha entrega</span>
+                            <input class="hero_input hero_date_input" type="date" name="fecha_entrega">
                         </div>
-                        <button type="submit" class="hero_btn">
-                            <i class="bi bi-search me-2"></i> {{ __('hero.search') }}
+                        <div class="hero_input_wrap hero_date_field">
+                            <i class="bi bi-calendar-check hero_input_icon"></i>
+                            <span class="hero_date_label">Fecha devolución</span>
+                            <input class="hero_input hero_date_input" type="date" name="fecha_devolucion">
+                        </div>
+                        <button type="submit" class="hero_btn hero_btn_inline">
+                            <i class="bi bi-search"></i> {{ __('hero.search') }}
                         </button>
                     </form>
                     <div class="hero_badges">
                         <span class="hero_badge"><i class="bi bi-airplane-fill"></i> {{ __('hero.airport') }}</span>
                         <span class="hero_badge"><i class="bi bi-shield-check-fill"></i> {{ __('hero.insurance') }}</span>
                         <span class="hero_badge"><i class="bi bi-lightning-charge-fill"></i> {{ __('hero.no_lines') }}</span>
-                    </div>
-                    <div class="d-flex align-items-center justify-content-center mt-2" style="gap:16px;">
-                        <div class="d-flex align-items-center" style="gap:6px;">
+                        <span class="hero_badge hero_stat_badge">
                             <span style="width:8px;height:8px;border-radius:50%;background:#28a745;display:inline-block;flex-shrink:0;animation:pulso_verde 1.5s infinite;"></span>
                             <span id="contador_visitantes" style="font-size:0.78rem;color:rgba(255,255,255,0.85);">— visitando ahora</span>
-                        </div>
-                        <div class="d-flex align-items-center" style="gap:6px;">
+                        </span>
+                        <span class="hero_badge hero_stat_badge">
                             <i class="bi bi-calendar-check-fill" style="font-size:0.78rem;color:rgba(255,255,255,0.7);"></i>
                             <span style="font-size:0.78rem;color:rgba(255,255,255,0.85);"><b>{{ number_format($totalReservaciones) }}</b> reservaciones realizadas</span>
-                        </div>
+                        </span>
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-sm-12 col-md-12 col-lg-8"></div>
         </div>
     </div>
 </div>
