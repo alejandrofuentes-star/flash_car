@@ -58,7 +58,7 @@ class RentaController extends Controller
         }
 
         try {
-            Mail::to('flashcarsdmin@gmail.com')->send(new NuevaRentaAdmin($renta));
+            Mail::to('flashcar.rental@gmail.com')->send(new NuevaRentaAdmin($renta));
         } catch (\Throwable $e) {
             \Log::error('Error enviando correo admin de renta: ' . $e->getMessage());
         }
@@ -87,11 +87,18 @@ class RentaController extends Controller
         try {
             Mail::to($renta->correo)->send(new RentaSolicitada($renta));
             $renta->update(['mail_enviado' => true, 'mail_enviado_at' => now()]);
-            return back()->with('success', 'Correo reenviado correctamente a ' . $renta->correo);
         } catch (\Throwable $e) {
             \Log::error('Error reenviando correo renta #' . $id . ': ' . $e->getMessage());
             return back()->with('error', 'No se pudo enviar el correo: ' . $e->getMessage());
         }
+
+        try {
+            Mail::to('flashcar.rental@gmail.com')->send(new NuevaRentaAdmin($renta));
+        } catch (\Throwable $e) {
+            \Log::error('Error reenviando correo admin renta #' . $id . ': ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Correo reenviado correctamente a ' . $renta->correo);
     }
 
     public function updateEstado(Request $request, $id)
