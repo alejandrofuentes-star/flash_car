@@ -3,7 +3,7 @@
 @section('title','Preguntas - Flash Car')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/styles_pagina_principal.css') }}">
+<link rel="stylesheet" href="{{ asset('css/styles_pagina_principal.css') }}?v=1">
 @endpush
 
 @section('content')

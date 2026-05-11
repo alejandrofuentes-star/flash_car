@@ -3,7 +3,7 @@
 @section('title', 'Flash Car')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/styles_pagina_principal.css') }}?v=1.6">
+<link rel="stylesheet" href="{{ asset('css/styles_pagina_principal.css') }}?v=1.7">
 @endpush
 
 @section('content')
@@ -268,7 +268,7 @@
         </div>
 
         {{-- FILTROS --}}
-        <div class="col-12 d-flex align-items-center justify-content-center flex-wrap py-2 mb-2" style="gap:8px;">
+        <div class="col-12 d-flex align-items-center justify-content-center flex-wrap py-2 mb-2 catalog_filters" style="gap:8px;">
             <select class="shadow-sm input_busqueda rounded px-2" style="height:40px; min-width:160px;" id="filtro_category">
                 <option value="">{{ __('catalog.category') }}</option>
                 @foreach($categories as $category)

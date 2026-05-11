@@ -3,7 +3,7 @@
 @section('title', 'Rentar - ' . $vehicle->name)
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/styles_pagina_principal.css') }}">
+<link rel="stylesheet" href="{{ asset('css/styles_pagina_principal.css') }}?v=1">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@23.3.2/build/css/intlTelInput.css">
 <style>
     .iti { width: 100%; display: block; background-color: #f5f6f8; border: 1px solid #e0e3e8; border-radius: 5px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.07); padding: 0.25rem; }

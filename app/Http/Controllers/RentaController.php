@@ -58,7 +58,7 @@ class RentaController extends Controller
         }
 
         try {
-            Mail::to('flashcar.rental@gmail.com')->send(new NuevaRentaAdmin($renta));
+            Mail::to('flashcarental@gmail.com')->send(new NuevaRentaAdmin($renta));
         } catch (\Throwable $e) {
             \Log::error('Error enviando correo admin de renta: ' . $e->getMessage());
         }
