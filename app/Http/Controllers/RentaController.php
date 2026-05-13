@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\NuevaRentaAdmin;
 use App\Mail\RentaSolicitada;
 use App\Models\Renta;
+use App\Models\SiteSetting;
 use App\Models\SiteStat;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
@@ -58,7 +59,7 @@ class RentaController extends Controller
         }
 
         try {
-            Mail::to('flashcarental@gmail.com')->send(new NuevaRentaAdmin($renta));
+            Mail::to(SiteSetting::get('admin_notification_email', 'flashcarental@gmail.com'))->send(new NuevaRentaAdmin($renta));
         } catch (\Throwable $e) {
             \Log::error('Error enviando correo admin de renta: ' . $e->getMessage());
         }
@@ -93,12 +94,13 @@ class RentaController extends Controller
         }
 
         try {
-            Mail::to('flashcar.rental@gmail.com')->send(new NuevaRentaAdmin($renta));
+            Mail::to(SiteSetting::get('admin_notification_email', 'flashcarental@gmail.com'))->send(new NuevaRentaAdmin($renta));
         } catch (\Throwable $e) {
             \Log::error('Error reenviando correo admin renta #' . $id . ': ' . $e->getMessage());
         }
 
-        return back()->with('success', 'Correo reenviado correctamente a ' . $renta->correo);
+        $adminEmail = SiteSetting::get('admin_notification_email', 'flashcarental@gmail.com');
+        return back()->with('success', 'Correo reenviado a ' . $renta->correo . ' y notificación al administrador (' . $adminEmail . ').');
     }
 
     public function updateEstado(Request $request, $id)
@@ -124,6 +126,16 @@ class RentaController extends Controller
         $vehicles = Vehicle::where('active', 1)->orderBy('name')->get();
 
         return view('rentas.edit', compact('renta', 'states', 'vehicles'));
+    }
+
+    public function destroy($id)
+    {
+        $renta = Renta::findOrFail($id);
+        $renta->delete();
+
+        SiteStat::where('key', 'total_reservations')->decrement('value');
+
+        return redirect()->route('rentas.index')->with('success', 'Renta eliminada correctamente.');
     }
 
     public function update(Request $request, $id)

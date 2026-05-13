@@ -149,6 +149,7 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
     // Rentas
     Route::put('/rentas/{id}/estado', [RentaController::class, 'updateEstado'])->name('rentas.estado');
     Route::post('/rentas/{id}/reenviar-correo', [RentaController::class, 'reenviarCorreo'])->name('rentas.reenviarCorreo');
+    Route::delete('/rentas/{id}', [RentaController::class, 'destroy'])->name('rentas.destroy');
 });
 
 // ============================================================

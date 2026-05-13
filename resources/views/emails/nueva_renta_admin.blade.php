@@ -14,16 +14,17 @@
 
                 {{-- Header --}}
                 <tr>
-                    <td style="background:#f5c518; padding:20px 30px; text-align:center;">
-                        <p style="margin:0; font-size:1rem; font-weight:bold; color:#111;">⚡ Flash Car — Panel Admin</p>
+                    <td style="background:#111111; padding:20px 30px; text-align:center;">
+                        <p style="margin:0; font-size:1rem; font-weight:bold; color:#ffffff;">⚡ Flash Car — Panel Admin</p>
                     </td>
                 </tr>
 
                 {{-- Alerta --}}
                 <tr>
                     <td style="padding:30px 30px 10px; text-align:center;">
-                        <p style="font-size:1.4rem; font-weight:bold; color:#111; margin:0;">🚗 Nueva reservación recibida</p>
+                        <p style="font-size:1.4rem; font-weight:bold; color:#111; margin:0;">Nueva reservación recibida</p>
                         <p style="font-size:0.95rem; color:#555; margin:8px 0 0;">Se acaba de registrar una nueva solicitud de renta.</p>
+                        <p style="font-size:1rem; font-weight:bold; color:#111; margin:8px 0 0;">Reservación #{{ $renta->id }}</p>
                     </td>
                 </tr>
 
@@ -86,6 +87,13 @@
                                 <td style="padding:5px 0; font-size:1rem; color:#111; font-weight:bold;">${{ number_format($renta->costo_total, 2) }} MXN</td>
                             </tr>
                         </table>
+                    </td>
+                </tr>
+
+                {{-- Botón panel --}}
+                <tr>
+                    <td style="padding:20px 30px; text-align:center;">
+                        <a href="{{ url('/dashboard') }}" style="display:inline-block; background:#f5c518; color:#111; font-weight:bold; font-size:0.95rem; padding:12px 30px; border-radius:6px; text-decoration:none;">Ir al panel de administración</a>
                     </td>
                 </tr>
 

@@ -46,5 +46,6 @@
     <script src="{{ asset('./js/libreria_jquery.js') }}"></script>
     <script src="{{ asset('./js/scripts_header.js') }}"></script>
     <script src="{{ asset('./js/messenger_alerts.js') }}"></script>
+    @stack('scripts')
 </body>
 </html>

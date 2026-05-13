@@ -18,7 +18,7 @@ class NuevaRentaAdmin extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '🚗 Nueva reservación recibida - Flash Car',
+            subject: 'Nueva reservación recibida - Flash Car',
         );
     }
 

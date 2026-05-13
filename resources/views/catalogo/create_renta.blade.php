@@ -118,7 +118,7 @@
                                     </div>
                                     <div class="col-12 col-md-4 fila_form_f_b py-2">
                                         <label class="label_form_f_b fs-6 p-1"><b>{{ __('form.delivery_date') }}</b></label>
-                                        <input class="input_form_f_b fs-6 p-1" type="date" id="fecha_entrega" name="fecha_entrega" value="{{ old('fecha_entrega') }}" required>
+                                        <input class="input_form_f_b fs-6 p-1" type="date" id="fecha_entrega" name="fecha_entrega" value="{{ old('fecha_entrega') }}" min="{{ date('Y-m-d') }}" required>
                                     </div>
                                     <div class="col-12 col-md-4 fila_form_f_b py-2">
                                         <label class="label_form_f_b fs-6 p-1"><b>{{ __('form.delivery_time') }}</b></label>
@@ -380,6 +380,60 @@
                 sel.appendChild(opt);
             });
         });
+    });
+</script>
+<div id="fecha_messenger" class="messenger_alert" style="display:none">
+    <div class="dialog_alert messenger py-2 px-4 rounded" style="background:#dc3545;">
+        <div class="fs-6 text-white"><b id="fecha_messenger_texto"></b></div>
+    </div>
+</div>
+
+<script>
+    const fechaEntrega    = document.getElementById('fecha_entrega');
+    const fechaDevolucion = document.getElementById('fecha_devolucion');
+
+    function mostrarErrorFecha(msg) {
+        $('#fecha_messenger_texto').text(msg);
+        $('#fecha_messenger').stop(true).fadeIn(200);
+        setTimeout(function () { $('#fecha_messenger').fadeOut(300); }, 4000);
+    }
+
+    function getHoy() {
+        const d = new Date();
+        return d.getFullYear() + '-' +
+            String(d.getMonth() + 1).padStart(2, '0') + '-' +
+            String(d.getDate()).padStart(2, '0');
+    }
+
+    fechaEntrega.min    = getHoy();
+    fechaDevolucion.min = getHoy();
+
+    fechaEntrega.addEventListener('change', function () {
+        const hoy = getHoy();
+        if (this.value && this.value < hoy) {
+            this.value = '';
+            mostrarErrorFecha('La fecha de entrega no puede ser anterior a hoy.');
+            return;
+        }
+        if (!this.value) return;
+        const siguiente = new Date(this.value + 'T00:00:00');
+        siguiente.setDate(siguiente.getDate() + 1);
+        const minDev = siguiente.getFullYear() + '-' +
+            String(siguiente.getMonth() + 1).padStart(2, '0') + '-' +
+            String(siguiente.getDate()).padStart(2, '0');
+        fechaDevolucion.min = minDev;
+        if (fechaDevolucion.value && fechaDevolucion.value <= this.value) {
+            fechaDevolucion.value = '';
+            mostrarErrorFecha('La fecha de devolución fue reiniciada, selecciona una fecha posterior a la entrega.');
+        }
+    });
+
+    fechaDevolucion.addEventListener('change', function () {
+        if (!this.value) return;
+        if (fechaEntrega.value && this.value <= fechaEntrega.value) {
+            this.value = '';
+            mostrarErrorFecha('La fecha de devolución debe ser posterior a la fecha de entrega.');
+        }
     });
 </script>
 @endsection
