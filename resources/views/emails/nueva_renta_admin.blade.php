@@ -3,111 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nueva reservación</title>
+    <meta name="x-apple-disable-message-reformatting">
 </head>
-<body style="margin:0; padding:0; background:#f4f4f4; font-family:Arial,sans-serif;">
-
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4; padding:30px 0;">
-    <tr>
-        <td align="center">
-            <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-
-                {{-- Header --}}
-                <tr>
-                    <td style="background:#111111; padding:20px 30px; text-align:center;">
-                        <p style="margin:0; font-size:1rem; font-weight:bold; color:#ffffff;">⚡ Flash Car — Panel Admin</p>
-                    </td>
-                </tr>
-
-                {{-- Alerta --}}
-                <tr>
-                    <td style="padding:30px 30px 10px; text-align:center;">
-                        <p style="font-size:1.4rem; font-weight:bold; color:#111; margin:0;">Nueva reservación recibida</p>
-                        <p style="font-size:0.95rem; color:#555; margin:8px 0 0;">Se acaba de registrar una nueva solicitud de renta.</p>
-                        <p style="font-size:1rem; font-weight:bold; color:#111; margin:8px 0 0;">Reservación #{{ $renta->id }}</p>
-                    </td>
-                </tr>
-
-                {{-- Datos del cliente --}}
-                <tr>
-                    <td style="padding:20px 30px 10px;">
-                        <p style="font-size:0.8rem; font-weight:bold; color:#888; text-transform:uppercase; margin:0 0 10px; border-bottom:1px solid #eee; padding-bottom:6px;">Datos del cliente</p>
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#555; width:45%;">Nombre</td>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#111; font-weight:bold;">{{ $renta->nombre_completo }}</td>
-                            </tr>
-                            <tr>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#555;">Teléfono</td>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#111; font-weight:bold;">{{ $renta->telefono }}</td>
-                            </tr>
-                            <tr>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#555;">Correo</td>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#111; font-weight:bold;">{{ $renta->correo }}</td>
-                            </tr>
-                            <tr>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#555;">Ciudad</td>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#111; font-weight:bold;">{{ $renta->ciudad }}</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-
-                {{-- Datos de la renta --}}
-                <tr>
-                    <td style="padding:10px 30px 10px;">
-                        <p style="font-size:0.8rem; font-weight:bold; color:#888; text-transform:uppercase; margin:0 0 10px; border-bottom:1px solid #eee; padding-bottom:6px;">Detalles de la reservación</p>
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#555; width:45%;">Vehículo</td>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#111; font-weight:bold;">{{ $renta->vehicle->name ?? '—' }}</td>
-                            </tr>
-                            <tr>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#555;">Entrega</td>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#111; font-weight:bold;">{{ \Carbon\Carbon::parse($renta->fecha_entrega)->format('d/m/Y') }} — {{ $renta->hora_entrega }}</td>
-                            </tr>
-                            <tr>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#555;">Lugar de entrega</td>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#111; font-weight:bold;">{{ $renta->lugar_entrega }}</td>
-                            </tr>
-                            <tr>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#555;">Devolución</td>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#111; font-weight:bold;">{{ \Carbon\Carbon::parse($renta->fecha_devolucion)->format('d/m/Y') }} — {{ $renta->hora_devolucion }}</td>
-                            </tr>
-                            <tr>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#555;">Lugar de devolución</td>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#111; font-weight:bold;">{{ $renta->lugar_devolucion }}</td>
-                            </tr>
-                            <tr>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#555;">Total de días</td>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#111; font-weight:bold;">{{ $renta->total_dias }} día(s)</td>
-                            </tr>
-                            <tr>
-                                <td style="padding:5px 0; font-size:0.9rem; color:#555;">Costo total</td>
-                                <td style="padding:5px 0; font-size:1rem; color:#111; font-weight:bold;">${{ number_format($renta->costo_total, 2) }} MXN</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-
-                {{-- Botón panel --}}
-                <tr>
-                    <td style="padding:20px 30px; text-align:center;">
-                        <a href="{{ url('/dashboard') }}" style="display:inline-block; background:#f5c518; color:#111; font-weight:bold; font-size:0.95rem; padding:12px 30px; border-radius:6px; text-decoration:none;">Ir al panel de administración</a>
-                    </td>
-                </tr>
-
-                {{-- Footer --}}
-                <tr>
-                    <td style="background:#f9f9f9; padding:20px 30px; text-align:center; border-top:1px solid #eee;">
-                        <p style="font-size:0.8rem; color:#aaa; margin:0;">Este mensaje es una notificación automática de Flash Car.</p>
-                    </td>
-                </tr>
-
-            </table>
-        </td>
-    </tr>
-</table>
-
+<body style="margin:0; padding:0; background:#e5e5e5; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:1.4; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; text-size-adjust:100%;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#e5e5e5; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; text-size-adjust:100%;">
+        <tr>
+            <td align="center" style="padding:24px;">
+                <table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0" style="max-width:640px; width:100%; background:#111418; border radius:16px; overflow:hidden; border:1px solid #22262b; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:1.4; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; text-size-adjust:100%;">
+                    <!-- Hero -->
+                    <tr>
+                        <td align="center" style="padding:28px 24px; background:#111418;">
+                            <!-- Banda gris clara ajustada al tamaño del logo -->
+                            <div style="display:inline-block; background:#fafbfc; background-image:linear-gradient(180deg,#ffffff,#f3f4f6); padding:8px 12px; border-radius:14px;">
+                                <img src="https://flashcar.rentadeautos.site/img/logo_correo.jpg" alt="Flash Car" width="220" style="display:block; border:0; outline:none; text-decoration:none; height:auto;">
+                            </div>
+                            <div style="margin-top:16px; color:#ffffff; font-family:Arial,Helvetica,sans-serif; font-size:22px; font-weight:700; line-height:1.2; letter-spacing: 0.3px;">Nueva Solicitud de Renta</div>
+                            <div style="margin-top:8px; display:inline-block; padding:6px 12px; border-radius:999px; background:#ffd60a; color:#111; font-weight:700; font-size:12px; font-family:Arial,Helvetica,sans-serif;">Renta #{{ str_pad($renta->id, 5, '0', STR_PAD_LEFT) }}</div>
+                        </td>
+                    </tr>
+                    <!-- Intro -->
+                    <tr>
+                        <td style="background:#ffffff; padding:24px;">
+                            <p style="margin:0 0 16px 0; color:#3b4046; font-family:Arial,Helvetica,sans-serif; font-size:14px;">Se ha registrado una nueva solicitud de renta. Aquí están los detalles:</p>
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="table-layout:fixed; width:100%; max-width:100%;">
+                                <tr>
+                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                            <tr>
+                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                    <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Nombre completo</div>
+                                                    <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ $renta->nombre_completo }}</div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                            <tr>
+                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                    <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Teléfono</div>
+                                                    <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ $renta->telefono }}</div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                            <tr>
+                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                    <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Correo electrónico</div>
+                                                    <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ $renta->correo }}</div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                            <tr>
+                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                    <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Ciudad</div>
+                                                    <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ $renta->ciudad }}</div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                            <tr>
+                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                    <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Vehículo</div>
+                                                    <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">
+                                                        {{ $renta->vehicle->name ?? 'Vehículo' }}
+                                                        @if($renta->vehicle)
+                                                            <span style="color:#6b7280; font-weight:400;"> — {{ $renta->vehicle->brand }} {{ $renta->vehicle->model }}@if($renta->vehicle->year) {{ $renta->vehicle->year }}@endif</span>
+                                                        @endif
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                            <tr>
+                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                    <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Fecha de entrega</div>
+                                                    <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ \Carbon\Carbon::parse($renta->fecha_entrega)->format('d/m/Y') }} · {{ substr($renta->hora_entrega, 0, 5) }}</div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                            <tr>
+                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                    <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Lugar de entrega</div>
+                                                    <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ $renta->lugar_entrega }}</div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                            <tr>
+                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                    <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Fecha de devolución</div>
+                                                    <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ \Carbon\Carbon::parse($renta->fecha_devolucion)->format('d/m/Y') }} · {{ substr($renta->hora_devolucion, 0, 5) }}</div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                            <tr>
+                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                    <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Lugar de devolución</div>
+                                                    <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ $renta->lugar_devolucion }}</div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                            <tr>
+                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                    <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Pasajeros</div>
+                                                    <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ $renta->num_pasajeros }}</div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                            <tr>
+                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                    <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Total de días</div>
+                                                    <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ $renta->total_dias }} día{{ $renta->total_dias > 1 ? 's' : '' }}</div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                            <tr>
+                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                    <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Costo estimado</div>
+                                                    <div style="margin-top:2px; font-size:16px; color:#111418; font-weight:900; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">${{ number_format($renta->costo_total, 2) }} MXN</div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                @if($renta->vehicle && $renta->vehicle->category)
+                                <tr>
+                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                            <tr>
+                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                    <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Garantía requerida</div>
+                                                    <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">${{ number_format($renta->vehicle->category->warranty, 2) }} MXN</div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">&nbsp;</td>
+                                </tr>
+                                @endif
+                            </table>
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:16px;">
+                                <tr>
+                                    <td style="padding:14px 16px; border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc;">
+                                        <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Detalles</div>
+                                        <div style="font-size:14px; color:#111418; font-weight:700; font-family:Arial,Helvetica,sans-serif;">Responde al correo flashcarental@gmail.com: INE o pasaporte, licencia de conducir, reserva de tus vuelos o comprobante de domicilio.</div>
+                                        <div style="font-size:14px; color:#111418; font-weight:400; font-family:Arial,Helvetica,sans-serif;">Reply to the email flashcarental@gmail.com with: INE or passport, drivers license, your flight reservation or proof of address.</div>
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:10px;">
+                                            <tr>
+                                                <!--<td align="center" bgcolor="#ffd60a" style="border-radius:12px;">
+                                                    <a href="" style="display:inline-block; padding:10px 16px; font-family:Arial,Helvetica,sans-serif; font-weight:700; font-size:14px; color:#111; text-decoration:none; border:1px solid #b5902a; border-radius:12px;">Responder a Correo</a>
+                                                </td>-->
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:18px;">
+                                <tr>
+                                    <td style="padding:16px; border-radius:12px; background:#fff7ed; border:1px solid #fed7aa;">
+                                        <div style="margin:0 0 6px 0; color:#9a6700; font-weight:700; font-family:Arial,Helvetica,sans-serif;">Pagos y facturación</div>
+                                        <div style="margin:0 0 8px 0; color:#6b7280; font-family:Arial,Helvetica,sans-serif; font-size:14px;">Aceptamos pagos 100% digitales. Métodos disponibles:</div>
+                                        <div>
+                                            <span style="display:inline-block; padding:6px 10px; margin:4px 8px 4px 0; border-radius:999px; background:#111418; color:#fff; font-family:Arial,Helvetica,sans-serif; font-size:12px; font-weight:700;">VISA</span>
+                                            <span style="display:inline-block; padding:6px 10px; margin:4px 8px 4px 0; border-radius:999px; background:#e11d48; color:#fff; font-family:Arial,Helvetica,sans-serif; font-size:12px; font-weight:700;">MASTERCARD</span>
+                                            <span style="display:inline-block; padding:6px 10px; margin:4px 8px 4px 0; border-radius:999px; background:#2563eb; color:#fff; font-family:Arial,Helvetica,sans-serif; font-size:12px; font-weight:700;">AMEX</span>
+                                            <span style="display:inline-block; padding:6px 10px; margin:4px 8px 4px 0; border-radius:999px; background:#16a34a; color:#fff; font-family:Arial,Helvetica,sans-serif; font-size:12px; font-weight:700;">SPEI</span>
+                                        </div>
+                                        <ul style="margin:10px 0 0 18px; color:#6b7280; font-family:Arial,Helvetica,sans-serif; font-size:13px;">
+                                            <li>Factura disponible a solicitud (RFC requerido).</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </table>
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:16px;">
+                                <tr>
+                                    <td align="center">
+                                        <a href="{{ url('/rentas') }}" style="display:inline-block; padding:10px 16px; font-family:Arial,Helvetica,sans-serif; font-weight:700; font-size:14px; color:#111; text-decoration:none; border:1px solid #b5902a; border-radius:12px; background:#ffd60a;">Ver en el panel</a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div style="margin-top:16px; padding:14px; border-radius:12px; background:#f0fdf4; border:1px solid #a7f3d0; color:#065f46; font-weight:700; text-align:center; font-family:Arial,Helvetica,sans-serif;">Todo listo para una experiencia de lujo sobre ruedas.</div>
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center" style="padding:18px; color:#9ca3af; font-size:12px; font-family:Arial,Helvetica,sans-serif; background:#111418;">© {{ date('Y') }} Flash Car.</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
