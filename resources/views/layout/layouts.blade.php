@@ -35,6 +35,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css?v=1.2">
     <link rel="stylesheet" href="{{ asset('css/styles_general.css') }}?v=1.2">
     @stack('styles')
+    @stack('gtm_head')
 
 </head>
 <body>

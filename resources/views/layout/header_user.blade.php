@@ -1,3 +1,14 @@
+@push('gtm_head')
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-17849169665"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'AW-17849169665');
+</script>
+@endpush
+
 <header>
     <nav class="header_principal_usuarios shadow-sm d-flex align-items-center justify-content-center">
         <div class="col-6 col-sm-6 col-md-4 col-lg-2 d-flex align-items-center justify-content-center">
