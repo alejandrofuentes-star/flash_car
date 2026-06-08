@@ -66,7 +66,7 @@
                     <div>
                         <p class="text-muted m-0 mb-1" style="font-size:0.78rem;">Ingresos del mes</p>
                         <p class="fs-5 fw-bold m-0">${{ number_format($ingresos_mes, 0) }}<span class="fs-6 fw-normal text-muted"> MXN</span></p>
-                        <span class="text-muted" style="font-size:0.75rem;">Confirmadas + completadas</span>
+                        <span class="text-muted" style="font-size:0.75rem;">En renta + Finalizado + Devuelto</span>
                     </div>
                     <div style="width:36px;height:36px;border-radius:50%;background:#e8d5ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                         <i class="bi bi-cash-stack" style="color:#6f42c1;font-size:1rem;"></i>
