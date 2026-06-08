@@ -59,7 +59,7 @@ class VehicleController extends Controller
             // Excluir autos que ya tienen renta en ese rango de fechas
             ->when($fecha_entrega && $fecha_devolucion, function($q) use ($fecha_entrega, $fecha_devolucion) {
                 $q->whereDoesntHave('rentas', function($r) use ($fecha_entrega, $fecha_devolucion) {
-                    $r->whereIn('estado', ['pendiente', 'confirmada'])
+                    $r->whereIn('estado', ['reserva_confirmada', 'proxima_entrega', 'pendiente_pago', 'contrato_abierto'])
                     ->where('fecha_entrega', '<=', $fecha_devolucion)
                     ->where('fecha_devolucion', '>=', $fecha_entrega);
                 });
@@ -135,6 +135,7 @@ class VehicleController extends Controller
 
         $stateIds = $validated['state_ids'] ?? [];
         unset($validated['state_ids']);
+        unset($validated['motivo_inactivo']);
 
         $vehicle = Vehicle::create($validated);
         $vehicle->states()->sync($stateIds);
@@ -183,6 +184,7 @@ class VehicleController extends Controller
             'active'       => 'boolean',
             'mileage'           => 'nullable|integer|min:0',
             'next_verification' => 'nullable|date',
+            'motivo_inactivo'   => 'nullable|in:Servicio,Mtto Mayor,Traslado',
             'state_ids'    => 'nullable|array',
             'state_ids.*'  => 'exists:states,id',
         ]);
@@ -216,6 +218,7 @@ class VehicleController extends Controller
 
         $validated['available'] = $request->has('available');
         $validated['active']    = $request->has('active');
+        $validated['motivo_inactivo'] = $validated['active'] ? null : ($request->motivo_inactivo ?? null);
 
         $stateIds = $validated['state_ids'] ?? [];
         unset($validated['state_ids']);

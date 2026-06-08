@@ -4,51 +4,12 @@
 
 @section('content')
 @include('layout.header')
-<div class="bg-light">
+<div class="bg-light min-vh-100">
     <div class="main_principal">
         <div class="space_principal">
         <!--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
 
-        {{-- ENCABEZADO --}}
-        <div class="col-12 d-flex align-items-center justify-content-between flex-wrap px-1 py-3">
-            <p class="text-muted fs-6 m-0">{{ \Carbon\Carbon::now()->locale('es')->isoFormat('dddd, D [de] MMMM [de] YYYY') }}</p>
-            <a href="{{ route('rentas.index') }}" class="boton_link_xxl b_sm rounded" style="width:auto; padding:0 14px; white-space:nowrap;">
-                <i class="bi bi-list-ul me-1"></i> Ver todas las rentas
-            </a>
-        </div>
 
-        {{-- ===== MANTENIMIENTO ===== --}}
-        @if(Auth::user()->role === 'super_admin')
-        <div class="col-12 px-1 mb-1">
-            <div class="col-12 d-flex align-items-center justify-content-between flex-wrap rounded p-2"
-                 style="background:{{ $maintenanceActive ? '#fff3cd' : '#f8f9fa' }};border:1px solid {{ $maintenanceActive ? '#ffc107' : '#dee2e6' }};">
-                <div class="d-flex align-items-center gap-2">
-                    <div style="width:32px;height:32px;border-radius:50%;background:{{ $maintenanceActive ? '#ffc107' : '#e9ecef' }};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                        <i class="bi bi-tools" style="font-size:.9rem;color:{{ $maintenanceActive ? '#5c3d00' : '#6c757d' }};"></i>
-                    </div>
-                    <div>
-                        <p class="m-0 fw-semibold" style="font-size:.85rem;color:{{ $maintenanceActive ? '#5c3d00' : '#495057' }};">
-                            Modo mantenimiento:
-                            <span style="color:{{ $maintenanceActive ? '#a05c00' : '#198754' }};">
-                                {{ $maintenanceActive ? 'Activado' : 'Desactivado' }}
-                            </span>
-                        </p>
-                        <p class="m-0 text-muted" style="font-size:.75rem;">
-                            {{ $maintenanceActive ? 'El sitio público muestra la página de mantenimiento.' : 'El sitio es accesible para todos los visitantes.' }}
-                        </p>
-                    </div>
-                </div>
-                <form method="POST" action="{{ route('maintenance.toggle') }}" class="mt-1 mt-sm-0">
-                    @csrf
-                    <button type="submit" class="b_sm rounded"
-                            style="padding:0 14px;white-space:nowrap;{{ $maintenanceActive ? 'background:#198754;color:#fff;border:none;' : 'background:#dc3545;color:#fff;border:none;' }}">
-                        <i class="bi bi-{{ $maintenanceActive ? 'check-circle' : 'tools' }} me-1"></i>
-                        {{ $maintenanceActive ? 'Desactivar' : 'Activar mantenimiento' }}
-                    </button>
-                </form>
-            </div>
-        </div>
-        @endif
 
         {{-- ===== KPIs ===== --}}
         <div class="col-12 d-flex align-items-stretch justify-content-start flex-wrap">
@@ -153,16 +114,21 @@
                         <p class="col-3 col-sm-3 col-md-3 col-lg-2 border_right_dato px-1 my-1 m-0 fw-semibold" style="font-size:0.85rem;">${{ number_format($renta->costo_total, 0) }}</p>
                         <div class="col-6 col-sm-6 col-md-6 col-lg-2 border_right_dato px-1 my-1 box_hidden_movil">
                             @php
-                                $badge = match($renta->estado) {
-                                    'pendiente'  => 'warning text-dark',
-                                    'confirmada' => 'success',
-                                    'cancelada'  => 'danger',
-                                    'completada' => 'secondary',
-                                    default      => 'light text-dark',
+                                [$badge, $badgeLabel] = match($renta->estado) {
+                                    'reserva_confirmada'  => ['warning text-dark', 'Reservada'],
+                                    'proxima_entrega'     => ['info text-dark',    'Prox. entrega'],
+                                    'pendiente_pago'      => ['warning text-dark', 'Pdte. pago'],
+                                    'contrato_abierto'    => ['success',           'En renta'],
+                                    'contrato_finalizado' => ['secondary',         'Finalizado'],
+                                    'devolucion_exitosa'  => ['primary',           'Devuelto'],
+                                    'dano_faltante'       => ['danger',            'Daño/Faltante'],
+                                    'garantia_pendiente'  => ['dark',              'Gtía. pendiente'],
+                                    'cancelada'           => ['danger',            'Cancelada'],
+                                    default               => ['light text-dark',   ucfirst($renta->estado)],
                                 };
                             @endphp
                             <span class="badge bg-{{ $badge }}" style="font-size:0.72rem;">
-                                {{ ucfirst($renta->estado) }}
+                                {{ $badgeLabel }}
                             </span>
                         </div>
                         <div class="col-6 col-sm-6 col-md-6 col-lg-1 px-1 my-1 d-flex align-items-center justify-content-start box_hidden_movil">
@@ -190,7 +156,7 @@
                         <h2 class="fs-6 fw-bold m-0"><i class="bi bi-calendar-event me-2"></i>Entregas próximas</h2>
                         <span class="badge bg-secondary" style="font-size:0.72rem;">Hoy + 3 días</span>
                     </div>
-                    <div class="col-12 p-2">
+                    <div class="col-12 p-2" style="max-height:280px; overflow-y:auto;">
                         @forelse($proximas as $renta)
                         <a href="{{ route('rentas.show', $renta->id) }}" class="text-decoration-none">
                             <div class="col-12 d-flex align-items-center justify-content-start border_gris_2_buttom py-2">
@@ -227,7 +193,7 @@
                         <h2 class="fs-6 fw-bold m-0"><i class="bi bi-arrow-return-left me-2"></i>Devoluciones próximas</h2>
                         <span class="badge bg-secondary" style="font-size:0.72rem;">Hoy + 3 días</span>
                     </div>
-                    <div class="col-12 p-2">
+                    <div class="col-12 p-2" style="max-height:280px; overflow-y:auto;">
                         @forelse($devoluciones as $renta)
                         <a href="{{ route('rentas.show', $renta->id) }}" class="text-decoration-none">
                             <div class="col-12 d-flex align-items-center justify-content-start border_gris_2_buttom py-2">

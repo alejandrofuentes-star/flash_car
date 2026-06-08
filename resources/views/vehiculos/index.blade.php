@@ -46,6 +46,9 @@
                                         <span class="cuenta_activa">Activo</span>
                                     @else
                                         <span class="cuenta_inactiva">Inactivo</span>
+                                        @if($vehicle->motivo_inactivo)
+                                            <span class="cuenta_inactiva" style="font-size:0.7rem; opacity:0.85;">{{ $vehicle->motivo_inactivo }}</span>
+                                        @endif
                                     @endif
                                 </div>
                                 <div class="col-12 d-flex align-items-center justify-content-center py-2">

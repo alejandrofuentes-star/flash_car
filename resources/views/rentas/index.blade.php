@@ -35,15 +35,30 @@
                     <p class="col-2 border_right_dato px-1 my-1">{{ $renta->vehicle->name ?? '—' }}</p>
                     <p class="col-2 border_right_dato px-1 my-1">{{ $renta->fecha_entrega->format('d/m/Y') }}</p>
                     <p class="col-2 border_right_dato px-1 my-1">{{ $renta->fecha_devolucion->format('d/m/Y') }}</p>
-                    <div class="col-1 px-1 my-1 d-flex align-items-center">
-                        @if($renta->estado == 'pendiente')
-                            <span class="badge bg-warning text-dark" style="font-size:0.65rem">Pendiente</span>
-                        @elseif($renta->estado == 'confirmada')
-                            <span class="badge bg-success" style="font-size:0.65rem">Confirmada</span>
-                        @elseif($renta->estado == 'cancelada')
-                            <span class="badge bg-danger" style="font-size:0.65rem">Cancelada</span>
-                        @elseif($renta->estado == 'completada')
-                            <span class="badge bg-secondary" style="font-size:0.65rem">Completada</span>
+                    <div class="col-1 px-1 my-1 d-flex flex-column align-items-start justify-content-center" style="gap:3px;">
+                        @php
+                            [$badgeClass, $badgeLabel] = match($renta->estado) {
+                                'reserva_confirmada'  => ['warning text-dark', 'Reservada'],
+                                'proxima_entrega'     => ['info text-dark',    'Prox. entrega'],
+                                'pendiente_pago'      => ['warning text-dark', 'Pdte. pago'],
+                                'contrato_abierto'    => ['success',           'En renta'],
+                                'contrato_finalizado' => ['secondary',         'Finalizado'],
+                                'devolucion_exitosa'  => ['primary',           'Devuelto'],
+                                'dano_faltante'       => ['danger',            'Daño/Faltante'],
+                                'garantia_pendiente'  => ['dark',              'Gtía. pendiente'],
+                                'cancelada'           => ['danger',            'Cancelada'],
+                                default               => ['light text-dark',   ucfirst($renta->estado)],
+                            };
+                        @endphp
+                        <span class="badge bg-{{ $badgeClass }}" style="font-size:0.65rem">{{ $badgeLabel }}</span>
+                        @if($renta->payment_intent_id)
+                            <span class="badge bg-success bg-opacity-75" style="font-size:0.65rem;" title="Stripe: {{ $renta->payment_intent_id }}">
+                                <i class="bi bi-credit-card-fill me-1"></i>Pagado
+                            </span>
+                        @else
+                            <span class="badge bg-warning text-dark bg-opacity-50" style="font-size:0.65rem;">
+                                <i class="bi bi-clock me-1"></i>Pago pdte.
+                            </span>
                         @endif
                     </div>
                     <div class="col-2 px-1 my-1 d-flex align-items-center justify-content-start">

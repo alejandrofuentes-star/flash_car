@@ -196,15 +196,16 @@ window.addEventListener('load', function () {
     if (horaEntregaInput)    horaEntregaInput.addEventListener('change', calcularCosto);
     if (horaDevolucionInput) horaDevolucionInput.addEventListener('change', calcularCosto);
 
-    // Validar etapa 2 antes de enviar
+    // Validar etapa 3 antes de enviar
     const formRenta = document.getElementById('formRenta');
     if (formRenta) {
         formRenta.addEventListener('submit', function (e) {
-            if (etapaActual === 2 && !validarEtapa2()) {
+            if (etapaActual === 3 && !validarEtapa3()) {
                 e.preventDefault();
             }
         });
     }
+
 });
 
 // Etapas del formulario
@@ -245,8 +246,13 @@ function validarEtapa1() {
     return valido;
 }
 
+function validarEtapa3() {
+    return true;
+}
+
 function irEtapa(n) {
     if (n === 2 && etapaActual === 1 && !validarEtapa1()) return;
+    if (n === 3 && etapaActual === 2 && !validarEtapa2()) return;
 
     document.getElementById('etapa_' + etapaActual).style.display = 'none';
     document.getElementById('etapa_' + n).style.display = 'block';
@@ -265,5 +271,5 @@ function irEtapa(n) {
     etapaActual = n;
 
     const btnConfirmar = document.getElementById('btn_confirmar');
-    if (btnConfirmar) btnConfirmar.style.display = n === 2 ? 'block' : 'none';
+    if (btnConfirmar) btnConfirmar.style.display = n === (window.flashCarUltimaEtapa || 3) ? 'block' : 'none';
 }

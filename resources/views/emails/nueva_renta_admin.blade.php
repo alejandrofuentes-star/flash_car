@@ -8,8 +8,8 @@
 <body style="margin:0; padding:0; background:#e5e5e5; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:1.4; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; text-size-adjust:100%;">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#e5e5e5; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; text-size-adjust:100%;">
         <tr>
-            <td align="center" style="padding:24px;">
-                <table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0" style="max-width:640px; width:100%; background:#111418; border radius:16px; overflow:hidden; border:1px solid #22262b; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:1.4; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; text-size-adjust:100%;">
+            <td align="center" style="padding:12px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:640px; width:100%; background:#111418; border radius:16px; overflow:hidden; border:1px solid #22262b; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:1.4; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; text-size-adjust:100%;">
                     <!-- Hero -->
                     <tr>
                         <td align="center" style="padding:28px 24px; background:#111418;">
@@ -23,24 +23,26 @@
                     </tr>
                     <!-- Intro -->
                     <tr>
-                        <td style="background:#ffffff; padding:24px;">
+                        <td style="background:#ffffff; padding:16px;">
                             <p style="margin:0 0 16px 0; color:#3b4046; font-family:Arial,Helvetica,sans-serif; font-size:14px;">Se ha registrado una nueva solicitud de renta. Aquí están los detalles:</p>
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="table-layout:fixed; width:100%; max-width:100%;">
                                 <tr>
-                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                    <td valign="top" width="100%" style="padding:4px 0; width:100%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; table-layout:fixed; width:100%; max-width:100%;">
                                             <tr>
-                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                <td style="padding:10px 12px; vertical-align:top;">
                                                     <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Nombre completo</div>
                                                     <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ $renta->nombre_completo }}</div>
                                                 </td>
                                             </tr>
                                         </table>
                                     </td>
-                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                </tr>
+                                <tr>
+                                    <td valign="top" width="100%" style="padding:4px 0; width:100%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; table-layout:fixed; width:100%; max-width:100%;">
                                             <tr>
-                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                <td style="padding:10px 12px; vertical-align:top;">
                                                     <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Teléfono</div>
                                                     <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ $renta->telefono }}</div>
                                                 </td>
@@ -49,20 +51,22 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                    <td valign="top" width="100%" style="padding:4px 0; width:100%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; table-layout:fixed; width:100%; max-width:100%;">
                                             <tr>
-                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                <td style="padding:10px 12px; vertical-align:top;">
                                                     <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Correo electrónico</div>
                                                     <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ $renta->correo }}</div>
                                                 </td>
                                             </tr>
                                         </table>
                                     </td>
-                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                </tr>
+                                <tr>
+                                    <td valign="top" width="100%" style="padding:4px 0; width:100%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; table-layout:fixed; width:100%; max-width:100%;">
                                             <tr>
-                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                <td style="padding:10px 12px; vertical-align:top;">
                                                     <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Ciudad</div>
                                                     <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ $renta->ciudad }}</div>
                                                 </td>
@@ -71,10 +75,10 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                    <td valign="top" width="100%" style="padding:4px 0; width:100%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; table-layout:fixed; width:100%; max-width:100%;">
                                             <tr>
-                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                <td style="padding:10px 12px; vertical-align:top;">
                                                     <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Vehículo</div>
                                                     <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">
                                                         {{ $renta->vehicle->name ?? 'Vehículo' }}
@@ -86,54 +90,80 @@
                                             </tr>
                                         </table>
                                     </td>
-                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                </tr>
+                                <tr>
+                                    <td valign="top" width="100%" style="padding:4px 0; width:100%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; table-layout:fixed; width:100%; max-width:100%;">
                                             <tr>
-                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
-                                                    <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Fecha de entrega</div>
-                                                    <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ \Carbon\Carbon::parse($renta->fecha_entrega)->format('d/m/Y') }} · {{ substr($renta->hora_entrega, 0, 5) }}</div>
+                                                <td style="padding:10px 12px; vertical-align:top;">
+                                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="table-layout:auto; border-collapse:collapse; width:100%;">
+                                                        <tr>
+                                                            <td width="60%" valign="top" style="padding-right:8px; width:60%">
+                                                                <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Fecha de entrega</div>
+                                                                <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; white-space:nowrap;">{{ \Carbon\Carbon::parse($renta->fecha_entrega)->format('d/m/Y') }}</div>
+                                                            </td>
+                                                            <td width="40%" valign="top" style="width:40%">
+                                                                <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Hora</div>
+                                                                <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; white-space:nowrap;">{{ substr($renta->hora_entrega, 0, 5) }}</div>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
                                                 </td>
                                             </tr>
                                         </table>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                    <td valign="top" width="100%" style="padding:4px 0; width:100%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; table-layout:fixed; width:100%; max-width:100%;">
                                             <tr>
-                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                <td style="padding:10px 12px; vertical-align:top;">
                                                     <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Lugar de entrega</div>
                                                     <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ $renta->lugar_entrega }}</div>
                                                 </td>
                                             </tr>
                                         </table>
                                     </td>
-                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                </tr>
+                                <tr>
+                                    <td valign="top" width="100%" style="padding:4px 0; width:100%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; table-layout:fixed; width:100%; max-width:100%;">
                                             <tr>
-                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
-                                                    <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Fecha de devolución</div>
-                                                    <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ \Carbon\Carbon::parse($renta->fecha_devolucion)->format('d/m/Y') }} · {{ substr($renta->hora_devolucion, 0, 5) }}</div>
+                                                <td style="padding:10px 12px; vertical-align:top;">
+                                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="table-layout:auto; border-collapse:collapse; width:100%;">
+                                                        <tr>
+                                                            <td width="60%" valign="top" style="padding-right:8px; width:60%">
+                                                                <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Fecha de devolución</div>
+                                                                <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; white-space:nowrap;">{{ \Carbon\Carbon::parse($renta->fecha_devolucion)->format('d/m/Y') }}</div>
+                                                            </td>
+                                                            <td width="40%" valign="top" style="width:40%">
+                                                                <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Hora</div>
+                                                                <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; white-space:nowrap;">{{ substr($renta->hora_devolucion, 0, 5) }}</div>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
                                                 </td>
                                             </tr>
                                         </table>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                    <td valign="top" width="100%" style="padding:4px 0; width:100%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; table-layout:fixed; width:100%; max-width:100%;">
                                             <tr>
-                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                <td style="padding:10px 12px; vertical-align:top;">
                                                     <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Lugar de devolución</div>
                                                     <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ $renta->lugar_devolucion }}</div>
                                                 </td>
                                             </tr>
                                         </table>
                                     </td>
-                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                </tr>
+                                <tr>
+                                    <td valign="top" width="100%" style="padding:4px 0; width:100%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; table-layout:fixed; width:100%; max-width:100%;">
                                             <tr>
-                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                <td style="padding:10px 12px; vertical-align:top;">
                                                     <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Pasajeros</div>
                                                     <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ $renta->num_pasajeros }}</div>
                                                 </td>
@@ -142,20 +172,22 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                    <td valign="top" width="100%" style="padding:4px 0; width:100%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; table-layout:fixed; width:100%; max-width:100%;">
                                             <tr>
-                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                <td style="padding:10px 12px; vertical-align:top;">
                                                     <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Total de días</div>
                                                     <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">{{ $renta->total_dias }} día{{ $renta->total_dias > 1 ? 's' : '' }}</div>
                                                 </td>
                                             </tr>
                                         </table>
                                     </td>
-                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                </tr>
+                                <tr>
+                                    <td valign="top" width="100%" style="padding:4px 0; width:100%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; table-layout:fixed; width:100%; max-width:100%;">
                                             <tr>
-                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                <td style="padding:10px 12px; vertical-align:top;">
                                                     <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Costo estimado</div>
                                                     <div style="margin-top:2px; font-size:16px; color:#111418; font-weight:900; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">${{ number_format($renta->costo_total, 2) }} MXN</div>
                                                 </td>
@@ -165,17 +197,16 @@
                                 </tr>
                                 @if($renta->vehicle && $renta->vehicle->category)
                                 <tr>
-                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" height="65" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; height:65px; table-layout:fixed; width:100%; max-width:100%;">
+                                    <td valign="top" width="100%" style="padding:4px 0; width:100%;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; table-layout:fixed; width:100%; max-width:100%;">
                                             <tr>
-                                                <td height="65" style="padding:10px 12px; height:65px; vertical-align:top;">
+                                                <td style="padding:10px 12px; vertical-align:top;">
                                                     <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Garantía requerida</div>
                                                     <div style="margin-top:2px; font-size:14px; color:#111418; font-weight:700; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">${{ number_format($renta->vehicle->category->warranty, 2) }} MXN</div>
                                                 </td>
                                             </tr>
                                         </table>
                                     </td>
-                                    <td width="50%" valign="top" style="padding:2px; width:50%; max-width:50%; min-width:50%;">&nbsp;</td>
                                 </tr>
                                 @endif
                             </table>
@@ -232,3 +263,4 @@
     </table>
 </body>
 </html>
+

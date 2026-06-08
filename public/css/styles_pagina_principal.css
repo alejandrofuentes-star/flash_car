@@ -316,7 +316,7 @@
     font-size: 1.2rem;
     transition: background 0.2s;
 }
-.carrucel_btn:hover { background: rgba(0, 0, 0, 0.85); }
+.carrucel_btn:hover { background: var(--amarillo_fuerte); color: #111; }
 .carrucel_prev { left: 12px; }
 .carrucel_next { right: 12px; }
 @keyframes pulso_verde {
@@ -789,10 +789,17 @@
 }
 .text_color_white { color: white; }
 
+.footer_img_tech      { width: 190px; }
+.footer_img_marketing { width: 161px; }
+.footer_img_label     { font-size: 1rem; }
+
 @media (max-width: 768px)
 {
     .d_flex_movil
     {
         flex-direction: column !important;
     }
+    .footer_img_tech      { width: 120px; }
+    .footer_img_marketing { width: 100px; }
+    .footer_img_label     { font-size: 0.7rem; }
 }

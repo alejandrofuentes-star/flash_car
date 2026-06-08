@@ -11,7 +11,10 @@
         </div>
     </nav>
     <div class="submenu p-2" id="submenu">
-        <p class="nombre_perfil fs-5 m-0"><b>{{ Auth::user()->name }}</b></p>
+        <p class="nombre_perfil fs-5 m-0 text-white">
+            <b>{{ Auth::user()->name }}</b>
+            <small class="fw-normal" style="font-size:0.8rem; color:#fff;">{{ \Carbon\Carbon::now('America/Mexico_City')->locale(app()->getLocale())->isoFormat('dddd, D MMMM YYYY') }} · {{ \Carbon\Carbon::now('America/Mexico_City')->format('H:i') }}</small>
+        </p>
         <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('dashboard') }}"><i class="bi bi-house-fill"></i><b> Inicio</b></a>
         <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('users.index') }}"><i class="bi bi-people-fill"></i> Usuarios</a>
         <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('vehiculos.index') }}"><i class="bi bi-car-front-fill"></i> Autos</a>
@@ -26,9 +29,6 @@
         @if(Auth::user()->role === 'super_admin')
             <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('system.cache') }}">
                 <i class="bi bi-tools"></i> Sistema
-            </a>
-            <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('system.migrations') }}">
-                <i class="bi bi-database-gear"></i> Migraciones
             </a>
         @endif
 

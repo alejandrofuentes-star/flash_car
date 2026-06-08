@@ -12,14 +12,14 @@ class DashboardController extends Controller
     public function index()
     {
         // KPIs
-        $pendientes         = Renta::where('estado', 'pendiente')->count();
-        $confirmadas        = Renta::where('estado', 'confirmada')->count();
+        $pendientes            = Renta::where('estado', 'reserva_confirmada')->count();
+        $confirmadas           = Renta::where('estado', 'contrato_abierto')->count();
         $vehiculos_disponibles = Vehicle::where('available', true)->count();
-        $vehiculos_total    = Vehicle::count();
-        $ingresos_mes       = Renta::whereIn('estado', ['confirmada', 'completada'])
-                                ->whereMonth('created_at', now()->month)
-                                ->whereYear('created_at', now()->year)
-                                ->sum('costo_total');
+        $vehiculos_total       = Vehicle::count();
+        $ingresos_mes          = Renta::whereIn('estado', ['contrato_abierto', 'contrato_finalizado', 'devolucion_exitosa'])
+                                    ->whereMonth('created_at', now()->month)
+                                    ->whereYear('created_at', now()->year)
+                                    ->sum('costo_total');
 
         // Últimas 8 solicitudes
         $recientes = Renta::with('vehicle')
@@ -29,7 +29,7 @@ class DashboardController extends Controller
 
         // Entregas próximas (hoy + 3 días)
         $proximas = Renta::with('vehicle')
-                        ->whereIn('estado', ['pendiente', 'confirmada'])
+                        ->whereIn('estado', ['reserva_confirmada', 'proxima_entrega', 'pendiente_pago', 'contrato_abierto'])
                         ->whereBetween('fecha_entrega', [Carbon::today(), Carbon::today()->addDays(3)])
                         ->orderBy('fecha_entrega')
                         ->orderBy('hora_entrega')
@@ -37,7 +37,7 @@ class DashboardController extends Controller
 
         // Devoluciones próximas (hoy + 3 días)
         $devoluciones = Renta::with('vehicle')
-                        ->whereIn('estado', ['pendiente', 'confirmada'])
+                        ->whereIn('estado', ['contrato_abierto'])
                         ->whereBetween('fecha_devolucion', [Carbon::today(), Carbon::today()->addDays(3)])
                         ->orderBy('fecha_devolucion')
                         ->orderBy('hora_devolucion')

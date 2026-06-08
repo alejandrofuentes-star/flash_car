@@ -11,7 +11,7 @@ class Vehicle extends Model
     protected $fillable = [
         'name', 'category_id', 'slug', 'image_path', 'passengers',
         'fuel_capacity', 'brand', 'model', 'year', 'plate_number',
-        'transmission', 'available', 'active','city','mileage','next_verification',
+        'transmission', 'available', 'active', 'motivo_inactivo', 'city', 'mileage', 'next_verification',
     ];
 
     protected $casts = [

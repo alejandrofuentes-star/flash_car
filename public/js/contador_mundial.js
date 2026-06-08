@@ -4,20 +4,19 @@ function actualizarContador() {
     const diff    = mundial - ahora;
 
     if (diff <= 0) {
-        document.getElementById('meses').textContent = '0';
-        document.getElementById('dias').textContent  = '0';
-        document.getElementById('horas').textContent = '0';
+        document.getElementById('dias').textContent    = '0';
+        document.getElementById('horas').textContent   = '0';
+        document.getElementById('minutos').textContent = '0';
         return;
     }
 
-    const totalDias = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const meses     = Math.floor(totalDias / 30);
-    const dias      = totalDias % 30;
-    const horas     = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const dias    = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const horas   = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-    document.getElementById('meses').textContent = meses;
-    document.getElementById('dias').textContent  = dias;
-    document.getElementById('horas').textContent = horas;
+    document.getElementById('dias').textContent    = dias;
+    document.getElementById('horas').textContent   = horas;
+    document.getElementById('minutos').textContent = minutos;
 }
 
 actualizarContador();

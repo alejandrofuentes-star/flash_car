@@ -4,27 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class SystemController extends Controller
 {
     public function migrations()
     {
-        $ran = DB::table('migrations')->pluck('migration')->toArray();
-
-        $files = collect(glob(database_path('migrations/*.php')))
-            ->map(fn($f) => pathinfo($f, PATHINFO_FILENAME))
-            ->sortDesc()
-            ->values();
-
-        $migrations = $files->map(fn($name) => [
-            'name'   => $name,
-            'status' => in_array($name, $ran) ? 'ran' : 'pending',
-        ]);
-
-        $pendingCount = $migrations->where('status', 'pending')->count();
-
-        return view('super-admin.migrations', compact('migrations', 'pendingCount'));
+        return redirect()->route('system.cache', ['tab' => 'migraciones']);
     }
 
     public function runMigrations()
@@ -67,7 +54,22 @@ class SystemController extends Controller
     }
     public function index()
     {
-        return view('super-admin.cache');
+        $ran = DB::table('migrations')->pluck('migration')->toArray();
+
+        $files = collect(glob(database_path('migrations/*.php')))
+            ->map(fn($f) => pathinfo($f, PATHINFO_FILENAME))
+            ->sortDesc()
+            ->values();
+
+        $migrations = $files->map(fn($name) => [
+            'name'   => $name,
+            'status' => in_array($name, $ran) ? 'ran' : 'pending',
+        ]);
+
+        $pendingCount      = $migrations->where('status', 'pending')->count();
+        $maintenanceActive = Cache::get('maintenance_mode', false);
+
+        return view('super-admin.sistema', compact('migrations', 'pendingCount', 'maintenanceActive'));
     }
 
     public function clearCache()

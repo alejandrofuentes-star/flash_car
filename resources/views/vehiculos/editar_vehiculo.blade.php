@@ -133,9 +133,21 @@
                     </div>
                     <div class="col-12 col-sm-12 col-md-3 fila_form_f_b py-2">
                         <label class="label_form_f_b d-flex align-items-center justify-content-start fs-6 py-1 px-1">
-                            <input class="check_box_form" type="checkbox" name="active" value="1" {{ old('active', $vehicle->active) ? 'checked' : '' }}>
+                            <input class="check_box_form" type="checkbox" id="chk_active" name="active" value="1" {{ old('active', $vehicle->active) ? 'checked' : '' }}>
                             <b class="mx-2">Vehículo activo</b>
                         </label>
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-6 fila_form_f_b py-2" id="bloque_motivo" style="{{ old('active', $vehicle->active) ? 'display:none' : 'display:flex' }}">
+                        <span class="label_form_f_b fs-6 p-1"><b>Motivo de inactividad</b></span>
+                        <div class="input_form_f_b p-2 d-flex align-items-center" style="gap:18px; flex-wrap:wrap;">
+                            @foreach(['Servicio', 'Mtto Mayor', 'Traslado'] as $motivo)
+                            <label class="d-flex align-items-center fs-6" style="gap:6px; cursor:pointer; white-space:nowrap;">
+                                <input type="radio" name="motivo_inactivo" value="{{ $motivo }}"
+                                       {{ old('motivo_inactivo', $vehicle->motivo_inactivo) === $motivo ? 'checked' : '' }}>
+                                {{ $motivo }}
+                            </label>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
 
@@ -223,4 +235,15 @@
         </div>
     </div>
 </div>
+@push('scripts')
+<script>
+document.getElementById('chk_active').addEventListener('change', function () {
+    document.getElementById('bloque_motivo').style.display = this.checked ? 'none' : 'flex';
+    if (this.checked) {
+        document.querySelectorAll('input[name="motivo_inactivo"]').forEach(r => r.checked = false);
+    }
+});
+</script>
+@endpush
+
 @endsection

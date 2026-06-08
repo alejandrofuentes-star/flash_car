@@ -30,10 +30,15 @@
                     <div class="col-12 col-md-4 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Estado *</b></label>
                         <select class="input_form_f_b fs-6 p-1" name="estado" required>
-                            <option value="pendiente"   {{ old('estado', $renta->estado) == 'pendiente'   ? 'selected' : '' }}>Pendiente</option>
-                            <option value="confirmada"  {{ old('estado', $renta->estado) == 'confirmada'  ? 'selected' : '' }}>Confirmada</option>
-                            <option value="cancelada"   {{ old('estado', $renta->estado) == 'cancelada'   ? 'selected' : '' }}>Cancelada</option>
-                            <option value="completada"  {{ old('estado', $renta->estado) == 'completada'  ? 'selected' : '' }}>Completada</option>
+                            <option value="reserva_confirmada"  {{ old('estado', $renta->estado) == 'reserva_confirmada'  ? 'selected' : '' }}>Reserva Confirmada</option>
+                            <option value="proxima_entrega"     {{ old('estado', $renta->estado) == 'proxima_entrega'     ? 'selected' : '' }}>Próxima Entrega</option>
+                            <option value="pendiente_pago"      {{ old('estado', $renta->estado) == 'pendiente_pago'      ? 'selected' : '' }}>Pendiente de pago/garantía</option>
+                            <option value="contrato_abierto"    {{ old('estado', $renta->estado) == 'contrato_abierto'    ? 'selected' : '' }}>Contrato abierto</option>
+                            <option value="contrato_finalizado" {{ old('estado', $renta->estado) == 'contrato_finalizado' ? 'selected' : '' }}>Contrato Finalizado</option>
+                            <option value="devolucion_exitosa"  {{ old('estado', $renta->estado) == 'devolucion_exitosa'  ? 'selected' : '' }}>Devolución exitosa</option>
+                            <option value="dano_faltante"       {{ old('estado', $renta->estado) == 'dano_faltante'       ? 'selected' : '' }}>Daño o Faltante</option>
+                            <option value="garantia_pendiente"  {{ old('estado', $renta->estado) == 'garantia_pendiente'  ? 'selected' : '' }}>Dev. garantía pendiente</option>
+                            <option value="cancelada"           {{ old('estado', $renta->estado) == 'cancelada'           ? 'selected' : '' }}>Cancelada</option>
                         </select>
                     </div>
                 </div>

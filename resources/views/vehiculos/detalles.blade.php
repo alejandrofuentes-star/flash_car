@@ -106,6 +106,9 @@
                             <span class="cuenta_activa">Activo</span>
                         @else
                             <span class="cuenta_inactiva">Inactivo</span>
+                            @if($vehicle->motivo_inactivo)
+                                <span class="cuenta_inactiva" style="font-size:0.8rem; opacity:0.85;">{{ $vehicle->motivo_inactivo }}</span>
+                            @endif
                         @endif
                     </div>
                 </div>

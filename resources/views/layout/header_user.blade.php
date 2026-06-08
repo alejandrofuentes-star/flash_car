@@ -18,7 +18,7 @@
             <div class="px-2 display_flex_center_center" id="cont_menu_desktop">
                 <a class="fs-6 link_submenu_user" href="{{ route('inicio') }}#inicio"><b>{{ __('nav.home') }}</b></a>
                 <a class="fs-6 link_submenu_user" href="{{ route('inicio') }}#catalogo">{{ __('nav.fleet') }}</a>
-                <a class="fs-6 link_submenu_user" href="{{ route('catalogo.index') }}">{{ __('nav.book') }}</a>
+                <a class="fs-6 link_submenu_user" href="{{ route('reservaciones.create.general') }}">{{ __('nav.book') }}</a>
                 <a class="fs-6 link_submenu_user" href="{{ route('inicio') }}#ubicaciones">{{ __('nav.locations') }}</a>
                 <a class="fs-6 link_submenu_user" href="{{ route('inicio') }}#contacto">{{ __('nav.contact') }}</a>
                 <a class="fs-6 link_submenu_user" href="{{ route('faqs') }}">{{ __('nav.faqs') }}</a>
@@ -42,7 +42,7 @@
     <div class="submenu_clientes p-2" id="submenu_clientes">
         <a class="link_submenu_clientes py-2 fs-6 border_link_bottom" href="{{ route('inicio') }}#inicio"><b>{{ __('nav.home') }}</b></a>
         <a class="link_submenu_clientes py-2 fs-6 border_link_bottom" href="{{ route('inicio') }}#catalogo">{{ __('nav.fleet') }}</a>
-        <a class="link_submenu_clientes py-2 fs-6 border_link_bottom" href="{{ route('catalogo.index') }}">{{ __('nav.book') }}</a>
+        <a class="link_submenu_clientes py-2 fs-6 border_link_bottom" href="{{ route('reservaciones.create.general') }}">{{ __('nav.book') }}</a>
         <a class="link_submenu_clientes py-2 fs-6 border_link_bottom" href="{{ route('inicio') }}#ubicaciones">{{ __('nav.locations') }}</a>
         <a class="link_submenu_clientes py-2 fs-6 border_link_bottom" href="{{ route('inicio') }}#contacto">{{ __('nav.contact') }}</a>
         <a class="link_submenu_clientes py-2 fs-6 border_link_bottom" href="{{ route('faqs') }}">{{ __('nav.faqs') }}</a>

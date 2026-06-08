@@ -3,7 +3,7 @@
 @section('title', 'Flash Car')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/styles_pagina_principal.css') }}?v=1.7">
+<link rel="stylesheet" href="{{ asset('css/styles_pagina_principal.css') }}?v={{ \App\Models\SiteSetting::get('asset_v_publico', '1.7') }}">
 @endpush
 
 @section('content')
@@ -64,12 +64,12 @@
                         </div>
                         <div class="hero_input_wrap hero_date_field">
                             <i class="bi bi-calendar-event hero_input_icon"></i>
-                            <span class="hero_date_label">Fecha entrega</span>
+                            <span class="hero_date_label">{{ __('hero.delivery_date') }}</span>
                             <input class="hero_input hero_date_input" type="date" name="fecha_entrega">
                         </div>
                         <div class="hero_input_wrap hero_date_field">
                             <i class="bi bi-calendar-check hero_input_icon"></i>
-                            <span class="hero_date_label">Fecha devolución</span>
+                            <span class="hero_date_label">{{ __('hero.return_date') }}</span>
                             <input class="hero_input hero_date_input" type="date" name="fecha_devolucion">
                         </div>
                         <button type="submit" class="hero_btn hero_btn_inline">
@@ -82,11 +82,11 @@
                         <span class="hero_badge"><i class="bi bi-lightning-charge-fill"></i> {{ __('hero.no_lines') }}</span>
                         <span class="hero_badge hero_stat_badge">
                             <span style="width:8px;height:8px;border-radius:50%;background:#28a745;display:inline-block;flex-shrink:0;animation:pulso_verde 1.5s infinite;"></span>
-                            <span id="contador_visitantes" style="font-size:0.78rem;color:rgba(255,255,255,0.85);">— visitando ahora</span>
+                            <span id="contador_visitantes" style="font-size:0.78rem;color:rgba(255,255,255,0.85);">{{ __('hero.visiting_loading') }}</span>
                         </span>
                         <span class="hero_badge hero_stat_badge">
                             <i class="bi bi-calendar-check-fill" style="font-size:0.78rem;color:rgba(255,255,255,0.7);"></i>
-                            <span style="font-size:0.78rem;color:rgba(255,255,255,0.85);"><b>{{ number_format($totalReservaciones) }}</b> reservaciones realizadas</span>
+                            <span style="font-size:0.78rem;color:rgba(255,255,255,0.85);"><b>{{ number_format($totalReservaciones) }}</b> {{ __('hero.reservations_made') }}</span>
                         </span>
                     </div>
                 </div>
@@ -108,13 +108,6 @@
                 <div class="linea_degradada_mundial"></div>
                 <div class="col-12 d-flex align-items-center justify-content-center py-2">
                     <div class="col-2 d-flex align-items-center justify-content-center flex-column">
-                        <p class="fs-1 m-0"><b id="meses">0</b></p>
-                        <p class="fs-4 m-0">{{ __('countdown.months') }}</p>
-                    </div>
-                    <div class="col-2 d-flex align-items-center justify-content-center">
-                        <img src="{{ asset('./img/balon.png') }}" width="30%" alt="balon flash car">
-                    </div>
-                    <div class="col-2 d-flex align-items-center justify-content-center flex-column">
                         <p class="fs-1 m-0"><b id="dias">0</b></p>
                         <p class="fs-4 m-0">{{ __('countdown.days') }}</p>
                     </div>
@@ -124,6 +117,13 @@
                     <div class="col-2 d-flex align-items-center justify-content-center flex-column">
                         <p class="fs-1 m-0"><b id="horas">0</b></p>
                         <p class="fs-4 m-0">{{ __('countdown.hours') }}</p>
+                    </div>
+                    <div class="col-2 d-flex align-items-center justify-content-center">
+                        <img src="{{ asset('./img/balon.png') }}" width="30%" alt="balon flash car">
+                    </div>
+                    <div class="col-2 d-flex align-items-center justify-content-center flex-column">
+                        <p class="fs-1 m-0"><b id="minutos">0</b></p>
+                        <p class="fs-4 m-0">{{ __('countdown.minutes') }}</p>
                     </div>
                 </div>
                 <div class="linea_degradada_mundial"></div>
@@ -451,26 +451,26 @@
 
             <div style="font-size:0.75rem; line-height:1.6; color:#222;">
 
-                <p class="mb-2">Servicio de renta de vehículos, sin filas ni mostradores, con un proceso completamente digital diseñado para facilitar cada etapa de la experiencia. Desde la reserva hasta la devolución, todo se realiza de forma autónoma: reservas en línea, verificación remota de documentos y un proceso de entrega y devolución optimizado, sin trámites innecesarios. Nuestro modelo está pensado para que puedas rentar un vehículo de manera fácil, rápida y segura, ya sea por día, semana o mes, con atención 24/7 y acompañamiento en cada paso.</p>
+                <p class="mb-2">{{ __('legal.intro') }}</p>
 
-                <p class="fw-bold mb-1">Seguro con cobertura amplia incluido:</p>
-                <p class="mb-2">Colisión y Robo al 90%, Daños a terceros, Responsabilidad Civil, Km Ilimitado y Asistencia vial. Adicional a ello en tu primera renta tienes conductor adicional incluido.</p>
+                <p class="fw-bold mb-1">{{ __('legal.insurance_title') }}</p>
+                <p class="mb-2">{{ __('legal.insurance') }}</p>
 
-                <p class="fw-bold mb-1">Requisitos</p>
-                <p class="mb-2">● INE o pasaporte vigente &nbsp;·&nbsp; ● Licencia de conducir &nbsp;·&nbsp; ● Comprobante de domicilio &nbsp;·&nbsp; ● Forma de pago</p>
+                <p class="fw-bold mb-1">{{ __('legal.requirements_title') }}</p>
+                <p class="mb-2">{!! __('legal.requirements') !!}</p>
 
-                <p class="fw-bold mb-1">Misión</p>
-                <p class="mb-2">Hacer que rentar un auto sea tan fácil como abrir una app: reservas digitales, verificación remota y hand off sin fricción.</p>
+                <p class="fw-bold mb-1">{{ __('legal.mission_title') }}</p>
+                <p class="mb-2">{{ __('legal.mission') }}</p>
 
-                <p class="fw-bold mb-1">Visión</p>
-                <p class="mb-2">Ser la plataforma líder de renta autónoma en LATAM, con robots en aeropuertos clave y experiencia 24/7.</p>
+                <p class="fw-bold mb-1">{{ __('legal.vision_title') }}</p>
+                <p class="mb-2">{{ __('legal.vision') }}</p>
 
-                <p class="fw-bold mb-1">Términos y Condiciones</p>
-                <p class="mb-2">La cobertura del seguro es válida únicamente durante el período de alquiler especificado en el contrato. El arrendatario deberá comunicar cualquier accidente, robo o daño dentro de las 24 horas. FlashCar no se hace responsable de las pertenencias personales dejadas en el vehículo. El arrendatario es responsable de cualquier infracción de tráfico o peajes incurridos durante el período de alquiler. El combustible no está incluido, el vehículo debe devolverse con el mismo nivel de combustible. Cualquier uso no autorizado del vehículo anula la cobertura del seguro. Se requiere una licencia de conducir válida y una identificación oficial para alquilar un vehículo. La asistencia en carretera está disponible las 24/7, pero es posible que no cubra áreas remotas o de alto riesgo.</p>
+                <p class="fw-bold mb-1">{{ __('legal.terms_title') }}</p>
+                <p class="mb-2">{{ __('legal.terms') }}</p>
 
                 <div class="pt-2 border-top mt-2">
-                    <p class="fw-bold mb-1">Aviso de Confidencialidad</p>
-                    <p class="mb-0">Este mensaje de correo electrónico y sus adjuntos pueden contener información confidencial o legalmente privilegiada y está destinado únicamente al uso de los destinatarios. Esta prohibido a las personas o entidades que no sean los destinatarios de este correo cualquier tipo de modificación, copia, distribución, divulgación, retención o uso de la información que contiene. La divulgación no autorizada, difusión, distribución, copia o la adopción de cualquier acción basada en la información aquí contenida, está prohibida. No puede garantizarse que los correos electrónicos estén libres de errores, ya que pueden ser interceptados, enmendados o contener virus. Flash Car no se hace responsable de errores u omisiones en este mensaje y niega cualquier responsabilidad por cualquier daño que surja del uso del correo electrónico y no se responsabiliza por su uso abusivo, contrario a la moral, a las buenas costumbres o a la ley.</p>
+                    <p class="fw-bold mb-1">{{ __('legal.privacy_title') }}</p>
+                    <p class="mb-0">{{ __('legal.privacy') }}</p>
                 </div>
 
             </div>
@@ -503,7 +503,7 @@
     </div>
 </div>
 <script>
-    window.addEventListener('load', function () {
+    document.addEventListener('DOMContentLoaded', function () {
         new bootstrap.Modal(document.getElementById('modalReservaOk')).show();
     });
 </script>
@@ -516,12 +516,14 @@
 <script>
 (function () {
     var el = document.getElementById('contador_visitantes');
+    var tSingular = @json(__('hero.visiting_singular'));
+    var tPlural   = @json(__('hero.visiting_plural'));
 
     function actualizarContador() {
         fetch('/visitantes')
             .then(function(r){ return r.json(); })
             .then(function(d){
-                if (el) el.textContent = d.count + ' ' + (d.count === 1 ? 'persona visitando ahora' : 'personas visitando ahora');
+                if (el) el.textContent = d.count + ' ' + (d.count === 1 ? tSingular : tPlural);
             })
             .catch(function(){});
     }

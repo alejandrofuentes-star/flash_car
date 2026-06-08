@@ -37,7 +37,8 @@ Middleware de roles: `role:admin,super_admin` — definido en `app/Http/Middlewa
 
 ### `Renta`
 - Campos: `vehicle_id`, `nombre_completo`, `telefono`, `correo`, `ciudad`, `fecha_entrega`, `hora_entrega`, `lugar_entrega`, `fecha_devolucion`, `hora_devolucion`, `lugar_devolucion`, `num_pasajeros`, `total_dias`, `costo_total`, `estado`, `mail_enviado`, `mail_enviado_at`
-- `estado` enum: `pendiente` | `confirmada` | `cancelada` | `completada`
+- `estado` valores: `reserva_confirmada` | `proxima_entrega` | `pendiente_pago` | `contrato_abierto` | `contrato_finalizado` | `devolucion_exitosa` | `dano_faltante` | `garantia_pendiente` | `cancelada`
+- Estado inicial al crear una renta: `reserva_confirmada` (default en BD)
 - `mail_enviado`: bool — indica si el correo de confirmación se envió sin errores
 - `mail_enviado_at`: timestamp del envío exitoso
 - Relación: `belongsTo(Vehicle)`

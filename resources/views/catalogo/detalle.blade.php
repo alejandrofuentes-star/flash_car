@@ -1,9 +1,9 @@
-@extends('layout.layouts')
+﻿@extends('layout.layouts')
 
 @section('title', $vehicle->name . ' - Flash Car')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/styles_pagina_principal.css') }}?v=1">
+<link rel="stylesheet" href="{{ asset('css/styles_pagina_principal.css') }}?v={{ \App\Models\SiteSetting::get('asset_v_publico', '1.7') }}">
 @endpush
 
 @section('content')

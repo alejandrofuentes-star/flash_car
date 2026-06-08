@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CategoryController;
@@ -13,6 +14,11 @@ use App\Http\Controllers\StateController;
 use App\Http\Controllers\SliderController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\SettingController;
+
+// ============================================================
+// WEBHOOK STRIPE (sin CSRF, sin auth)
+// ============================================================
+Route::post('/webhook/stripe', [StripeWebhookController::class, 'handle'])->name('webhook.stripe');
 
 // ============================================================
 // CAMBIO DE IDIOMA
@@ -34,8 +40,10 @@ Route::get('/', function () {
 Route::get('/catalogo', [VehicleController::class, 'catalogo'])->name('catalogo.index');
 Route::get('/catalogo/{id}', [VehicleController::class, 'detalle'])->name('catalogo.detalle');
 
+Route::get('/rentar', [RentaController::class, 'createGeneral'])->name('reservaciones.create.general');
 Route::get('/rentar/{vehicleId}', [RentaController::class, 'create'])->name('reservaciones.create');
 Route::post('/rentar', [RentaController::class, 'store'])->name('rentas.store');
+Route::post('/rentar/payment-intent', [RentaController::class, 'createPaymentIntent'])->name('rentas.paymentIntent');
 
 Route::get('/buscar', [VehicleController::class, 'buscar'])->name('catalogo.buscar');
 
