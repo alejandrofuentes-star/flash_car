@@ -36,7 +36,7 @@
                     <div>
                         <p class="text-muted m-0 mb-1" style="font-size:0.78rem;">Rentas confirmadas</p>
                         <p class="fs-4 fw-bold m-0">{{ $confirmadas }}</p>
-                        <span class="text-muted" style="font-size:0.75rem;">Activas actualmente</span>
+                        <span class="text-muted" style="font-size:0.75rem;">Contrato abierto</span>
                     </div>
                     <div style="width:36px;height:36px;border-radius:50%;background:#d4edda;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                         <i class="bi bi-check-circle-fill" style="color:#28a745;font-size:1rem;"></i>
