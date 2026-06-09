@@ -186,6 +186,8 @@
     margin-right: 0 !important;
 }
 .hero_btn:hover { background: var(--amarillo_fuerte); }
+.hero_btn_reservar { background: var(--amarillo); color: #111; text-decoration: none; }
+.hero_btn_reservar:hover { background: var(--amarillo_fuerte); color: #111; }
 .hero_badges
 {
     display: flex;

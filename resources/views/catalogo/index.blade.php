@@ -55,7 +55,7 @@
                     <form action="{{ route('catalogo.buscar') }}#catalogo" method="GET" class="hero_search_form">
                         <div class="hero_input_wrap hero_field_city">
                             <i class="bi bi-geo-alt-fill hero_input_icon"></i>
-                            <select class="hero_input" name="city">
+                            <select class="hero_input" name="city" required>
                                 <option value="">{{ __('hero.city') }}</option>
                                 @foreach($cities as $city)
                                     <option value="{{ $city }}">{{ $city }}</option>
@@ -65,16 +65,19 @@
                         <div class="hero_input_wrap hero_date_field">
                             <i class="bi bi-calendar-event hero_input_icon"></i>
                             <span class="hero_date_label">{{ __('hero.delivery_date') }}</span>
-                            <input class="hero_input hero_date_input" type="date" name="fecha_entrega">
+                            <input class="hero_input hero_date_input" type="date" name="fecha_entrega" required>
                         </div>
                         <div class="hero_input_wrap hero_date_field">
                             <i class="bi bi-calendar-check hero_input_icon"></i>
                             <span class="hero_date_label">{{ __('hero.return_date') }}</span>
-                            <input class="hero_input hero_date_input" type="date" name="fecha_devolucion">
+                            <input class="hero_input hero_date_input" type="date" name="fecha_devolucion" required>
                         </div>
                         <button type="submit" class="hero_btn hero_btn_inline">
                             <i class="bi bi-search"></i> {{ __('hero.search') }}
                         </button>
+                        {{-- <a href="{{ route('reservaciones.create.general') }}" class="hero_btn hero_btn_inline hero_btn_reservar">
+                            <i class="bi bi-calendar-check-fill"></i> RESERVAR AHORA
+                        </a> --}}
                     </form>
                     <div class="hero_badges">
                         <span class="hero_badge"><i class="bi bi-airplane-fill"></i> {{ __('hero.airport') }}</span>
