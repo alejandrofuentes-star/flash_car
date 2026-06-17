@@ -46,7 +46,9 @@ function calcularCosto() {
         return;
     }
 
-    const diasBase = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const d1Date   = new Date(entrega + 'T00:00:00');
+    const d2Date   = new Date(devolucion + 'T00:00:00');
+    const diasBase = Math.round((d2Date - d1Date) / (1000 * 60 * 60 * 24));
 
     // Comparar solo horas para determinar cargo extra
     const minutosEntrega = parseInt(horaEntrega.split(':')[0]) * 60 + parseInt(horaEntrega.split(':')[1]);
