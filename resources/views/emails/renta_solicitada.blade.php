@@ -140,8 +140,35 @@
                                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e5e7eb; border-radius:12px; background:#fcfcfc; table-layout:fixed; width:100%; max-width:100%;">
                                             <tr>
                                                 <td style="padding:10px 12px; vertical-align:top;">
-                                                    <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Costo estimado</div>
+                                                    <div style="font-size:11px; color:#6b7280; text-transform:uppercase; font-family:Arial,Helvetica,sans-serif;">Costo total de la renta</div>
                                                     <div style="margin-top:2px; font-size:16px; color:#111418; font-weight:900; line-height:1.35; font-family:Arial,Helvetica,sans-serif; word-break:break-word; overflow-wrap:break-word; word-wrap:break-word;">${{ number_format($renta->costo_total, 2) }} MXN</div>
+                                                    @if($renta->metodo_pago === 'tarjeta' && $renta->monto_anticipo > 0)
+                                                    @php $resto = $renta->costo_total - $renta->monto_anticipo; @endphp
+                                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:10px; border-top:1px solid #e5e7eb;">
+                                                        <tr>
+                                                            <td style="padding-top:8px;">
+                                                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                                                    <tr>
+                                                                        <td style="padding:4px 0;">
+                                                                            <span style="font-size:12px; color:#6b7280; font-family:Arial,Helvetica,sans-serif;">Anticipo pagado con tarjeta</span>
+                                                                        </td>
+                                                                        <td align="right" style="padding:4px 0;">
+                                                                            <span style="font-size:13px; color:#16a34a; font-weight:700; font-family:Arial,Helvetica,sans-serif;">−${{ number_format($renta->monto_anticipo, 2) }} MXN</span>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td style="padding:4px 0;">
+                                                                            <span style="font-size:12px; color:#6b7280; font-family:Arial,Helvetica,sans-serif;">Resta por pagar al recibir el vehículo</span>
+                                                                        </td>
+                                                                        <td align="right" style="padding:4px 0;">
+                                                                            <span style="font-size:14px; color:#b45309; font-weight:900; font-family:Arial,Helvetica,sans-serif;">${{ number_format($resto, 2) }} MXN</span>
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                    @endif
                                                 </td>
                                             </tr>
                                         </table>
