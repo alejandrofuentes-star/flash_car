@@ -29,6 +29,15 @@
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
         gtag('config', 'AW-17945512932');
+        gtag('config', 'AW-18270080949');
+    </script>
+    <!-- Event snippet for Vista de una página conversion page -->
+    <script>
+        gtag('event', 'conversion', {
+            'send_to': 'AW-18270080949/NEV0CKm7jMUcELWf7YdE',
+            'value': 1.0,
+            'currency': 'MXN'
+        });
     </script>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
