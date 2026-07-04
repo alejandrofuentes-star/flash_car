@@ -14,6 +14,15 @@
                 <div class="col-12 d-flex align-items-center justify-content-between flex-wrap p-2 bg_gris_8">
                     <h1 class="fs-6 text_uppcase m-0">Solicitudes de Renta</h1>
                 </div>
+                <div class="col-12 p-2">
+                    <form method="GET" action="{{ route('rentas.index') }}" class="d-flex align-items-center flex-wrap" style="gap:8px; max-width:400px;">
+                        <input type="text" name="buscar" value="{{ $buscar }}" class="input_form_f_b" placeholder="Buscar por nombre del cliente..." style="flex:1; padding-left:10px;">
+                        <button type="submit" class="boton_link_sm b_sm rounded"><i class="bi bi-search"></i></button>
+                        @if($buscar)
+                            <a href="{{ route('rentas.index') }}" class="boton_link_sm b_sm rounded link_decoration_none display_flex_center_center" title="Limpiar búsqueda"><i class="bi bi-x-lg"></i></a>
+                        @endif
+                    </form>
+                </div>
                 <div class="w_150_movil" style="overflow-x:auto; width:100%">
                 <div class="bg_amarillo d-flex align-items-center justify-content-start" style="min-width:980px">
                     <p class="col-3 border_right px-1 text-dark my-1"><b># Cliente</b></p>
@@ -91,7 +100,13 @@
                 </div>
                 @empty
                     <div class="col-12 d-flex align-items-center justify-content-center">
-                        <p colspan="9" class="fs-6 py-4 m-0 text-center text-muted">No hay solicitudes de renta registradas.</p>
+                        <p colspan="9" class="fs-6 py-4 m-0 text-center text-muted">
+                            @if($buscar)
+                                No se encontraron solicitudes de renta para "{{ $buscar }}".
+                            @else
+                                No hay solicitudes de renta registradas.
+                            @endif
+                        </p>
                     </div>
                 @endforelse
                 </div>{{-- fin overflow-x --}}

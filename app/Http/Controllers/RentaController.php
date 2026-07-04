@@ -157,10 +157,17 @@ class RentaController extends Controller
             ->with('reserva_ok', true);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $rentas = Renta::with('vehicle')->orderBy('created_at', 'desc')->paginate(15);
-        return view('rentas.index', compact('rentas'));
+        $buscar = $request->query('buscar');
+
+        $rentas = Renta::with('vehicle')
+            ->when($buscar, fn($query) => $query->where('nombre_completo', 'like', '%' . $buscar . '%'))
+            ->orderBy('created_at', 'desc')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('rentas.index', compact('rentas', 'buscar'));
     }
 
     public function show($id)
