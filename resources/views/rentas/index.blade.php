@@ -15,13 +15,37 @@
                     <h1 class="fs-6 text_uppcase m-0">Solicitudes de Renta</h1>
                 </div>
                 <div class="col-12 p-2">
-                    <form method="GET" action="{{ route('rentas.index') }}" class="d-flex align-items-center flex-wrap" style="gap:8px; max-width:400px;">
-                        <input type="text" name="buscar" value="{{ $buscar }}" class="input_form_f_b" placeholder="Buscar por nombre del cliente..." style="flex:1; padding-left:10px;">
-                        <button type="submit" class="boton_link_sm b_sm rounded"><i class="bi bi-search"></i></button>
-                        @if($buscar)
-                            <a href="{{ route('rentas.index') }}" class="boton_link_sm b_sm rounded link_decoration_none display_flex_center_center" title="Limpiar búsqueda"><i class="bi bi-x-lg"></i></a>
-                        @endif
-                    </form>
+                    <button type="button" class="boton_link_lg rounded d-flex d-md-none align-items-center justify-content-between w-100"
+                            data-bs-toggle="collapse" data-bs-target="#filtrosRenta" aria-expanded="false" aria-controls="filtrosRenta">
+                        <span><i class="bi bi-funnel-fill me-2"></i>Filtros de búsqueda</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
+                    <div class="collapse d-md-block {{ ($buscar || $registro || $correo || $fechaDevolucion) ? 'show' : '' }}" id="filtrosRenta">
+                        <form method="GET" action="{{ route('rentas.index') }}" class="row align-items-end mt-2 mt-md-0">
+                            <div class="col-12 col-sm-12 col-md-3 px-1 my-1">
+                                <label class="label_form_f_b">Nombre del cliente</label>
+                                <input type="text" name="buscar" value="{{ $buscar }}" class="input_form_f_b w-100" placeholder="Buscar por nombre..." style="padding-left:10px;">
+                            </div>
+                            <div class="col-12 col-sm-12 col-md-2 px-1 my-1">
+                                <label class="label_form_f_b"># Registro</label>
+                                <input type="number" name="registro" value="{{ $registro }}" class="input_form_f_b w-100" placeholder="ID..." style="padding-left:10px;">
+                            </div>
+                            <div class="col-12 col-sm-12 col-md-3 px-1 my-1">
+                                <label class="label_form_f_b">Correo</label>
+                                <input type="text" name="correo" value="{{ $correo }}" class="input_form_f_b w-100" placeholder="Buscar por correo..." style="padding-left:10px;">
+                            </div>
+                            <div class="col-12 col-sm-12 col-md-2 px-1 my-1">
+                                <label class="label_form_f_b">Fecha devolución</label>
+                                <input type="date" name="fecha_devolucion" value="{{ $fechaDevolucion }}" class="input_form_f_b w-100" style="padding-left:10px;">
+                            </div>
+                            <div class="col-12 col-sm-12 col-md-2 px-1 my-1 d-flex align-items-center" style="gap:8px;">
+                                <button type="submit" class="boton_link_sm b_sm rounded" title="Buscar"><i class="bi bi-search"></i></button>
+                                @if($buscar || $registro || $correo || $fechaDevolucion)
+                                    <a href="{{ route('rentas.index') }}" class="boton_link_sm b_sm rounded link_decoration_none display_flex_center_center" title="Limpiar filtros"><i class="bi bi-x-lg"></i></a>
+                                @endif
+                            </div>
+                        </form>
+                    </div>
                 </div>
                 <div class="w_150_movil" style="overflow-x:auto; width:100%">
                 <div class="bg_amarillo d-flex align-items-center justify-content-start" style="min-width:980px">
@@ -101,8 +125,8 @@
                 @empty
                     <div class="col-12 d-flex align-items-center justify-content-center">
                         <p colspan="9" class="fs-6 py-4 m-0 text-center text-muted">
-                            @if($buscar)
-                                No se encontraron solicitudes de renta para "{{ $buscar }}".
+                            @if($buscar || $registro || $correo || $fechaDevolucion)
+                                No se encontraron solicitudes de renta con los filtros aplicados.
                             @else
                                 No hay solicitudes de renta registradas.
                             @endif
@@ -172,6 +196,11 @@ document.getElementById('modalEliminarRenta').addEventListener('show.bs.modal', 
     document.getElementById('modalRentaInfo').textContent = '#' + btn.dataset.id + ' — ' + btn.dataset.nombre;
     document.getElementById('formEliminarRenta').action = btn.dataset.action;
 });
+
+const filtrosRenta = document.getElementById('filtrosRenta');
+const filtrosRentaChevron = document.querySelector('[data-bs-target="#filtrosRenta"] .bi-chevron-down, [data-bs-target="#filtrosRenta"] .bi-chevron-up');
+filtrosRenta.addEventListener('show.bs.collapse', () => filtrosRentaChevron.classList.replace('bi-chevron-down', 'bi-chevron-up'));
+filtrosRenta.addEventListener('hide.bs.collapse', () => filtrosRentaChevron.classList.replace('bi-chevron-up', 'bi-chevron-down'));
 </script>
 @endpush
 

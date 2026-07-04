@@ -160,14 +160,20 @@ class RentaController extends Controller
     public function index(Request $request)
     {
         $buscar = $request->query('buscar');
+        $registro = $request->query('registro');
+        $correo = $request->query('correo');
+        $fechaDevolucion = $request->query('fecha_devolucion');
 
         $rentas = Renta::with('vehicle')
             ->when($buscar, fn($query) => $query->where('nombre_completo', 'like', '%' . $buscar . '%'))
+            ->when($registro, fn($query) => $query->where('id', $registro))
+            ->when($correo, fn($query) => $query->where('correo', 'like', '%' . $correo . '%'))
+            ->when($fechaDevolucion, fn($query) => $query->whereDate('fecha_devolucion', $fechaDevolucion))
             ->orderBy('created_at', 'desc')
             ->paginate(15)
             ->withQueryString();
 
-        return view('rentas.index', compact('rentas', 'buscar'));
+        return view('rentas.index', compact('rentas', 'buscar', 'registro', 'correo', 'fechaDevolucion'));
     }
 
     public function show($id)
