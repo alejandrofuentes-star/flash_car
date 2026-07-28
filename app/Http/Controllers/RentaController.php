@@ -60,21 +60,43 @@ class RentaController extends Controller
 
     public function createPaymentIntent(Request $request)
     {
-        $request->validate([
-            'amount'         => 'required|numeric|min:1',
-            'nombre_completo' => 'required|string|max:150',
-            'correo'         => 'required|email',
+        $validated = $request->validate([
+            'amount'           => 'required|numeric|min:1',
+            'vehicle_id'       => 'nullable|integer|exists:vehicles,id',
+            'category_id'      => 'nullable|integer|exists:categories,id',
+            'nombre_completo'  => 'required|string|max:150',
+            'telefono'         => 'nullable|string|max:20',
+            'correo'           => 'required|email|max:100',
+            'ciudad'           => 'nullable|string|max:100',
+            'fecha_entrega'    => 'nullable|date',
+            'hora_entrega'     => 'nullable|string',
+            'lugar_entrega'    => 'nullable|string|max:255',
+            'fecha_devolucion' => 'nullable|date',
+            'hora_devolucion'  => 'nullable|string',
+            'lugar_devolucion' => 'nullable|string|max:255',
+            'num_pasajeros'    => 'nullable|integer|min:1',
+            'total_dias'       => 'nullable|integer|min:1',
+            'costo_total'      => 'nullable|numeric|min:0',
         ]);
 
         try {
             Stripe::setApiKey(config('services.stripe.secret'));
 
+            // Guardamos todos los datos del formulario en el PaymentIntent: si el navegador
+            // del cliente nunca llega a hacer el submit final, el webhook puede recuperar
+            // la renta a partir de esta metadata en lugar de perder el registro por completo.
+            $metadata = collect($validated)
+                ->except(['amount'])
+                ->filter(fn ($v) => $v !== null && $v !== '')
+                ->map(fn ($v) => (string) $v)
+                ->all();
+
             $intent = PaymentIntent::create([
-                'amount'   => (int) round($request->amount * 100), // centavos
+                'amount'   => (int) round($validated['amount'] * 100), // centavos
                 'currency' => 'mxn',
-                'description' => 'Renta Flash Car - ' . $request->nombre_completo,
-                'receipt_email' => $request->correo,
-                'metadata'  => ['nombre' => $request->nombre_completo],
+                'description' => 'Renta Flash Car - ' . $validated['nombre_completo'],
+                'receipt_email' => $validated['correo'],
+                'metadata'  => $metadata,
             ]);
 
             return response()->json([

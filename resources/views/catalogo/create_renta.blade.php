@@ -387,13 +387,23 @@ window.flashCarAnticipo = {
         const correo   = document.querySelector('input[name="correo"]').value;
         const csrf     = document.querySelector('meta[name="csrf-token"]').content;
 
+        // Datos completos de la renta: viajan como metadata del PaymentIntent para que,
+        // si el navegador nunca llega a completar el submit final, el webhook de Stripe
+        // pueda recuperar la renta en vez de perder el registro por completo.
+        const camposRenta = ['vehicle_id', 'nombre_completo', 'telefono', 'correo', 'ciudad',
+            'fecha_entrega', 'hora_entrega', 'lugar_entrega', 'fecha_devolucion', 'hora_devolucion',
+            'lugar_devolucion', 'num_pasajeros', 'total_dias', 'costo_total'];
+        const formData  = new FormData(this);
+        const datosRenta = {};
+        camposRenta.forEach(campo => { if (formData.has(campo)) datosRenta[campo] = formData.get(campo); });
+
         // 1. Crear PaymentIntent en el servidor
         let clientSecret, intentId;
         try {
             const res  = await fetch('{{ route('rentas.paymentIntent') }}', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
-                body: JSON.stringify({ amount, nombre_completo: nombre, correo }),
+                body: JSON.stringify({ amount, ...datosRenta }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Error al iniciar el pago.');

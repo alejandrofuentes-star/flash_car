@@ -2,8 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\NuevaRentaAdmin;
+use App\Mail\RentaSolicitada;
 use App\Models\Renta;
+use App\Models\SiteSetting;
+use App\Models\SiteStat;
+use App\Models\Vehicle;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Webhook;
 
@@ -50,12 +56,96 @@ class StripeWebhookController extends Controller
         }
 
         // Pago cobrado sin renta registrada (browser cerró antes de enviar el formulario)
-        \Log::warning('Stripe webhook: pago sin renta registrada', [
+        $renta = $this->crearRentaDesdeMetadata($intent);
+
+        if (!$renta) {
+            \Log::warning('Stripe webhook: pago sin renta registrada y sin datos suficientes en metadata para recuperarla', [
+                'payment_intent_id' => $intent->id,
+                'amount'            => ($intent->amount ?? 0) / 100,
+                'currency'          => $intent->currency ?? 'mxn',
+                'nombre'            => $intent->metadata->nombre_completo ?? '—',
+            ]);
+        }
+    }
+
+    /**
+     * Reconstruye la renta a partir de la metadata guardada en el PaymentIntent
+     * (ver RentaController::createPaymentIntent) cuando el cliente pagó pero su
+     * navegador nunca llegó a completar el submit del formulario hacia store().
+     */
+    private function crearRentaDesdeMetadata($intent): ?Renta
+    {
+        $meta = $intent->metadata ?? null;
+        if (!$meta) return null;
+
+        $requeridos = [
+            'nombre_completo', 'telefono', 'correo', 'ciudad',
+            'fecha_entrega', 'hora_entrega', 'lugar_entrega',
+            'fecha_devolucion', 'hora_devolucion', 'lugar_devolucion',
+            'num_pasajeros', 'total_dias', 'costo_total',
+        ];
+        foreach ($requeridos as $campo) {
+            if (empty($meta->{$campo})) return null;
+        }
+
+        $vehicleId = $meta->vehicle_id ?? null;
+        if (!$vehicleId && !empty($meta->category_id)) {
+            $vehicleId = Vehicle::where('category_id', $meta->category_id)
+                ->where('available', 1)
+                ->where('active', 1)
+                ->value('id');
+        }
+        if (!$vehicleId) return null;
+
+        try {
+            $renta = Renta::create([
+                'vehicle_id'        => $vehicleId,
+                'nombre_completo'   => $meta->nombre_completo,
+                'telefono'          => $meta->telefono,
+                'correo'            => $meta->correo,
+                'ciudad'            => $meta->ciudad,
+                'fecha_entrega'     => $meta->fecha_entrega,
+                'hora_entrega'      => $meta->hora_entrega,
+                'lugar_entrega'     => $meta->lugar_entrega,
+                'fecha_devolucion'  => $meta->fecha_devolucion,
+                'hora_devolucion'   => $meta->hora_devolucion,
+                'lugar_devolucion'  => $meta->lugar_devolucion,
+                'num_pasajeros'     => (int) $meta->num_pasajeros,
+                'total_dias'        => (int) $meta->total_dias,
+                'costo_total'       => (float) $meta->costo_total,
+                'metodo_pago'       => 'tarjeta',
+                'payment_intent_id' => $intent->id,
+                'monto_anticipo'    => ($intent->amount ?? 0) / 100,
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('Stripe webhook: fallo al recuperar renta desde metadata', [
+                'payment_intent_id' => $intent->id,
+                'error'             => $e->getMessage(),
+            ]);
+            return null;
+        }
+
+        \Log::info('Stripe webhook: renta #' . $renta->id . ' creada automáticamente desde metadata (formulario incompleto)', [
             'payment_intent_id' => $intent->id,
-            'amount'            => ($intent->amount ?? 0) / 100,
-            'currency'          => $intent->currency ?? 'mxn',
-            'nombre'            => $intent->metadata->nombre ?? '—',
         ]);
+
+        $renta->load('vehicle');
+        SiteStat::addOne('total_reservations');
+
+        try {
+            Mail::to($renta->correo)->send(new RentaSolicitada($renta));
+            $renta->update(['mail_enviado' => true, 'mail_enviado_at' => now()]);
+        } catch (\Throwable $e) {
+            \Log::error('Stripe webhook: error enviando correo de renta recuperada #' . $renta->id . ': ' . $e->getMessage());
+        }
+
+        try {
+            Mail::to(SiteSetting::get('admin_notification_email', 'flashcarental@gmail.com'))->send(new NuevaRentaAdmin($renta));
+        } catch (\Throwable $e) {
+            \Log::error('Stripe webhook: error enviando correo admin de renta recuperada #' . $renta->id . ': ' . $e->getMessage());
+        }
+
+        return $renta;
     }
 
     private function onPaymentFailed($intent): void
@@ -65,7 +155,7 @@ class StripeWebhookController extends Controller
         \Log::error('Stripe webhook: pago fallido', [
             'payment_intent_id' => $intent->id,
             'error'             => $error,
-            'nombre'            => $intent->metadata->nombre ?? '—',
+            'nombre'            => $intent->metadata->nombre_completo ?? '—',
         ]);
     }
 
