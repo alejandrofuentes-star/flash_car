@@ -154,6 +154,10 @@
                         <label class="label_form_f_b fs-6 p-1"><b>Costo Total *</b></label>
                         <input class="input_form_f_b fs-6 p-1" type="number" name="costo_total" value="{{ old('costo_total', $renta->costo_total) }}" step="0.01" min="0" required>
                     </div>
+                    <div class="col-12 col-md-4 fila_form_f_b py-2">
+                        <label class="label_form_f_b fs-6 p-1"><b>Desglose</b></label>
+                        <input class="input_form_f_b fs-6 p-1" type="text" id="desglose_dias" value="" readonly>
+                    </div>
                 </div>
 
                 {{-- Botones --}}
@@ -184,6 +188,8 @@
     const fechaEntrega   = document.querySelector('input[name="fecha_entrega"]');
     const fechaDevolucion = document.querySelector('input[name="fecha_devolucion"]');
     const precioDia      = {{ $renta->vehicle->category->price_per_day ?? 0 }};
+    const precioSemana   = {{ $renta->vehicle->category->price_per_week ?? 0 }};
+    const precioMes      = {{ $renta->vehicle->category->price_per_month ?? 0 }};
 
     function calcularCosto() {
         if (!fechaEntrega.value || !fechaDevolucion.value) return;
@@ -194,14 +200,32 @@
 
         if (dias <= 0) return;
 
-        const costo = dias * precioDia;
+        let costo, desglose;
+        if (dias >= 30) {
+            const meses         = Math.floor(dias / 30);
+            const diasRestantes = dias % 30;
+            const semanasRest   = Math.floor(diasRestantes / 7);
+            const diasSueltos   = diasRestantes % 7;
+            costo    = (meses * precioMes) + (semanasRest * precioSemana) + (diasSueltos * precioDia);
+            desglose = `${meses} mes(es) + ${semanasRest} semana(s) + ${diasSueltos} día(s)`;
+        } else if (dias >= 7) {
+            const semanas     = Math.floor(dias / 7);
+            const diasSueltos = dias % 7;
+            costo    = (semanas * precioSemana) + (diasSueltos * precioDia);
+            desglose = `${semanas} semana(s) + ${diasSueltos} día(s)`;
+        } else {
+            costo    = dias * precioDia;
+            desglose = `${dias} día(s)`;
+        }
 
         document.querySelector('input[name="total_dias"]').value  = dias;
         document.querySelector('input[name="costo_total"]').value = costo.toFixed(2);
+        document.getElementById('desglose_dias').value             = desglose;
     }
 
     fechaEntrega.addEventListener('change', calcularCosto);
     fechaDevolucion.addEventListener('change', calcularCosto);
+    window.addEventListener('DOMContentLoaded', calcularCosto);
 </script>
 <script>
     const statesData = @json($states->map(fn($s) => [
