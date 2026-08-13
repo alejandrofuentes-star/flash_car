@@ -9,6 +9,7 @@ use App\Models\SiteSetting;
 use App\Models\SiteStat;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
@@ -156,7 +157,10 @@ class RentaController extends Controller
             }
         }
 
-        $renta = Renta::create($validated);
+        $renta = DB::transaction(function () use ($validated) {
+            $validated['id_flash_car'] = (Renta::lockForUpdate()->max('id_flash_car') ?? 66624) + 1;
+            return Renta::create($validated);
+        });
         $renta->load('vehicle');
 
         SiteStat::addOne('total_reservations');

@@ -23,7 +23,7 @@
                     <div class="collapse d-md-block {{ ($buscar || $registro || $correo || $fechaDevolucion) ? 'show' : '' }}" id="filtrosRenta">
                         <form method="GET" action="{{ route('rentas.index') }}" class="row align-items-end mt-2 mt-md-0">
                             <div class="col-12 col-sm-12 col-md-3 px-1 my-1">
-                                <label class="label_form_f_b">Nombre del cliente</label>
+                                <label class="label_form_f_b" style="padding-left:5px;">Nombre del cliente</label>
                                 <input type="text" name="buscar" value="{{ $buscar }}" class="input_form_f_b w-100" placeholder="Buscar por nombre..." style="padding-left:10px;">
                             </div>
                             <div class="col-12 col-sm-12 col-md-2 px-1 my-1">
@@ -48,26 +48,28 @@
                     </div>
                 </div>
                 <div class="w_150_movil" style="overflow-x:auto; width:100%">
-                <div class="bg_amarillo d-flex align-items-center justify-content-start" style="min-width:980px">
+                <div class="bg_amarillo d-flex align-items-center justify-content-start" style="min-width:1180px">
                     <p class="col-3 border_right px-1 text-dark my-1"><b># Cliente</b></p>
+                    <p class="col-1 border_right px-1 text-dark my-1"><b>ID</b></p>
                     <p class="col-2 border_right px-1 text-dark my-1 text_break"><b>Vehículo</b></p>
-                    <p class="col-2 border_right px-1 text-dark my-1"><b>Fecha entrega</b></p>
-                    <p class="col-2 border_right px-1 text-dark my-1 text_break"><b>Fecha Devolución</b></p>
+                    <p class="col-1 border_right px-1 text-dark my-1"><b>Entrega</b></p>
+                    <p class="col-1 border_right px-1 text-dark my-1 text_break"><b>Devolución</b></p>
                     <p class="col-1 border_right px-1 text-dark my-1"><b>Estado</b></p>
-                    <p class="col-2 px-1 text-dark my-1"><b>Acciones</b></p>
+                    <p class="col-3 px-1 text-dark my-1"><b>Acciones</b></p>
                 </div>
                  @forelse($rentas as $renta)
-                <div class="d-flex align-items-center justify-content-start border_gris_2_buttom" style="min-width:980px">
-                    <div class="col-3 display_flex_center_start border_right_dato px-1 my-1">
+                <div class="d-flex align-items-center justify-content-start border_gris_2_buttom" style="min-width:1180px">
+                    <div class="col-3 display_flex_center_start px-1 my-1">
                         {{ $renta->id }}
                         <div class="px-2 display_flex_start_center_column over_hidden">
                             <b>{{ $renta->nombre_completo }}</b>
                             {{ $renta->correo }}
                         </div>
                     </div>
-                    <p class="col-2 border_right_dato px-1 my-1">{{ $renta->vehicle->name ?? '—' }}</p>
-                    <p class="col-2 border_right_dato px-1 my-1">{{ $renta->fecha_entrega->format('d/m/Y') }}</p>
-                    <p class="col-2 border_right_dato px-1 my-1">{{ $renta->fecha_devolucion->format('d/m/Y') }}</p>
+                    <p class="col-1 px-1 my-1">{{ $renta->id_flash_car ?? '-' }}</p>
+                    <p class="col-2 px-1 my-1">{{ $renta->vehicle->name ?? '—' }}</p>
+                    <p class="col-1 px-1 my-1">{{ $renta->fecha_entrega->format('d/m/Y') }}</p>
+                    <p class="col-1 px-1 my-1">{{ $renta->fecha_devolucion->format('d/m/Y') }}</p>
                     <div class="col-1 px-1 my-1 d-flex flex-column align-items-start justify-content-center" style="gap:3px;">
                         @php
                             [$badgeClass, $badgeLabel] = match($renta->estado) {
@@ -94,7 +96,7 @@
                             </span>
                         @endif
                     </div>
-                    <div class="col-2 px-1 my-1 d-flex align-items-center justify-content-start">
+                    <div class="col-3 px-1 my-1 d-flex align-items-center justify-content-start">
                         <form method="POST" action="{{ route('rentas.reenviarCorreo', $renta->id) }}" class="d-inline">
                             @csrf
                             @if($renta->mail_enviado)
