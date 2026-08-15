@@ -257,7 +257,13 @@ function irEtapa(n) {
     if (n === 3 && etapaActual === 2 && !validarEtapa2()) return;
 
     document.getElementById('etapa_' + etapaActual).style.display = 'none';
-    document.getElementById('etapa_' + n).style.display = 'block';
+    const nuevaEtapa = document.getElementById('etapa_' + n);
+    nuevaEtapa.style.display = 'block';
+
+    if (window.matchMedia('(max-width: 767.98px)').matches) {
+        const anclaScroll = document.getElementById('indicador_etapas') || nuevaEtapa;
+        anclaScroll.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 
     for (let i = 1; i <= 3; i++) {
         const c = document.getElementById('circulo_' + i);

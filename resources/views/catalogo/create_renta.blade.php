@@ -22,7 +22,7 @@
             <div class="col-12 d-flex align-items-center justify-content-start flex-wrap rounded cont_base my-2">
 
                 {{-- INDICADOR DE ETAPAS --}}
-                <div class="col-12 d-flex align-items-center justify-content-center p-3">
+                <div class="col-12 d-flex align-items-center justify-content-center p-3" id="indicador_etapas">
                     <div class="col-12 d-flex align-items-center justify-content-center flex-wrap">
                         <div class="col-12 col-sm-12 col-md-4 col-lg-3 d-flex align-items-center justify-content-start py-1">
                             <div class="mx-2 etapa_circulo activa" id="circulo_1">1</div>
