@@ -23,6 +23,9 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
+
+            Auth::user()->forceFill(['last_login_at' => now()])->save();
+
             return redirect()->intended('dashboard');
         }
 

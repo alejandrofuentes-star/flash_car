@@ -732,6 +732,15 @@ body
 }
 /*xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*/
 /*blade usuarios*/
+.tabla_scroll_x
+{
+    width: 100%;
+    overflow-x: auto;
+}
+.tabla_scroll_x_inner
+{
+    min-width: 960px;
+}
 .border_right
 {
     border-right: 1px solid var(--gris_7);
