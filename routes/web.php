@@ -14,6 +14,7 @@ use App\Http\Controllers\StateController;
 use App\Http\Controllers\SliderController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\ReporteController;
 
 // ============================================================
 // WEBHOOK STRIPE (sin CSRF, sin auth)
@@ -164,6 +165,9 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
 // RUTAS SOLO SUPER ADMIN
 // ============================================================
 Route::middleware(['auth', 'role:super_admin'])->group(function () {
+    // Reportes
+    Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
+
     Route::post('/maintenance/toggle', [MaintenanceController::class, 'toggle'])->name('maintenance.toggle');
 
     Route::get('/super-admin', function () { return view('super-admin.index'); })->name('super-admin.index');

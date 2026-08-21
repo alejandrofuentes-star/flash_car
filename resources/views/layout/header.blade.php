@@ -27,6 +27,7 @@
 
         {{-- Solo visible para super_admin --}}
         @if(Auth::user()->role === 'super_admin')
+            <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('reportes.index') }}"><i class="bi bi-graph-up"></i> Reportes</a>
             <a class="link_submenu py-1 fs-6 border_link_bottom" href="{{ route('system.cache') }}">
                 <i class="bi bi-tools"></i> Sistema
             </a>
