@@ -41,6 +41,14 @@
                             </div>
                         </div>
                         @enderror
+
+                        @if(session('error'))
+                        <div class="messenger_alert">
+                            <div class="dialog_alert danger py-2 px-4 rounded">
+                                <div class="fs-6 text-white"><b>{{ session('error') }}</b></div>
+                            </div>
+                        </div>
+                        @endif
                     </form>
                 </div>
                 <div class="col-12 col-sm-12 col-md-12 col-lg-6 d-flex align-items-center justify-content-center p-2">

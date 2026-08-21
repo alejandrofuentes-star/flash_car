@@ -24,5 +24,15 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => 'La sesión expiró. Por favor actualiza la página e intenta de nuevo.',
+                ], 419);
+            }
+
+            return back()
+                ->withInput($request->except('password', 'password_confirmation'))
+                ->with('error', 'Tu sesión expiró por inactividad. Por favor intenta de nuevo.');
+        });
     })->create();

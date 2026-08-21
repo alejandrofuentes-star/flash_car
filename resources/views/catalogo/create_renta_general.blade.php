@@ -408,7 +408,7 @@ window.flashCarAnticipo = {
         try {
             const res  = await fetch('{{ route('rentas.paymentIntent') }}', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
                 body: JSON.stringify({ amount, ...datosRenta }),
             });
             const data = await res.json();
