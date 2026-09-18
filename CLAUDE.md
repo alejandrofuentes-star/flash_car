@@ -18,7 +18,7 @@ Plataforma de renta de autos 100% queretana. Tiene dos lados:
 | Rol | Acceso |
 |---|---|
 | `super_admin` | Todo, incluyendo caché, settings, super-admin panel |
-| `admin` | Dashboard, vehículos, rentas, slider, usuarios, estados |
+| `admin` | Dashboard, vehículos, rentas, slider, usuarios, estados, reportes |
 | *(autenticado)* | Dashboard, ver rentas/vehículos (sin eliminar) |
 
 Middleware de roles: `role:admin,super_admin` — definido en `app/Http/Middleware/`.
@@ -70,7 +70,7 @@ Middleware de roles: `role:admin,super_admin` — definido en `app/Http/Middlewa
 | `SystemController` | `/system/cache`, `/system/migrations` | Limpieza de caché y gestión de migraciones (solo `super_admin`) |
 | `AuthController` | `/login`, `/logout` | — |
 | `UserController` | `/users` | CRUD usuarios |
-| `ReporteController` | `/reportes` | Dashboard ejecutivo (ver sección Módulo de Reportes) |
+| `ReporteController` | `/reportes` | Dashboard ejecutivo (ver sección Módulo de Reportes) — acceso `admin` y `super_admin` |
 
 ## Correo
 - **Mailable**: `app/Mail/RentaSolicitada.php`

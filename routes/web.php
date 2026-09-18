@@ -159,15 +159,15 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
     Route::put('/rentas/{id}/estado', [RentaController::class, 'updateEstado'])->name('rentas.estado');
     Route::post('/rentas/{id}/reenviar-correo', [RentaController::class, 'reenviarCorreo'])->name('rentas.reenviarCorreo');
     Route::delete('/rentas/{id}', [RentaController::class, 'destroy'])->name('rentas.destroy');
+
+    // Reportes
+    Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
 });
 
 // ============================================================
 // RUTAS SOLO SUPER ADMIN
 // ============================================================
 Route::middleware(['auth', 'role:super_admin'])->group(function () {
-    // Reportes
-    Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
-
     Route::post('/maintenance/toggle', [MaintenanceController::class, 'toggle'])->name('maintenance.toggle');
 
     Route::get('/super-admin', function () { return view('super-admin.index'); })->name('super-admin.index');
