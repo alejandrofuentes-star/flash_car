@@ -115,14 +115,14 @@
                         <p class="fs-4 m-0">{{ __('countdown.days') }}</p>
                     </div>
                     <div class="col-2 d-flex align-items-center justify-content-center">
-                        <img src="{{ asset('./img/balon.png') }}" width="30%" alt="balon flash car">
+                        <img src="{{ asset('./img/balon.png') }}" width="30%" alt="balón flash car">
                     </div>
                     <div class="col-2 d-flex align-items-center justify-content-center flex-column">
                         <p class="fs-1 m-0"><b id="horas">0</b></p>
                         <p class="fs-4 m-0">{{ __('countdown.hours') }}</p>
                     </div>
                     <div class="col-2 d-flex align-items-center justify-content-center">
-                        <img src="{{ asset('./img/balon.png') }}" width="30%" alt="balon flash car">
+                        <img src="{{ asset('./img/balon.png') }}" width="30%" alt="balón flash car">
                     </div>
                     <div class="col-2 d-flex align-items-center justify-content-center flex-column">
                         <p class="fs-1 m-0"><b id="minutos">0</b></p>
@@ -363,7 +363,7 @@
                         <h2 class="fs-3">{{ __('advantages.title') }}</h2>
                         <p class="fs-5">{{ __('advantages.subtitle') }}</p>
                         <div class="col-12 d-flex align-items-center justify-content-center">
-                            <img src="{{ asset('./img/carros.webp') }}" width="100%" alt="flash car catalogo">
+                            <img src="{{ asset('./img/carros.webp') }}" width="100%" alt="flash car catálogo">
                         </div>
                     </div>
                     <div class="col-12 col-sm-12 col-md-12 col-lg-6 d-flex align-items-start justify-content-center flex-column">

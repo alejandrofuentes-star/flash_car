@@ -184,10 +184,13 @@ class ReporteController extends Controller
         $duracionDias = $this->contarDias($desde, $hasta);
         $mensual      = $duracionDias > 62;
 
-        $etiquetas = [];
-        $ocupacion = [];
-        $ingresos  = [];
-        $demanda   = [];
+        $ocupacionPorDia = $this->calcularOcupacionDiaria($desde, $hasta, $vehiculosActivos);
+
+        $etiquetas   = [];
+        $ocupacion   = [];
+        $ingresos    = [];
+        $demanda     = [];
+        $concretadas = [];
 
         if (!$mensual) {
             $cursor = $desde->copy()->startOfDay();
@@ -195,12 +198,11 @@ class ReporteController extends Controller
                 $dia    = $cursor->copy();
                 $delDia = $rentasPeriodo->filter(fn ($r) => $r->created_at->isSameDay($dia));
 
-                $diasRentadosDia = $delDia->where('estado', '!=', 'cancelada')->sum('total_dias');
-
-                $etiquetas[] = $dia->format('d/m');
-                $ocupacion[] = $vehiculosActivos > 0 ? round(($diasRentadosDia / $vehiculosActivos) * 100, 1) : 0;
-                $ingresos[]  = (float) $delDia->whereIn('estado', self::ESTADOS_INGRESO)->sum('costo_total');
-                $demanda[]   = $delDia->where('estado', '!=', 'cancelada')->count();
+                $etiquetas[]   = $dia->format('d/m');
+                $ocupacion[]   = $ocupacionPorDia[$dia->format('Y-m-d')];
+                $ingresos[]    = (float) $delDia->whereIn('estado', self::ESTADOS_INGRESO)->sum('costo_total');
+                $demanda[]     = $delDia->count();
+                $concretadas[] = $delDia->whereIn('estado', self::ESTADOS_INGRESO)->count();
 
                 $cursor->addDay();
             }
@@ -210,18 +212,59 @@ class ReporteController extends Controller
                 $mes    = $cursor->copy();
                 $delMes = $rentasPeriodo->filter(fn ($r) => $r->created_at->isSameMonth($mes));
 
-                $diasDisponiblesMes = $vehiculosActivos * $mes->daysInMonth;
-                $diasRentadosMes    = $delMes->where('estado', '!=', 'cancelada')->sum('total_dias');
+                $diasDelMesEnRango = collect($ocupacionPorDia)
+                    ->filter(fn ($valor, $fecha) => Carbon::parse($fecha)->isSameMonth($mes));
 
-                $etiquetas[] = ucfirst($mes->translatedFormat('M Y'));
-                $ocupacion[] = $diasDisponiblesMes > 0 ? round(($diasRentadosMes / $diasDisponiblesMes) * 100, 1) : 0;
-                $ingresos[]  = (float) $delMes->whereIn('estado', self::ESTADOS_INGRESO)->sum('costo_total');
-                $demanda[]   = $delMes->where('estado', '!=', 'cancelada')->count();
+                $etiquetas[]   = ucfirst($mes->translatedFormat('M Y'));
+                $ocupacion[]   = $diasDelMesEnRango->isNotEmpty() ? round($diasDelMesEnRango->avg(), 1) : 0.0;
+                $ingresos[]    = (float) $delMes->whereIn('estado', self::ESTADOS_INGRESO)->sum('costo_total');
+                $demanda[]     = $delMes->count();
+                $concretadas[] = $delMes->whereIn('estado', self::ESTADOS_INGRESO)->count();
 
                 $cursor->addMonth();
             }
         }
 
-        return compact('etiquetas', 'ocupacion', 'ingresos', 'demanda');
+        return compact('etiquetas', 'ocupacion', 'ingresos', 'demanda', 'concretadas');
+    }
+
+    /**
+     * Ocupación real por fecha: % de la flota activa con un vehículo distinto rentado
+     * ese día (fecha_entrega..fecha_devolucion de la renta, no su fecha de creación).
+     * Numerador y denominador se restringen a la flota "active" actual (no hay historial
+     * de disponibilidad por fecha) para que el resultado nunca pueda superar 100%.
+     * Devuelve un mapa ['Y-m-d' => %] para cada día del rango, usado tanto en la serie
+     * diaria como para promediar el bucket mensual en rangos largos.
+     */
+    private function calcularOcupacionDiaria(Carbon $desde, Carbon $hasta, int $vehiculosActivos): array
+    {
+        $vehiculosActivosIds = Vehicle::where('active', true)->pluck('id')->all();
+
+        $rentasOcupacion = Renta::whereIn('vehicle_id', $vehiculosActivosIds)
+            ->where('estado', '!=', 'cancelada')
+            ->whereDate('fecha_entrega', '<=', $hasta)
+            ->whereDate('fecha_devolucion', '>=', $desde)
+            ->get(['vehicle_id', 'fecha_entrega', 'fecha_devolucion']);
+
+        $ocupacionPorDia = [];
+        $cursor = $desde->copy()->startOfDay();
+
+        while ($cursor->lte($hasta)) {
+            $dia = $cursor->copy();
+
+            $vehiculosOcupados = $rentasOcupacion
+                ->filter(fn ($r) => $dia->gte($r->fecha_entrega) && $dia->lte($r->fecha_devolucion))
+                ->pluck('vehicle_id')
+                ->unique()
+                ->count();
+
+            $ocupacionPorDia[$dia->format('Y-m-d')] = $vehiculosActivos > 0
+                ? min(100.0, round(($vehiculosOcupados / $vehiculosActivos) * 100, 1))
+                : 0.0;
+
+            $cursor->addDay();
+        }
+
+        return $ocupacionPorDia;
     }
 }

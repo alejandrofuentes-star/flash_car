@@ -167,7 +167,7 @@
             </div>
             <div class="col-12 col-md-4 p-1">
                 <div class="cont_base rounded p-2 h-100">
-                    <p class="fs-6 fw-bold mb-2">Demanda (reservas concretadas)</p>
+                    <p class="fs-6 fw-bold mb-2">Demanda (recibida vs. concretada)</p>
                     <canvas id="graficaDemanda" height="220"></canvas>
                 </div>
             </div>
@@ -195,10 +195,11 @@
     selectPeriodo.addEventListener('change', actualizarCamposPeriodo);
     actualizarCamposPeriodo();
 
-    const etiquetas = @json($series['etiquetas']);
-    const ocupacion = @json($series['ocupacion']);
-    const ingresos  = @json($series['ingresos']);
-    const demanda   = @json($series['demanda']);
+    const etiquetas   = @json($series['etiquetas']);
+    const ocupacion   = @json($series['ocupacion']);
+    const ingresos    = @json($series['ingresos']);
+    const demanda     = @json($series['demanda']);
+    const concretadas = @json($series['concretadas']);
 
     const estiloLinea = {
         borderColor: '#f0b429',
@@ -218,7 +219,14 @@
     new Chart(document.getElementById('graficaOcupacion'), {
         type: 'line',
         data: { labels: etiquetas, datasets: [{ data: ocupacion, ...estiloLinea }] },
-        options: opciones,
+        options: {
+            ...opciones,
+            scales: { y: { beginAtZero: true, min: 0, max: 100, ticks: { callback: (v) => v + '%' } } },
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: (ctx) => `Ocupación: ${ctx.parsed.y}%` } },
+            },
+        },
     });
 
     new Chart(document.getElementById('graficaIngresos'), {
@@ -229,8 +237,36 @@
 
     new Chart(document.getElementById('graficaDemanda'), {
         type: 'line',
-        data: { labels: etiquetas, datasets: [{ data: demanda, ...estiloLinea }] },
-        options: opciones,
+        data: {
+            labels: etiquetas,
+            datasets: [
+                {
+                    label: 'Demanda recibida',
+                    data: demanda,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 2,
+                },
+                {
+                    label: 'Rentas concretadas',
+                    data: concretadas,
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 2,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+        },
     });
 })();
 </script>

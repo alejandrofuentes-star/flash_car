@@ -70,6 +70,7 @@ Middleware de roles: `role:admin,super_admin` — definido en `app/Http/Middlewa
 | `SystemController` | `/system/cache`, `/system/migrations` | Limpieza de caché y gestión de migraciones (solo `super_admin`) |
 | `AuthController` | `/login`, `/logout` | — |
 | `UserController` | `/users` | CRUD usuarios |
+| `ReporteController` | `/reportes` | Dashboard ejecutivo (ver sección Módulo de Reportes) |
 
 ## Correo
 - **Mailable**: `app/Mail/RentaSolicitada.php`
@@ -77,6 +78,28 @@ Middleware de roles: `role:admin,super_admin` — definido en `app/Http/Middlewa
 - Se envía al cliente al hacer submit del formulario de renta
 - Si falla, se loguea en `storage/logs/laravel.log` y `mail_enviado` queda en `false`
 - Desde la lista de rentas, el ícono rojo (`bi-envelope-x-fill`) es clickeable para reenviar
+
+## Módulo de Reportes (`ReporteController` / `reportes/index.blade.php`)
+Dashboard ejecutivo con filtros de periodo (`7d`, `30d`, `mes`, `anio`, `personalizado`) y filtro de estado. Basado en el manual funcional `reportes.md` (referencia, no eliminar — documenta fórmulas de KPIs de renta de autos en general, solo una parte está implementada).
+
+**Principio del documento:** no mezclar conceptos que son matemáticamente distintos — **ocupación** (foto diaria, 0–100%), **utilización** (acumulado del periodo, vehículo-días), **demanda** (solicitudes recibidas vs. concretadas) y **productividad de flota** (ingresos) son 4 cosas separadas. Si la demanda supera la capacidad, se reporta como "demanda no atendida", nunca como ocupación >100%.
+
+**Estados de `Renta` considerados "renta efectiva" (venta lograda):** `contrato_abierto`, `contrato_finalizado`, `devolucion_exitosa` — constante `ReporteController::ESTADOS_INGRESO`. Se usa tanto para ingresos como para "rentas concretadas" en la gráfica de demanda. Si se agregan más KPIs del documento, reusar esta misma constante (no definir otra lista de estados en otro lado).
+
+**Gráfica de Ocupación (corregida sesión 2026-09-18):**
+- Antes sumaba `total_dias` de rentas *creadas* ese día / vehículos activos → podía dar 150%, 240%, etc. (bug descrito en el documento).
+- Ahora: `calcularOcupacionDiaria()` cuenta vehículos **únicos** (solo flota `active=true`) con una renta no cancelada cuyo rango `fecha_entrega`–`fecha_devolucion` cubre ese día, dividido entre el total de flota activa. Numerador y denominador restringidos a la misma flota activa actual → nunca puede superar 100% (el chart además fija el eje Y en 0–100%).
+- No hay historial de disponibilidad por fecha en el sistema (el documento lo pide en la sección 1) — se usa la flota activa **actual** como aproximación tanto para el día de hoy como para fechas pasadas. Si se necesita precisión histórica real habría que guardar snapshots de disponibilidad por fecha.
+- En rangos largos (>62 días, ej. filtro "año") el bucket mensual es el **promedio** de la ocupación diaria de ese mes, no una fórmula distinta.
+
+**Gráfica de Demanda (corregida sesión 2026-09-18):**
+- Antes era una sola línea, etiquetada "reservas concretadas" pero en realidad contaba reservas no-canceladas creadas ese día (ni era demanda total ni eran solo las concretadas).
+- Ahora son dos líneas basadas en `created_at`: **Demanda recibida** (todas las rentas creadas ese día/mes, cualquier estado) y **Rentas concretadas** (estado en `ESTADOS_INGRESO`).
+
+**Pendiente del documento `reportes.md` (no implementado, fuera de alcance de la sesión 2026-09-18):**
+- Utilización de flota, Ingresos, Días rentados y Top 5 vehículos siguen calculándose sobre `total_dias`/`costo_total` de rentas filtradas por `created_at`, sin recortar la porción del contrato que cae fuera del rango filtrado (mismo tipo de bug ya corregido en Ocupación, pero en otros KPIs — ver secciones 2, 6, 7 y 8 del documento).
+- Demanda no atendida (sección 5 del documento): no existe forma de distinguir una reserva cancelada por falta de disponibilidad de una cancelada por otro motivo. Requeriría agregar un campo/motivo de cancelación a `Renta`.
+- Tasa de conversión, ticket promedio, duración promedio, clientes únicos (secciones 4, 6, 7): no implementados.
 
 ## CSS — dos archivos separados
 

@@ -21,7 +21,7 @@
     "hero.reservations_made": "reservaciones realizadas",
 
     "countdown.title": "Cuenta regresiva para el mundial 2026",
-    "countdown.days": "Dias",
+    "countdown.days": "Días",
     "countdown.hours": "Horas",
     "countdown.minutes": "Minutos",
 
@@ -49,14 +49,14 @@
     "advantages.title": "Conoce las ventajas de rentar con Flash Car",
     "advantages.subtitle": "Donde sea que estés, nuestra cobertura y servicios van contigo con la garantía Flash Car.",
     "advantages.km.title": "Kilometraje ilimitado en todos tus viajes",
-    "advantages.km.desc": "Sin limite de kilometraje en tu renta, disfruta del recorrido sin importar la distancia.",
-    "advantages.deposit.title": "Los depositos más bajos de México",
-    "advantages.deposit.desc": "Con la garantia y seguridad, renta la mejor gama de autos con la mejor tarifa.",
+    "advantages.km.desc": "Sin límite de kilometraje en tu renta, disfruta del recorrido sin importar la distancia.",
+    "advantages.deposit.title": "Los depósitos más bajos de México",
+    "advantages.deposit.desc": "Con la garantía y seguridad, renta la mejor gama de autos con la mejor tarifa.",
     "advantages.brands.title": "Variedad de marcas y modelos",
     "advantages.brands.desc": "Siempre disponibles, para todas las necesidades, conoce todo nuestro catálogo.",
 
     "coverage.title": "Cobertura en 7 destinos y creciendo...",
-    "coverage.desc": "Disponibilidad 24/7, distintas categorías, opción de rentar por dia, semana, mes o por larga estadía con minimos requisitos.",
+    "coverage.desc": "Disponibilidad 24/7, distintas categorías, opción de rentar por día, semana, mes o por larga estadía con mínimos requisitos.",
     "coverage.accepts": "Aceptamos:",
 
     "contact.about": "En Flash Car, somos una empresa 100% queretana comprometida con ofrecer un servicio de renta de vehículos confiable, accesible y de alta calidad. Contamos con una amplia flotilla para cubrir todas tus necesidades, ya sea por día, semana o mes.",
@@ -123,7 +123,7 @@
     "form.total_days": "Total de días",
     "form.extra_charge": "Cargo por hora extra",
     "form.total_cost": "Costo Total",
-    "form.or_similar": "ó similar",
+    "form.or_similar": "o similar",
 
     "form.vehicle": "Vehículo *",
     "form.vehicle_placeholder": "-- Selecciona un vehículo --",
@@ -167,13 +167,13 @@
     "faqs.breadcrumb": "Inicio",
     "faqs.help": "¿Necesitas Ayuda?",
     "faqs.q1": "¿Por qué si hago mi reservación con anticipación no me entregan el modelo y marca de auto de mi preferencia?",
-    "faqs.a1": "Cuando realizas una reservación lo que seleccionas es una categoría de auto y no un modelo específico. Para nosotros, los autos son catalogados de acuerdo a sus características en grupos. Por ejemplo, al reservar en auto del Grupo A \"Subcompacto\" tenemos el compromiso de entregarte alguno de los 3 modelos incluidos en esa categoría. Cada grupo puede contener varias marcas y modelos automotrices todos con los estándares de calidad y comodidad a los que estamos comprometidos con nuestros clientes.",
+    "faqs.a1": "Cuando realizas una reservación lo que seleccionas es una categoría de auto y no un modelo específico. Para nosotros, los autos son catalogados de acuerdo a sus características en grupos. Por ejemplo, al reservar un auto del Grupo A \"Subcompacto\" tenemos el compromiso de entregarte alguno de los 3 modelos incluidos en esa categoría. Cada grupo puede contener varias marcas y modelos automotrices todos con los estándares de calidad y comodidad a los que estamos comprometidos con nuestros clientes.",
     "faqs.q2": "¿Es posible prepagar con mi tarjeta de crédito y solicitar que el vehículo se le entregue a otra persona?",
     "faqs.a2": "Por cuestiones de seguridad, el titular de la renta debe ser el titular también de la tarjeta de crédito con la que se realice el prepago.",
     "faqs.q3": "¿Cuánto es el límite de crédito necesario en mi tarjeta para poder rentar un auto?",
     "faqs.a3": "Para proteger el auto que se te entregará es necesario realizar una pre-autorización a tu tarjeta de crédito y el monto se determinará según la opción que elijas entre nuestros relevos de responsabilidad.",
     "faqs.q4": "¿Son obligatorias las protecciones al rentar un auto?",
-    "faqs.a4": "Nuestros relevos de responsabilidad y protecciones son 100% opcionales y adicionales al total de la renta, dándote la libertad de elegir entre cualquiera de nuestras alternativas. Aunque es altamente recomendable para tu seguridad y tranquilad adquirir algún tipo de relevo de responsabilidad, de ninguna manera son obligatorias ni su compra condiciona la renta del auto...",
+    "faqs.a4": "Nuestros relevos de responsabilidad y protecciones son 100% opcionales y adicionales al total de la renta, dándote la libertad de elegir entre cualquiera de nuestras alternativas. Aunque es altamente recomendable para tu seguridad y tranquilidad adquirir algún tipo de relevo de responsabilidad, de ninguna manera son obligatorias ni su compra condiciona la renta del auto...",
 
     "footer.created_by": "Página creada con tecnología de",
     "footer.marketing": "Estrategia de marketing digital",
@@ -190,5 +190,5 @@
     "legal.terms_title": "Términos y Condiciones",
     "legal.terms": "La cobertura del seguro es válida únicamente durante el período de alquiler especificado en el contrato. El arrendatario deberá comunicar cualquier accidente, robo o daño dentro de las 24 horas. FlashCar no se hace responsable de las pertenencias personales dejadas en el vehículo. El arrendatario es responsable de cualquier infracción de tráfico o peajes incurridos durante el período de alquiler. El combustible no está incluido, el vehículo debe devolverse con el mismo nivel de combustible. Cualquier uso no autorizado del vehículo anula la cobertura del seguro. Se requiere una licencia de conducir válida y una identificación oficial para alquilar un vehículo. La asistencia en carretera está disponible las 24/7, pero es posible que no cubra áreas remotas o de alto riesgo.",
     "legal.privacy_title": "Aviso de Confidencialidad",
-    "legal.privacy": "Este mensaje de correo electrónico y sus adjuntos pueden contener información confidencial o legalmente privilegiada y está destinado únicamente al uso de los destinatarios. Esta prohibido a las personas o entidades que no sean los destinatarios de este correo cualquier tipo de modificación, copia, distribución, divulgación, retención o uso de la información que contiene. La divulgación no autorizada, difusión, distribución, copia o la adopción de cualquier acción basada en la información aquí contenida, está prohibida. No puede garantizarse que los correos electrónicos estén libres de errores, ya que pueden ser interceptados, enmendados o contener virus. Flash Car no se hace responsable de errores u omisiones en este mensaje y niega cualquier responsabilidad por cualquier daño que surja del uso del correo electrónico y no se responsabiliza por su uso abusivo, contrario a la moral, a las buenas costumbres o a la ley."
+    "legal.privacy": "Este mensaje de correo electrónico y sus adjuntos pueden contener información confidencial o legalmente privilegiada y está destinado únicamente al uso de los destinatarios. Está prohibido a las personas o entidades que no sean los destinatarios de este correo cualquier tipo de modificación, copia, distribución, divulgación, retención o uso de la información que contiene. La divulgación no autorizada, difusión, distribución, copia o la adopción de cualquier acción basada en la información aquí contenida, está prohibida. No puede garantizarse que los correos electrónicos estén libres de errores, ya que pueden ser interceptados, enmendados o contener virus. Flash Car no se hace responsable de errores u omisiones en este mensaje y niega cualquier responsabilidad por cualquier daño que surja del uso del correo electrónico y no se responsabiliza por su uso abusivo, contrario a la moral, a las buenas costumbres o a la ley."
 }

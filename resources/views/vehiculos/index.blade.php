@@ -63,7 +63,7 @@
 
                                     {{-- Eliminar: solo admin y super_admin --}}
                                     @if(Auth::user()->hasAdminAccess())
-                                        <form method="POST" action="{{ route('vehiculos.destroy', $vehicle->id) }}" style="display:inline;" onsubmit="return confirm('¿Estás seguro de eliminar la categoría {{ $vehicle->name }}?')">
+                                        <form method="POST" action="{{ route('vehiculos.destroy', $vehicle->id) }}" style="display:inline;" onsubmit="return confirm('¿Estás seguro de eliminar el vehículo {{ $vehicle->name }}?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="boton_link_lg bg_rojo_2 rounded">Eliminar</button>
