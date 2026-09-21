@@ -185,20 +185,35 @@
     </div>
 </div>
 <script>
-    const fechaEntrega   = document.querySelector('input[name="fecha_entrega"]');
+    const fechaEntrega    = document.querySelector('input[name="fecha_entrega"]');
+    const horaEntrega     = document.querySelector('input[name="hora_entrega"]');
     const fechaDevolucion = document.querySelector('input[name="fecha_devolucion"]');
+    const horaDevolucion  = document.querySelector('input[name="hora_devolucion"]');
     const precioDia      = {{ $renta->vehicle->category->price_per_day ?? 0 }};
     const precioSemana   = {{ $renta->vehicle->category->price_per_week ?? 0 }};
     const precioMes      = {{ $renta->vehicle->category->price_per_month ?? 0 }};
 
+    // Misma lógica que public/js/formulario_renta.js (calcularCosto): si no se replica aquí,
+    // abrir esta pantalla recalcula solo con fechas y pisa silenciosamente el total_dias
+    // correcto (el que sí contempla la tolerancia de 2h en la hora de devolución).
     function calcularCosto() {
-        if (!fechaEntrega.value || !fechaDevolucion.value) return;
+        if (!fechaEntrega.value || !fechaDevolucion.value || !horaEntrega.value || !horaDevolucion.value) return;
 
-        const inicio = new Date(fechaEntrega.value);
-        const fin    = new Date(fechaDevolucion.value);
-        const dias   = Math.ceil((fin - inicio) / (1000 * 60 * 60 * 24));
+        const d1   = new Date(fechaEntrega.value + 'T' + horaEntrega.value + ':00');
+        const d2   = new Date(fechaDevolucion.value + 'T' + horaDevolucion.value + ':00');
+        if (d2 - d1 <= 0) return;
 
-        if (dias <= 0) return;
+        const d1Date   = new Date(fechaEntrega.value + 'T00:00:00');
+        const d2Date   = new Date(fechaDevolucion.value + 'T00:00:00');
+        const diasBase = Math.round((d2Date - d1Date) / (1000 * 60 * 60 * 24));
+
+        // Tolerancia de 2h: si la hora de devolución supera la hora de entrega por más
+        // de 2 horas, se cobra un día completo adicional.
+        const minutosEntrega = parseInt(horaEntrega.value.split(':')[0]) * 60 + parseInt(horaEntrega.value.split(':')[1]);
+        const minutosDevol   = parseInt(horaDevolucion.value.split(':')[0]) * 60 + parseInt(horaDevolucion.value.split(':')[1]);
+        const cargoExtra     = (minutosDevol - minutosEntrega) > 120;
+
+        const dias = diasBase === 0 ? 1 : (cargoExtra ? diasBase + 1 : diasBase);
 
         let costo, desglose;
         if (dias >= 30) {
@@ -218,13 +233,17 @@
             desglose = `${dias} día(s)`;
         }
 
+        if (cargoExtra) desglose += ' (+1 día por devolución con más de 2h de retraso)';
+
         document.querySelector('input[name="total_dias"]').value  = dias;
         document.querySelector('input[name="costo_total"]').value = costo.toFixed(2);
         document.getElementById('desglose_dias').value             = desglose;
     }
 
     fechaEntrega.addEventListener('change', calcularCosto);
+    horaEntrega.addEventListener('change', calcularCosto);
     fechaDevolucion.addEventListener('change', calcularCosto);
+    horaDevolucion.addEventListener('change', calcularCosto);
     window.addEventListener('DOMContentLoaded', calcularCosto);
 </script>
 <script>

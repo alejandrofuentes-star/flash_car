@@ -8,6 +8,7 @@ use App\Models\Renta;
 use App\Models\SiteSetting;
 use App\Models\SiteStat;
 use App\Models\Vehicle;
+use App\Services\RentaPricingCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -61,24 +62,51 @@ class RentaController extends Controller
 
     public function createPaymentIntent(Request $request)
     {
+        // Formulario general: resolver vehículo a partir de categoría (misma lógica que store())
+        if (!$request->filled('vehicle_id') && $request->filled('category_id')) {
+            $vehicleResuelto = Vehicle::where('category_id', $request->category_id)
+                ->where('available', 1)
+                ->where('active', 1)
+                ->first();
+            if ($vehicleResuelto) {
+                $request->merge(['vehicle_id' => $vehicleResuelto->id]);
+            }
+        }
+
         $validated = $request->validate([
-            'amount'           => 'required|numeric|min:1',
-            'vehicle_id'       => 'nullable|integer|exists:vehicles,id',
+            'vehicle_id'       => 'required|integer|exists:vehicles,id',
             'category_id'      => 'nullable|integer|exists:categories,id',
             'nombre_completo'  => 'required|string|max:150',
             'telefono'         => 'nullable|string|max:20',
             'correo'           => 'required|email|max:100',
             'ciudad'           => 'nullable|string|max:100',
-            'fecha_entrega'    => 'nullable|date',
-            'hora_entrega'     => 'nullable|string',
+            'fecha_entrega'    => 'required|date',
+            'hora_entrega'     => 'required|string',
             'lugar_entrega'    => 'nullable|string|max:255',
-            'fecha_devolucion' => 'nullable|date',
-            'hora_devolucion'  => 'nullable|string',
+            'fecha_devolucion' => 'required|date|after:fecha_entrega',
+            'hora_devolucion'  => 'required|string',
             'lugar_devolucion' => 'nullable|string|max:255',
             'num_pasajeros'    => 'nullable|integer|min:1',
-            'total_dias'       => 'nullable|integer|min:1',
-            'costo_total'      => 'nullable|numeric|min:0',
         ]);
+
+        // El monto a cobrar nunca se confía del navegador: se recalcula en servidor a
+        // partir de fechas/horas y el precio real de la categoría (incluye tolerancia de 2h).
+        $vehicle = Vehicle::with('category')->find($validated['vehicle_id']);
+        if (!$vehicle || !$vehicle->category) {
+            return response()->json(['error' => 'No se encontró un vehículo disponible para calcular el costo.'], 422);
+        }
+
+        try {
+            $calculo = RentaPricingCalculator::calcular(
+                $validated['fecha_entrega'], $validated['hora_entrega'],
+                $validated['fecha_devolucion'], $validated['hora_devolucion'],
+                $vehicle->category
+            );
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
+        $montoAnticipo = $this->calcularMontoAnticipo($calculo['costo_total']);
 
         try {
             Stripe::setApiKey(config('services.stripe.secret'));
@@ -86,14 +114,16 @@ class RentaController extends Controller
             // Guardamos todos los datos del formulario en el PaymentIntent: si el navegador
             // del cliente nunca llega a hacer el submit final, el webhook puede recuperar
             // la renta a partir de esta metadata en lugar de perder el registro por completo.
+            // total_dias/costo_total van con el valor recalculado en servidor, no el del navegador.
             $metadata = collect($validated)
-                ->except(['amount'])
                 ->filter(fn ($v) => $v !== null && $v !== '')
                 ->map(fn ($v) => (string) $v)
                 ->all();
+            $metadata['total_dias']  = (string) $calculo['total_dias'];
+            $metadata['costo_total'] = (string) $calculo['costo_total'];
 
             $intent = PaymentIntent::create([
-                'amount'   => (int) round($validated['amount'] * 100), // centavos
+                'amount'   => (int) round($montoAnticipo * 100), // centavos
                 'currency' => 'mxn',
                 'description' => 'Renta Flash Car - ' . $validated['nombre_completo'],
                 'receipt_email' => $validated['correo'],
@@ -103,10 +133,32 @@ class RentaController extends Controller
             return response()->json([
                 'client_secret'    => $intent->client_secret,
                 'payment_intent_id' => $intent->id,
+                'monto_anticipo'    => $montoAnticipo,
+                'costo_total'       => $calculo['costo_total'],
+                'total_dias'        => $calculo['total_dias'],
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
+    }
+
+    /**
+     * Monto a cobrar ahora mismo por Stripe (anticipo total o parcial), a partir del
+     * costo total ya recalculado en servidor. Replica la regla de public/js del formulario
+     * (window.flashCarAnticipo): sin anticipo configurado, se cobra el costo total completo.
+     */
+    private function calcularMontoAnticipo(float $costoTotal): float
+    {
+        $tipo  = SiteSetting::get('anticipo_tipo', 'fijo');
+        $monto = (float) SiteSetting::get('anticipo_monto', '0');
+
+        if ($monto <= 0) {
+            return $costoTotal;
+        }
+
+        return $tipo === 'porcentaje'
+            ? round($costoTotal * $monto) / 100
+            : min($monto, $costoTotal);
     }
 
     public function store(Request $request)
@@ -143,6 +195,28 @@ class RentaController extends Controller
             'metodo_pago'        => SiteSetting::get('pago_tarjeta', '1') === '1' ? 'required|in:tarjeta' : 'nullable',
             'payment_intent_id'  => SiteSetting::get('pago_tarjeta', '1') === '1' ? 'required|string' : 'nullable',
         ]);
+
+        // total_dias/costo_total nunca se confían del navegador: se recalculan en servidor
+        // a partir de fechas/horas y el precio real de la categoría (incluye la tolerancia de 2h).
+        $vehicle = Vehicle::with('category')->find($validated['vehicle_id']);
+        if (!$vehicle || !$vehicle->category) {
+            return back()
+                ->withErrors(['vehicle_id' => 'El vehículo no tiene una categoría con precios configurados.'])
+                ->withInput();
+        }
+
+        try {
+            $calculo = RentaPricingCalculator::calcular(
+                $validated['fecha_entrega'], $validated['hora_entrega'],
+                $validated['fecha_devolucion'], $validated['hora_devolucion'],
+                $vehicle->category
+            );
+        } catch (\InvalidArgumentException $e) {
+            return back()->withErrors(['fecha_devolucion' => $e->getMessage()])->withInput();
+        }
+
+        $validated['total_dias']  = $calculo['total_dias'];
+        $validated['costo_total'] = $calculo['costo_total'];
 
         if (SiteSetting::get('pago_tarjeta', '1') === '1') {
             try {
@@ -286,6 +360,28 @@ class RentaController extends Controller
             'costo_total'      => 'required|numeric|min:0',
             'estado'           => 'required|in:reserva_confirmada,proxima_entrega,pendiente_pago,contrato_abierto,contrato_finalizado,devolucion_exitosa,dano_faltante,garantia_pendiente,cancelada',
         ]);
+
+        // total_dias/costo_total nunca se confían del navegador: se recalculan en servidor
+        // a partir de fechas/horas y el precio real de la categoría (incluye la tolerancia de 2h).
+        $vehicle = Vehicle::with('category')->find($validated['vehicle_id']);
+        if (!$vehicle || !$vehicle->category) {
+            return back()
+                ->withErrors(['vehicle_id' => 'El vehículo no tiene una categoría con precios configurados.'])
+                ->withInput();
+        }
+
+        try {
+            $calculo = RentaPricingCalculator::calcular(
+                $validated['fecha_entrega'], $validated['hora_entrega'],
+                $validated['fecha_devolucion'], $validated['hora_devolucion'],
+                $vehicle->category
+            );
+        } catch (\InvalidArgumentException $e) {
+            return back()->withErrors(['fecha_devolucion' => $e->getMessage()])->withInput();
+        }
+
+        $validated['total_dias']  = $calculo['total_dias'];
+        $validated['costo_total'] = $calculo['costo_total'];
 
         $renta->update($validated);
 

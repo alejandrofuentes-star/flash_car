@@ -50,11 +50,13 @@ function calcularCosto() {
     const d2Date   = new Date(devolucion + 'T00:00:00');
     const diasBase = Math.round((d2Date - d1Date) / (1000 * 60 * 60 * 24));
 
-    // Comparar solo horas para determinar cargo extra
+    // Comparar solo horas para determinar cargo extra.
+    // Regla: si la hora de devolución supera la hora de entrega por más de 2 horas
+    // (tolerancia de 2h), se cobra un día completo adicional.
     const minutosEntrega = parseInt(horaEntrega.split(':')[0]) * 60 + parseInt(horaEntrega.split(':')[1]);
     const minutosDevol   = parseInt(horaDevol.split(':')[0]) * 60 + parseInt(horaDevol.split(':')[1]);
     const difMinutos     = minutosDevol - minutosEntrega;
-    const cargoExtra     = difMinutos >= 60;
+    const cargoExtra     = difMinutos > 120;
 
     const dias = diasBase === 0 ? 1 : (cargoExtra ? diasBase + 1 : diasBase);
 
