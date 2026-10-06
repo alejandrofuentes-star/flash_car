@@ -5,11 +5,34 @@
             <a href="{{ route('dashboard') }}"><img src="{{ asset('./img/logo.webp') }}" width="120px" alt="logo HD rent Car"></a>
         </div>
         <div class="col-8 d-flex align-items-center justify-content-end px-5">
+            {{-- Campana de notificaciones (alertas del sistema) --}}
+            <div class="campana_notificaciones me-3" id="boton_notificaciones" title="Notificaciones">
+                <i class="bi bi-bell-fill"></i>
+                @php $noLeidas = $notificaciones->where('leida', false)->count(); @endphp
+                <span class="badge_notificaciones {{ $noLeidas ? '' : 'd-none' }}" id="badge_notificaciones">{{ $noLeidas }}</span>
+            </div>
             <div class="circulo_img_perfil" id="boton_menu">
                 <p class="letra_perfil_submenu">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</p>
             </div>
         </div>
     </nav>
+    <div class="panel_notificaciones shadow" id="panel_notificaciones" data-url-leidas="{{ route('notificaciones.leidas') }}">
+        <div class="titulo_panel_notificaciones d-flex align-items-center justify-content-between px-3 py-2">
+            <span><i class="bi bi-bell-fill"></i> <b>Notificaciones</b></span>
+            <button type="button" class="boton_marcar_todas {{ $noLeidas ? '' : 'd-none' }}" id="boton_marcar_todas">Marcar todas como leídas</button>
+        </div>
+        @forelse($notificaciones as $notificacion)
+            <a class="item_notificacion d-flex align-items-start px-3 py-2 {{ $notificacion['leida'] ? 'leida' : '' }}" href="{{ $notificacion['url'] }}" data-clave="{{ $notificacion['clave'] }}">
+                <i class="bi {{ $notificacion['icono'] }} icono_notificacion {{ $notificacion['urgente'] ? 'text-danger' : '' }} me-2"></i>
+                <span>
+                    <b class="d-block {{ $notificacion['urgente'] ? 'text-danger' : '' }}">{{ $notificacion['titulo'] }}</b>
+                    <small>{{ $notificacion['detalle'] }}</small>
+                </span>
+            </a>
+        @empty
+            <p class="m-0 px-3 py-3 text-center text-muted"><small>No hay notificaciones</small></p>
+        @endforelse
+    </div>
     <div class="submenu p-2" id="submenu">
         <p class="nombre_perfil fs-5 m-0 text-white">
             <b>{{ Auth::user()->name }}</b>

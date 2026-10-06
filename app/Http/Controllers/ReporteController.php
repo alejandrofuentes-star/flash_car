@@ -12,6 +12,9 @@ class ReporteController extends Controller
 {
     private const ESTADOS_INGRESO = ['contrato_abierto', 'contrato_finalizado', 'devolucion_exitosa'];
 
+    // Ingreso real de una renta: costo_total − costo del auto − descuentos (ver Renta::calcularTotalGeneral())
+    public const CAMPO_INGRESO = 'total_general';
+
     public const ESTADOS_RENTA = [
         'reserva_confirmada'  => 'Reservada',
         'proxima_entrega'     => 'Próx. entrega',
@@ -70,11 +73,11 @@ class ReporteController extends Controller
             ->take(5)
             ->values();
 
-        $ingresos = (float) $rentasPeriodo->whereIn('estado', self::ESTADOS_INGRESO)->sum('costo_total');
+        $ingresos = (float) $rentasPeriodo->whereIn('estado', self::ESTADOS_INGRESO)->sum(self::CAMPO_INGRESO);
 
         // Comparativo histórico (ingresos y % de utilización) contra el periodo anterior equivalente
-        $rentasAnterior       = Renta::whereBetween('created_at', [$desdeAnterior, $hastaAnterior])->get(['estado', 'total_dias', 'costo_total']);
-        $ingresosAnterior     = (float) $rentasAnterior->whereIn('estado', self::ESTADOS_INGRESO)->sum('costo_total');
+        $rentasAnterior       = Renta::whereBetween('created_at', [$desdeAnterior, $hastaAnterior])->get(['estado', 'total_dias', self::CAMPO_INGRESO]);
+        $ingresosAnterior     = (float) $rentasAnterior->whereIn('estado', self::ESTADOS_INGRESO)->sum(self::CAMPO_INGRESO);
         $diasRentadosAnterior = (int) $rentasAnterior->where('estado', '!=', 'cancelada')->sum('total_dias');
         $diasPeriodoAnterior  = $this->contarDias($desdeAnterior, $hastaAnterior);
         $diasDisponiblesAnterior = $vehiculosActivos * $diasPeriodoAnterior;
@@ -200,7 +203,7 @@ class ReporteController extends Controller
 
                 $etiquetas[]   = $dia->format('d/m');
                 $ocupacion[]   = $ocupacionPorDia[$dia->format('Y-m-d')];
-                $ingresos[]    = (float) $delDia->whereIn('estado', self::ESTADOS_INGRESO)->sum('costo_total');
+                $ingresos[]    = (float) $delDia->whereIn('estado', self::ESTADOS_INGRESO)->sum(self::CAMPO_INGRESO);
                 $demanda[]     = $delDia->count();
                 $concretadas[] = $delDia->whereIn('estado', self::ESTADOS_INGRESO)->count();
 
@@ -217,7 +220,7 @@ class ReporteController extends Controller
 
                 $etiquetas[]   = ucfirst($mes->translatedFormat('M Y'));
                 $ocupacion[]   = $diasDelMesEnRango->isNotEmpty() ? round($diasDelMesEnRango->avg(), 1) : 0.0;
-                $ingresos[]    = (float) $delMes->whereIn('estado', self::ESTADOS_INGRESO)->sum('costo_total');
+                $ingresos[]    = (float) $delMes->whereIn('estado', self::ESTADOS_INGRESO)->sum(self::CAMPO_INGRESO);
                 $demanda[]     = $delMes->count();
                 $concretadas[] = $delMes->whereIn('estado', self::ESTADOS_INGRESO)->count();
 

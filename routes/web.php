@@ -15,6 +15,7 @@ use App\Http\Controllers\SliderController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\NotificacionController;
 
 // ============================================================
 // WEBHOOK STRIPE (sin CSRF, sin auth)
@@ -104,6 +105,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/vehiculos', [VehicleController::class, 'index'])->name('vehiculos.index');
     Route::get('/vehiculos/create_categoria', [CategoryController::class, 'create'])->name('categoria.create_categoria');
     Route::get('/vehiculos/create', [VehicleController::class, 'create'])->name('vehiculos.create');
+    Route::get('/vehiculos/categoria/{id}', [VehicleController::class, 'porCategoria'])->name('vehiculos.categoria');
     Route::get('/vehiculos/{id}', [VehicleController::class, 'show'])->name('vehicles.show');
 
     // Categorías - rutas estáticas ANTES que las dinámicas
@@ -118,6 +120,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/rentas/{id}', [RentaController::class, 'show'])->name('rentas.show');
     Route::get('/rentas/{id}/edit', [RentaController::class, 'edit'])->name('rentas.edit');
     Route::put('/rentas/{id}', [RentaController::class, 'update'])->name('rentas.update');
+    Route::patch('/rentas/{id}/campo/{campo}', [RentaController::class, 'updateCampoRapido'])
+        ->whereIn('campo', array_keys(RentaController::CAMPOS_RAPIDOS))
+        ->name('rentas.campoRapido');
 
     Route::resource('states', StateController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::patch('/states/{state}/toggle', [StateController::class, 'toggleActive'])->name('states.toggle');
@@ -154,6 +159,7 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
     Route::post('/vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
     Route::put('/vehicles/{id}', [VehicleController::class, 'update'])->name('vehicles.update');
     Route::delete('/vehicles/{id}', [VehicleController::class, 'destroy'])->name('vehiculos.destroy');
+    Route::patch('/vehicles/{id}/catalogo', [VehicleController::class, 'toggleCatalogo'])->name('vehiculos.catalogo');
 
     // Rentas
     Route::put('/rentas/{id}/estado', [RentaController::class, 'updateEstado'])->name('rentas.estado');
@@ -162,6 +168,9 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
 
     // Reportes
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
+
+    // Notificaciones (campana del header)
+    Route::post('/notificaciones/leidas', [NotificacionController::class, 'marcarLeidas'])->name('notificaciones.leidas');
 });
 
 // ============================================================

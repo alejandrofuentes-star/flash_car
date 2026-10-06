@@ -14,12 +14,12 @@ class DashboardController extends Controller
         // KPIs
         $pendientes            = Renta::where('estado', 'reserva_confirmada')->count();
         $confirmadas           = Renta::where('estado', 'contrato_abierto')->count();
-        $vehiculos_disponibles = Vehicle::where('available', true)->count();
+        $vehiculos_disponibles = Vehicle::disponibleAhora()->count();
         $vehiculos_total       = Vehicle::count();
         $ingresos_mes          = Renta::whereIn('estado', ['contrato_abierto', 'contrato_finalizado', 'devolucion_exitosa'])
                                     ->whereMonth('created_at', now()->month)
                                     ->whereYear('created_at', now()->year)
-                                    ->sum('costo_total');
+                                    ->sum(ReporteController::CAMPO_INGRESO);
 
         // Últimas 8 solicitudes
         $recientes = Renta::with('vehicle')

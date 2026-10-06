@@ -26,10 +26,16 @@ Middleware de roles: `role:admin,super_admin` — definido en `app/Http/Middlewa
 ## Modelos principales
 
 ### `Vehicle`
-- Campos: `name`, `brand`, `model`, `year`, `transmission` (enum: manual/automatic), `passengers`, `fuel_capacity`, `available` (bool), `image_path`, `category_id`, `active`, `mileage`, `next_verification`, `plate_number`, `slug`
+- Campos: `name`, `brand`, `model`, `year`, `transmission` (enum: manual/automatic), `passengers`, `fuel_capacity`, `available` (bool), `image_path`, `category_id`, `active`, `mileage`, `next_verification`, `plate_number`, `proveedor` (nombre del proveedor, texto libre, opcional), `fecha_pago_proveedor` (date, opcional), `costo_por_dia` (decimal 10,2, opcional — costo diario del auto con el proveedor), `slug`
 - Relaciones: `belongsTo(Category)`, `hasMany(VehicleImage)`, `hasMany(Renta)`, `belongsToMany(State)` via pivot `state_vehicle`
 - Accessor: `formatted_fuel_capacity`
 - Las ciudades donde opera un vehículo se gestionan con la pivot `state_vehicle` (no con el campo `city` que queda en desuso)
+- **Disponibilidad por fechas** (sesión 2026-09-25): `available` es solo el interruptor manual. Un auto solo se bloquea en el rango `fecha_entrega+hora_entrega` → `fecha_devolucion+hora_devolucion` de sus rentas con estado en `Vehicle::ESTADOS_OCUPAN` (`reserva_confirmada`, `proxima_entrega`, `pendiente_pago`, `contrato_abierto`). Horas en `Vehicle::TZ_OPERACION` (America/Mexico_City; la app corre en UTC). Después de cada devolución el auto sigue bloqueado `Vehicle::HORAS_PREPARACION` (8 h) para revisión; aplica en ambos sentidos (una renta nueva también debe terminar 8 h antes de la siguiente entrega) y `ocupado_hasta` ya incluye esas horas.
+  - `scopeLibreEntre($entrega, $devolucion, $exceptoRentaId)` / `estaLibreEntre()` (formato 'Y-m-d H:i'): activo + available + sin renta que se cruce. Se usa al asignar auto por categoría y al validar en `createPaymentIntent()`, `store()`, webhook de Stripe y `update()` de rentas; `RentaController::rangoRenta()` arma el rango.
+  - `rentasEnCurso()` (rentas cuyo rango cubre el momento actual), `scopeDisponibleAhora()`, accessors `ocupado_hasta` / `disponible_ahora` → etiqueta admin "No disponible hasta dd/mm/aaaa HH:mm" mientras la renta está en curso. Eager-load `rentasEnCurso` al listar.
+  - Catálogo público: `catalogo()` y `buscar()` pasan por `VehicleController::autosDelCatalogo()`: por cada categoría activa se muestran los autos disponibles con `mostrar_en_catalogo = true`; si ninguno marcado está disponible, se muestra el primero (por nombre) de la categoría. `catalogo()` toma autos `disponibleAhora()`; `buscar()` activos + available sin cruces por fecha. Filtros de categoría/pasajeros se arman con las tarjetas mostradas.
+  - `mostrar_en_catalogo` (bool, migración `2026_09_25_000004` marca por default el primer auto activo+disponible de cada categoría): checkbox en el formulario de vehículo y en las tarjetas de `por_categoria` (PATCH `vehiculos.catalogo` → `toggleCatalogo()`, solo admin).
+  - Con pago con tarjeta, `store()` NO rechaza un auto ocupado (el cobro ya se hizo); la validación se hace antes, en `createPaymentIntent()`. Sin tarjeta, `store()` sí rechaza.
 
 ### `Category`
 - Campos: `name`, `price_per_day`, `price_per_week`, `price_per_month`, `warranty`, `active`
@@ -37,6 +43,12 @@ Middleware de roles: `role:admin,super_admin` — definido en `app/Http/Middlewa
 
 ### `Renta`
 - Campos: `vehicle_id`, `nombre_completo`, `telefono`, `correo`, `ciudad`, `fecha_entrega`, `hora_entrega`, `lugar_entrega`, `fecha_devolucion`, `hora_devolucion`, `lugar_devolucion`, `num_pasajeros`, `total_dias`, `costo_total`, `estado`, `mail_enviado`, `mail_enviado_at`
+- `precio_dia` / `precio_semana` / `precio_mes` (decimal, nullable, migración `2026_09_29_000002`): precios de la categoría con que se calculó `costo_total`. Los devuelve `RentaPricingCalculator::calcular()['precios']` y se guardan en `store()` y el webhook (vía metadata del PaymentIntent). Rentas anteriores quedan en null → el detalle usa precios actuales de la categoría.
+- Desglose del costo en `rentas/show` (primer cuadro de "Resumen de Costo"): `RentaPricingCalculator::desglose()` (misma regla que el total: meses de 30, semanas de 7, días sueltos); avisa si no coincide con `costo_total`. Con día extra (tolerancia 2 h) muestra subtotal de días base + "1 día extra" a precio diario + "Ajuste por tarifa semanal/mensual" si al sumar el extra se completa semana/mes, para que la suma dé el total.
+- `costo_por_dia` (decimal, nullable, migración `2026_09_29_000003`): costo por día del auto para esa renta; si es null se muestra el `costo_por_dia` del vehículo ("Tomado del vehículo"). Nunca modifica el vehículo. En el cuadro de desglose, debajo del total, se muestra `total_dias × costo_por_dia` ("Costo por día del auto"), luego "Descuentos" (si hay) y al final "Total general" = `costo_total` (registrado) − costo del auto − `descuento` (rojo si es negativo).
+- `descuento` (decimal, nullable, migración `2026_09_29_000004`): monto de descuentos; no puede superar `costo_total`. Se resta en el "Total general" (y por lo tanto en los ingresos de reportes); NO modifica `costo_total` ni el saldo pendiente.
+- `total_general` (decimal, nullable, migración `2026_09_30_000001`, que también llena las rentas existentes): se guarda como `costo_total − total_dias × costoPorDiaAplicado() − descuento`. Lo calcula `Renta::calcularTotalGeneral()` en el evento `saving`, así que se actualiza solo en store/update/webhook/edición rápida. Si cambia el `costo_por_dia` de un vehículo, `Vehicle::updated` recalcula las rentas de ese auto que no tienen costo propio (sin mover `updated_at`). No usar `->update()` masivo por query builder sobre esos campos, porque se saltaría el recálculo.
+- Edición rápida en `rentas/show` (tarjetas con lápiz del Resumen de Costo): partial `rentas/partials/tarjeta_editable.blade.php` + `PATCH /rentas/{id}/campo/{campo}` (`rentas.campoRapido` → `updateCampoRapido()`). Campos permitidos en `RentaController::CAMPOS_RAPIDOS` (la ruta rechaza otros con 404); para agregar uno: columna + fillable + entrada en esa constante + `@include` del partial. Vacío = null.
 - `estado` valores: `reserva_confirmada` | `proxima_entrega` | `pendiente_pago` | `contrato_abierto` | `contrato_finalizado` | `devolucion_exitosa` | `dano_faltante` | `garantia_pendiente` | `cancelada`
 - Estado inicial al crear una renta: `reserva_confirmada` (default en BD)
 - `mail_enviado`: bool — indica si el correo de confirmación se envió sin errores
@@ -62,8 +74,8 @@ Middleware de roles: `role:admin,super_admin` — definido en `app/Http/Middlewa
 | Controlador | Ruta base | Notas |
 |---|---|---|
 | `DashboardController` | `/dashboard` | KPIs, rentas recientes, entregas próximas |
-| `VehicleController` | `/vehiculos`, `/catalogo` | `catalogo()` y `buscar()` pasan `$sliderDesktop` y `$sliderMobile`; ciudades via `State::whereHas('vehicles')`; búsqueda via `whereHas('states')` |
-| `RentaController` | `/rentas`, `/rentar` | `store()` envía correo y guarda `mail_enviado`; `reenviarCorreo()` para reenvío manual |
+| `VehicleController` | `/vehiculos`, `/catalogo` | `index()` solo lista categorías (con conteo de autos + botón "Ver autos"); `porCategoria($id)` en `/vehiculos/categoria/{id}` muestra las tarjetas de autos (`sin-categoria` = `category_id` null); store/update/destroy redirigen a la categoría del auto; `catalogo()` y `buscar()` pasan `$sliderDesktop` y `$sliderMobile`; ciudades via `State::whereHas('vehicles')`; búsqueda via `whereHas('states')` |
+| `RentaController` | `/rentas`, `/rentar` | `edit()`: select de categoría (solo filtra, no se guarda) + select de vehículo filtrado por JS a los disponibles (`active` y `available`) de esa categoría, siempre incluye el vehículo actual; `update()` rechaza cambiar a un vehículo no disponible y solo guarda información general (cliente, estado, vehículo, fechas, lugares): NO recalcula ni recibe `total_dias`, `costo_total`, precios, costo por día ni descuento (edit ya no tiene "Resumen de Costo"); `store()` envía correo y guarda `mail_enviado`; `reenviarCorreo()` para reenvío manual |
 | `SliderController` | `/slider` | upload, toggle active, reorder, destroy |
 | `CategoryController` | `/categorias` | CRUD categorías |
 | `StateController` | `/states` | CRUD estados + puntos de entrega |
@@ -79,12 +91,21 @@ Middleware de roles: `role:admin,super_admin` — definido en `app/Http/Middlewa
 - Si falla, se loguea en `storage/logs/laravel.log` y `mail_enviado` queda en `false`
 - Desde la lista de rentas, el ícono rojo (`bi-envelope-x-fill`) es clickeable para reenviar
 
+## Notificaciones (campana del header admin)
+- Campana en `layout/header.blade.php` (`#boton_notificaciones`, badge `#badge_notificaciones`, panel `#panel_notificaciones`); JS en `public/js/scripts_header.js` (se cierra con clic fuera, no usa `.click_any_side`).
+- Datos: view composer de `layout.header` en `AppServiceProvider::boot()` → `$notificaciones` (colección de `['icono','titulo','detalle','urgente','url']`). Solo se llena para `hasAdminAccess()`.
+- Se calculan al vuelo en cada carga. Para agregar otra alerta, sumar elementos a esa colección con una `clave` única (`tipo:id:fecha`); incluir la fecha hace que la alerta vuelva a salir cuando cambia (ej. siguiente pago).
+- Leído/no leído: tabla `notificaciones_leidas` (`user_id`, `clave`, único por par) — modelo `NotificacionLeida`, por usuario. `POST /notificaciones/leidas` (`notificaciones.leidas`, `NotificacionController::marcarLeidas`, recibe `claves[]`) se llama por fetch al hacer clic en una alerta o en "Marcar todas como leídas"; borra marcas de más de 60 días. El badge cuenta solo las no leídas; las leídas se muestran al final con opacidad.
+- Alerta actual: pago a proveedor — `Vehicle::scopePagoProveedorProximo()` = `fecha_pago_proveedor` entre hoy y hoy + `Vehicle::DIAS_AVISO_PAGO_PROVEEDOR` (3) en hora local; urgente (rojo) si es hoy o mañana; enlaza a `vehicles.show`.
+
 ## Módulo de Reportes (`ReporteController` / `reportes/index.blade.php`)
 Dashboard ejecutivo con filtros de periodo (`7d`, `30d`, `mes`, `anio`, `personalizado`) y filtro de estado. Basado en el manual funcional `reportes.md` (referencia, no eliminar — documenta fórmulas de KPIs de renta de autos en general, solo una parte está implementada).
 
 **Principio del documento:** no mezclar conceptos que son matemáticamente distintos — **ocupación** (foto diaria, 0–100%), **utilización** (acumulado del periodo, vehículo-días), **demanda** (solicitudes recibidas vs. concretadas) y **productividad de flota** (ingresos) son 4 cosas separadas. Si la demanda supera la capacidad, se reporta como "demanda no atendida", nunca como ocupación >100%.
 
 **Estados de `Renta` considerados "renta efectiva" (venta lograda):** `contrato_abierto`, `contrato_finalizado`, `devolucion_exitosa` — constante `ReporteController::ESTADOS_INGRESO`. Se usa tanto para ingresos como para "rentas concretadas" en la gráfica de demanda. Si se agregan más KPIs del documento, reusar esta misma constante (no definir otra lista de estados en otro lado).
+
+**Ingreso = `rentas.total_general`** (sesión 2026-09-30), no `costo_total`: KPI "Ingresos del periodo", comparativo contra el periodo anterior, gráfica de Ingresos e "Ingresos del mes" del dashboard. Se toma de la constante `ReporteController::CAMPO_INGRESO`; si se agrega otro KPI de dinero, usar esa constante.
 
 **Gráfica de Ocupación (corregida sesión 2026-09-18):**
 - Antes sumaba `total_dias` de rentas *creadas* ese día / vehículos activos → podía dar 150%, 240%, etc. (bug descrito en el documento).

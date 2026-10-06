@@ -82,20 +82,30 @@
                     <p class="text-dark fs-6 m-0"><b>Vehículo</b></p>
                 </div>
                 <div class="col-12 d-flex align-items-center justify-content-start flex-wrap p-1">
+                    @php
+                        $vehiculoActualId = old('vehicle_id', $renta->vehicle_id);
+                        $categoriaActual  = $vehicles->firstWhere('id', $vehiculoActualId)?->category_id;
+                    @endphp
+                    {{-- Categoría: solo filtra la lista de vehículos (no se guarda en la renta) --}}
                     <div class="col-12 col-md-3 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Vehículo *</b></label>
-                        <select class="input_form_f_b fs-6 p-1" name="vehicle_id" required>
-                            <option value="">-- Selecciona un vehículo --</option>
-                            @foreach($vehicles as $vehicle)
-                                <option value="{{ $vehicle->id }}" {{ old('vehicle_id', $renta->vehicle_id) == $vehicle->id ? 'selected' : '' }}>
-                                    {{ $vehicle->name }}
-                                </option>
+                        <label class="label_form_f_b fs-6 p-1"><b>Categoría</b></label>
+                        <select class="input_form_f_b fs-6 p-1" id="select_categoria">
+                            <option value="">-- Selecciona una categoría --</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}" {{ $categoriaActual == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-12 col-md-3 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Categoría</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $renta->vehicle->category->name ?? '—' }}" readonly>
+                        <label class="label_form_f_b fs-6 p-1"><b>Vehículo *</b></label>
+                        <select class="input_form_f_b fs-6 p-1" name="vehicle_id" id="select_vehiculo" required>
+                            <option value="">-- Selecciona un vehículo --</option>
+                            @foreach($vehicles as $vehicle)
+                                <option value="{{ $vehicle->id }}" data-categoria="{{ $vehicle->category_id }}" {{ $vehiculoActualId == $vehicle->id ? 'selected' : '' }}>
+                                    {{ $vehicle->name }}{{ $vehicle->plate_number ? ' — ' . $vehicle->plate_number : '' }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
@@ -141,23 +151,12 @@
                     </div>
                 </div>
 
-                {{-- Resumen de costo --}}
-                <div class="col-12 bg_amarillo d-flex align-items-center justify-content-start p-2">
-                    <p class="text-dark fs-6 m-0"><b>Resumen de Costo</b></p>
-                </div>
-                <div class="col-12 d-flex align-items-center justify-content-start flex-wrap p-1">
-                    <div class="col-12 col-md-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Total de Días *</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="number" name="total_dias" value="{{ old('total_dias', $renta->total_dias) }}" min="1" required>
-                    </div>
-                    <div class="col-12 col-md-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Costo Total *</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="number" name="costo_total" value="{{ old('costo_total', $renta->costo_total) }}" step="0.01" min="0" required>
-                    </div>
-                    <div class="col-12 col-md-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Desglose</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="text" id="desglose_dias" value="" readonly>
-                    </div>
+                {{-- Los montos (días, costo total, desglose, costo por día, descuentos) no se editan aquí:
+                     se quedan como se registraron; costo por día y descuentos se editan desde el detalle --}}
+                <div class="col-12 px-2 pt-2">
+                    <p class="mb-0" style="font-size:0.8rem; color:#6b7280;">
+                        <i class="bi bi-info-circle me-1"></i>Los días, el costo total y el desglose no se modifican desde esta pantalla, aunque cambien las fechas o el vehículo.
+                    </p>
                 </div>
 
                 {{-- Botones --}}
@@ -185,66 +184,24 @@
     </div>
 </div>
 <script>
-    const fechaEntrega    = document.querySelector('input[name="fecha_entrega"]');
-    const horaEntrega     = document.querySelector('input[name="hora_entrega"]');
-    const fechaDevolucion = document.querySelector('input[name="fecha_devolucion"]');
-    const horaDevolucion  = document.querySelector('input[name="hora_devolucion"]');
-    const precioDia      = {{ $renta->vehicle->category->price_per_day ?? 0 }};
-    const precioSemana   = {{ $renta->vehicle->category->price_per_week ?? 0 }};
-    const precioMes      = {{ $renta->vehicle->category->price_per_month ?? 0 }};
+    // Filtra el select de vehículos para mostrar solo los de la categoría elegida
+    const selectCategoria = document.getElementById('select_categoria');
+    const selectVehiculo  = document.getElementById('select_vehiculo');
 
-    // Misma lógica que public/js/formulario_renta.js (calcularCosto): si no se replica aquí,
-    // abrir esta pantalla recalcula solo con fechas y pisa silenciosamente el total_dias
-    // correcto (el que sí contempla la tolerancia de 2h en la hora de devolución).
-    function calcularCosto() {
-        if (!fechaEntrega.value || !fechaDevolucion.value || !horaEntrega.value || !horaDevolucion.value) return;
-
-        const d1   = new Date(fechaEntrega.value + 'T' + horaEntrega.value + ':00');
-        const d2   = new Date(fechaDevolucion.value + 'T' + horaDevolucion.value + ':00');
-        if (d2 - d1 <= 0) return;
-
-        const d1Date   = new Date(fechaEntrega.value + 'T00:00:00');
-        const d2Date   = new Date(fechaDevolucion.value + 'T00:00:00');
-        const diasBase = Math.round((d2Date - d1Date) / (1000 * 60 * 60 * 24));
-
-        // Tolerancia de 2h: si la hora de devolución supera la hora de entrega por más
-        // de 2 horas, se cobra un día completo adicional.
-        const minutosEntrega = parseInt(horaEntrega.value.split(':')[0]) * 60 + parseInt(horaEntrega.value.split(':')[1]);
-        const minutosDevol   = parseInt(horaDevolucion.value.split(':')[0]) * 60 + parseInt(horaDevolucion.value.split(':')[1]);
-        const cargoExtra     = (minutosDevol - minutosEntrega) > 120;
-
-        const dias = diasBase === 0 ? 1 : (cargoExtra ? diasBase + 1 : diasBase);
-
-        let costo, desglose;
-        if (dias >= 30) {
-            const meses         = Math.floor(dias / 30);
-            const diasRestantes = dias % 30;
-            const semanasRest   = Math.floor(diasRestantes / 7);
-            const diasSueltos   = diasRestantes % 7;
-            costo    = (meses * precioMes) + (semanasRest * precioSemana) + (diasSueltos * precioDia);
-            desglose = `${meses} mes(es) + ${semanasRest} semana(s) + ${diasSueltos} día(s)`;
-        } else if (dias >= 7) {
-            const semanas     = Math.floor(dias / 7);
-            const diasSueltos = dias % 7;
-            costo    = (semanas * precioSemana) + (diasSueltos * precioDia);
-            desglose = `${semanas} semana(s) + ${diasSueltos} día(s)`;
-        } else {
-            costo    = dias * precioDia;
-            desglose = `${dias} día(s)`;
-        }
-
-        if (cargoExtra) desglose += ' (+1 día por devolución con más de 2h de retraso)';
-
-        document.querySelector('input[name="total_dias"]').value  = dias;
-        document.querySelector('input[name="costo_total"]').value = costo.toFixed(2);
-        document.getElementById('desglose_dias').value             = desglose;
+    function filtrarVehiculos() {
+        const catId = selectCategoria.value;
+        Array.from(selectVehiculo.options).forEach(opt => {
+            if (!opt.value) return;
+            const visible = catId !== '' && opt.dataset.categoria === catId;
+            opt.hidden   = !visible;
+            opt.disabled = !visible;
+        });
+        const actual = selectVehiculo.selectedOptions[0];
+        if (actual && actual.value && actual.disabled) selectVehiculo.value = '';
     }
 
-    fechaEntrega.addEventListener('change', calcularCosto);
-    horaEntrega.addEventListener('change', calcularCosto);
-    fechaDevolucion.addEventListener('change', calcularCosto);
-    horaDevolucion.addEventListener('change', calcularCosto);
-    window.addEventListener('DOMContentLoaded', calcularCosto);
+    selectCategoria.addEventListener('change', filtrarVehiculos);
+    filtrarVehiculos();
 </script>
 <script>
     const statesData = @json($states->map(fn($s) => [

@@ -13,7 +13,7 @@
                 <div class="col-12 d-flex align-items-start justify-content-center flex-column p-2 bg_gris_8">
                     <h1 class="fs-6 text_uppcase">Detalles del Vehículo</h1>
                     <div class="col-4 col-sm-4 col-md-2 col-lg-1">
-                        <a class="boton_forms b_sm rounded link_decoration_none display_flex_center_center" href="{{ route('vehiculos.index') }}">← Volver</a>
+                        <a class="boton_forms b_sm rounded link_decoration_none display_flex_center_center" href="{{ route('vehiculos.categoria', $vehicle->category_id ?? 'sin-categoria') }}">← Volver</a>
                     </div>
                 </div>
 
@@ -81,7 +81,19 @@
                         <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $vehicle->plate_number ?? 'No especificado' }}" readonly>
                     </div>
                     <div class="col-6 col-sm-6 col-md-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Ciudades</b></label>
+                        <label class="label_form_f_b fs-6 p-1"><b>Proveedor</b></label>
+                        <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $vehicle->proveedor ?? 'No especificado' }}" readonly>
+                    </div>
+                    <div class="col-6 col-sm-6 col-md-4 fila_form_f_b py-2">
+                        <label class="label_form_f_b fs-6 p-1"><b>Fecha de pago a proveedor</b></label>
+                        <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $vehicle->fecha_pago_proveedor ? \Carbon\Carbon::parse($vehicle->fecha_pago_proveedor)->format('d/m/Y') : 'No especificado' }}" readonly>
+                    </div>
+                    <div class="col-6 col-sm-6 col-md-4 fila_form_f_b py-2">
+                        <label class="label_form_f_b fs-6 p-1"><b>Costo por día</b></label>
+                        <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $vehicle->costo_por_dia !== null ? '$' . number_format($vehicle->costo_por_dia, 2) : 'No especificado' }}" readonly>
+                    </div>
+                    <div class="col-6 col-sm-6 col-md-4 fila_form_f_b py-2">
+                        <label class="label_form_f_b fs-6 p-1"><b>Ciudad</b></label>
                         <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $vehicle->states->pluck('name')->join(', ') ?: 'No especificado' }}" readonly>
                     </div>
                     <div class="col-6 col-sm-6 col-md-4 fila_form_f_b py-2">
@@ -94,10 +106,16 @@
                     </div>
                     <div class="col-6 col-sm-6 col-md-4 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Estado de Disponibilidad</b></label>
-                        @if($vehicle->available)
+                        @if($vehicle->disponible_ahora)
                             <span class="cuenta_activa">Disponible para rentar</span>
+                        @elseif($vehicle->ocupado_hasta)
+                            {{-- Móvil: fecha debajo de "Disponible"; desde tablet: ambas en la misma fila --}}
+                            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center flex-nowrap">
+                                <span class="cuenta_inactiva" style="white-space:nowrap; padding:1px 8px;">Disponible</span>
+                                <span class="cuenta_inactiva" style="white-space:nowrap; padding:1px 8px;">Hasta {{ $vehicle->ocupado_hasta->format('d/m/Y H:i') }}</span>
+                            </div>
                         @else
-                            <span class="cuenta_inactiva">No disponible</span>
+                            <span class="cuenta_inactiva">Disponible</span>
                         @endif
                     </div>
                     <div class="col-6 col-sm-6 col-md-4 fila_form_f_b py-2">

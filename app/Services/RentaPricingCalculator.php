@@ -25,7 +25,7 @@ class RentaPricingCalculator
     public const TOLERANCIA_MINUTOS = 120;
 
     /**
-     * @return array{total_dias:int, costo_total:float, cargo_extra:bool}
+     * @return array{total_dias:int, costo_total:float, cargo_extra:bool, precios:array{precio_dia:float, precio_semana:float, precio_mes:float}}
      * @throws InvalidArgumentException si la fecha/hora de devolución no es posterior a la de entrega
      */
     public static function calcular(
@@ -55,30 +55,58 @@ class RentaPricingCalculator
             'total_dias'  => $dias,
             'costo_total' => self::costoPorDias($dias, $category),
             'cargo_extra' => $cargoExtra,
+            // Se guardan en la renta para poder mostrar el desglose aunque la categoría cambie de precio
+            'precios'     => [
+                'precio_dia'    => (float) $category->price_per_day,
+                'precio_semana' => (float) $category->price_per_week,
+                'precio_mes'    => (float) $category->price_per_month,
+            ],
         ];
     }
 
     private static function costoPorDias(int $dias, Category $category): float
     {
+        return round(array_sum(array_column(self::desglose($dias, $category), 'subtotal')), 2);
+    }
+
+    /**
+     * Partidas con las que se arma el costo: meses (30 días), semanas (7) y días sueltos.
+     * Misma regla que costoPorDias(); se usa para mostrar el desglose en el detalle de la renta.
+     *
+     * @return array<int, array{concepto:string, cantidad:int, precio:float, subtotal:float}>
+     */
+    public static function desglose(int $dias, Category $category): array
+    {
         $precioDia    = (float) $category->price_per_day;
         $precioSemana = (float) $category->price_per_week;
         $precioMes    = (float) $category->price_per_month;
 
+        $meses = $semanas = 0;
+        $diasSueltos = $dias;
+
         if ($dias >= 30) {
             $meses         = intdiv($dias, 30);
             $diasRestantes = $dias % 30;
-            $semanasRest   = intdiv($diasRestantes, 7);
+            $semanas       = intdiv($diasRestantes, 7);
             $diasSueltos   = $diasRestantes % 7;
-            $costo = ($meses * $precioMes) + ($semanasRest * $precioSemana) + ($diasSueltos * $precioDia);
         } elseif ($dias >= 7) {
             $semanas     = intdiv($dias, 7);
             $diasSueltos = $dias % 7;
-            $costo = ($semanas * $precioSemana) + ($diasSueltos * $precioDia);
-        } else {
-            $costo = $dias * $precioDia;
         }
 
-        return round($costo, 2);
+        $partidas = [];
+        foreach ([['mes', $meses, $precioMes], ['semana', $semanas, $precioSemana], ['dia', $diasSueltos, $precioDia]] as [$concepto, $cantidad, $precio]) {
+            if ($cantidad > 0) {
+                $partidas[] = [
+                    'concepto' => $concepto,
+                    'cantidad' => $cantidad,
+                    'precio'   => $precio,
+                    'subtotal' => round($cantidad * $precio, 2),
+                ];
+            }
+        }
+
+        return $partidas;
     }
 
     private static function minutosDelDia(string $hora): int

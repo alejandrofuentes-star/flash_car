@@ -100,7 +100,7 @@
                 <div class="col-12 d-flex align-items-center justify-content-start flex-wrap p-1">
                     <div class="col-12 col-md-3 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Vehículo</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $renta->vehicle->name ?? '—' }}" readonly>
+                        <input class="input_form_f_b fs-6 p-1" type="text" value="{{ $renta->vehicle ? $renta->vehicle->name . ($renta->vehicle->plate_number ? ' — ' . $renta->vehicle->plate_number : '') : '—' }}" readonly>
                     </div>
                     <div class="col-12 col-md-3 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Categoría</b></label>
@@ -168,17 +168,111 @@
                     </div>
                 </div>
 
-                {{-- Desglose financiero --}}
-                <div class="col-12 d-flex align-items-stretch justify-content-start flex-wrap px-2 pb-3" style="gap:12px;">
+                {{-- Desglose financiero: desglose a la izquierda, tarjetas (y las que se agreguen) a la derecha --}}
+                <div class="col-12 d-flex align-items-start justify-content-start flex-wrap px-2 pb-3">
+
+                    {{-- Desglose del cálculo --}}
+                    @php
+                        $conceptos = [
+                            'mes'    => ['mes', 'meses'],
+                            'semana' => ['semana', 'semanas'],
+                            'dia'    => ['día', 'días'],
+                        ];
+                    @endphp
+                    <div class="col-12 col-sm-12 col-md-4 col-lg-4 p-1">
+                    <div class="rounded p-3" style="background:#f5f6f8; border:1px solid #e0e3e8;">
+                        <p class="text-muted fs-6 mb-2 text-center">Desglose del cálculo</p>
+                        @if($desglose && count($desglose['partidas']))
+                            @php $fila = 'd-flex justify-content-between'; $txt = 'font-size:0.85rem;'; @endphp
+                            @foreach($desglose['partidas'] as $partida)
+                                <div class="{{ $fila }}" style="{{ $txt }}">
+                                    <span>{{ $partida['cantidad'] }} {{ $conceptos[$partida['concepto']][$partida['cantidad'] === 1 ? 0 : 1] }} × ${{ number_format($partida['precio'], 2) }}</span>
+                                    <b>${{ number_format($partida['subtotal'], 2) }}</b>
+                                </div>
+                            @endforeach
+                            @if($desglose['cargo_extra'])
+                                <div class="{{ $fila }}" style="{{ $txt }}">
+                                    <span><i class="bi bi-clock-history me-1"></i>1 día extra</span>
+                                    <b>+${{ number_format($desglose['dia_extra'], 2) }}</b>
+                                </div>
+                                <p class="mb-0" style="font-size:0.72rem; color:#6b7280;">Devolución más de 2 h después de la hora de entrega</p>
+                                @if(abs($desglose['ajuste']) >= 0.01)
+                                    <div class="{{ $fila }}" style="{{ $txt }}">
+                                        <span>Ajuste por tarifa semanal/mensual</span>
+                                        <b>{{ $desglose['ajuste'] < 0 ? '-' : '+' }}${{ number_format(abs($desglose['ajuste']), 2) }}</b>
+                                    </div>
+                                @endif
+                            @endif
+                            <div class="{{ $fila }} border-top mt-2 pt-1" style="{{ $txt }}">
+                                <span>Total {{ $renta->total_dias }} {{ $renta->total_dias == 1 ? 'día' : 'días' }}</span>
+                                <b>${{ number_format($desglose['calculado'], 2) }}</b>
+                            </div>
+                            @if(!$desglose['coincide'])
+                                <p class="mb-0 mt-1" style="font-size:0.72rem; color:#b45309;">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ $desglose['guardados'] ? 'Precios de la reserva' : 'Precios actuales de la categoría (renta registrada antes de guardar precios)' }}; no coincide con el total registrado.
+                                </p>
+                            @elseif(!$desglose['guardados'])
+                                <p class="mb-0 mt-1" style="font-size:0.72rem; color:#6b7280;">
+                                    <i class="bi bi-info-circle me-1"></i>Con precios actuales de la categoría.
+                                </p>
+                            @endif
+                        @else
+                            <p class="mb-0 text-center" style="font-size:0.8rem; color:#9ca3af;">Sin categoría asignada, no se puede desglosar.</p>
+                        @endif
+
+                        {{-- Costo por día (el de la renta o, si no tiene, el del vehículo) × días de la renta --}}
+                        @php
+                            $costoDia     = $renta->costoPorDiaAplicado();
+                            $costoAuto    = $costoDia !== null ? round($renta->total_dias * $costoDia, 2) : 0;
+                            $descuento    = (float) ($renta->descuento ?? 0);
+                            $totalGeneral = (float) ($renta->total_general ?? $renta->calcularTotalGeneral());
+                        @endphp
+                        <div class="border-top mt-3 pt-2">
+                            <p class="text-muted mb-1 text-center" style="font-size:0.85rem;">Costo por día del auto</p>
+                            @if($costoDia !== null)
+                                <div class="d-flex justify-content-between" style="font-size:0.85rem;">
+                                    <span>{{ $renta->total_dias }} {{ $renta->total_dias == 1 ? 'día' : 'días' }} × ${{ number_format($costoDia, 2) }}</span>
+                                    <b class="text-danger">-${{ number_format($costoAuto, 2) }}</b>
+                                </div>
+                            @else
+                                <p class="mb-0 text-center" style="font-size:0.8rem; color:#9ca3af;">Sin costo por día capturado.</p>
+                            @endif
+                            @if($descuento > 0)
+                                <div class="d-flex justify-content-between" style="font-size:0.85rem;">
+                                    <span>Descuentos</span>
+                                    <b class="text-danger">-${{ number_format($descuento, 2) }}</b>
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- Total general: costo total registrado − (días × costo por día del auto) − descuentos --}}
+                        @if($costoDia !== null || $descuento > 0)
+                            <div class="d-flex justify-content-between border-top mt-2 pt-1 fs-6">
+                                <b>Total general</b>
+                                <b class="{{ $totalGeneral < 0 ? 'text-danger' : 'text-success' }}">{{ $totalGeneral < 0 ? '-' : '' }}${{ number_format(abs($totalGeneral), 2) }}</b>
+                            </div>
+                            @if($desglose && !$desglose['coincide'])
+                                <p class="mb-0" style="font-size:0.72rem; color:#6b7280;">Sobre el costo total registrado (${{ number_format($renta->costo_total, 2) }})</p>
+                            @endif
+                        @endif
+                    </div>
+                    </div>
+
+                    {{-- Tarjetas de montos --}}
+                    <div class="col-12 col-sm-12 col-md-8 col-lg-8 d-flex align-items-stretch justify-content-start flex-wrap">
 
                     {{-- Costo total --}}
-                    <div class="col-12 col-md-3 rounded p-3 text-center" style="background:#f5f6f8; border:1px solid #e0e3e8;">
+                    <div class="col-12 col-sm-12 col-md-4 col-lg-4 p-1">
+                    <div class="h-100 rounded p-3 text-center" style="background:#f5f6f8; border:1px solid #e0e3e8;">
                         <p class="text-muted fs-6 mb-1">Costo total de renta</p>
                         <b class="fs-4" style="color:var(--primary);">${{ number_format($renta->costo_total, 2) }}</b>
                     </div>
 
+                    </div>
+
                     {{-- Anticipo / Pagado --}}
-                    <div class="col-12 col-md-3 rounded p-3 text-center"
+                    <div class="col-12 col-sm-12 col-md-4 col-lg-4 p-1">
+                    <div class="h-100 rounded p-3 text-center"
                          style="background:{{ $pagado ? '#d1fae5' : '#f5f6f8' }}; border:1px solid {{ $pagado ? '#6ee7b7' : '#e0e3e8' }};">
                         <p class="text-muted fs-6 mb-1">
                             {{ $pagado ? '✅ Pagado (anticipo)' : 'Anticipo' }}
@@ -193,8 +287,11 @@
                         @endif
                     </div>
 
+                    </div>
+
                     {{-- Saldo pendiente --}}
-                    <div class="col-12 col-md-3 rounded p-3 text-center"
+                    <div class="col-12 col-sm-12 col-md-4 col-lg-4 p-1">
+                    <div class="h-100 rounded p-3 text-center"
                          style="background:{{ $saldo > 0 ? '#fef9c3' : '#d1fae5' }}; border:1px solid {{ $saldo > 0 ? '#fde047' : '#6ee7b7' }};">
                         <p class="text-muted fs-6 mb-1">
                             {{ $saldo > 0 ? '⏳ Saldo pendiente' : '✅ Liquidado' }}
@@ -207,6 +304,27 @@
                             <i class="bi bi-clock me-1"></i>A cobrar al momento de la entrega
                         </p>
                         @endif
+                    </div>
+                    </div>
+
+                    {{-- Costo por día: el de la renta si se editó, si no el del vehículo --}}
+                    @include('rentas.partials.tarjeta_editable', [
+                        'campo'       => 'costo_por_dia',
+                        'titulo'      => 'Costo por día',
+                        'valor'       => $renta->costo_por_dia ?? $renta->vehicle?->costo_por_dia,
+                        'valorEditar' => $renta->costo_por_dia ?? $renta->vehicle?->costo_por_dia,
+                        'nota'        => $renta->costo_por_dia === null ? 'Tomado del vehículo' : null,
+                    ])
+
+                    {{-- Descuentos --}}
+                    @include('rentas.partials.tarjeta_editable', [
+                        'campo'       => 'descuento',
+                        'titulo'      => 'Descuentos',
+                        'valor'       => $renta->descuento,
+                        'valorEditar' => $renta->descuento,
+                        'vacio'       => 'Sin descuento',
+                    ])
+
                     </div>
 
                 </div>
@@ -239,3 +357,31 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    // Edición rápida de las tarjetas de Resumen de Costo (partial rentas.partials.tarjeta_editable)
+    document.querySelectorAll('[data-tarjeta-editable]').forEach(function (tarjeta) {
+        const boton = tarjeta.querySelector('[data-editar]');
+        const vista = tarjeta.querySelector('[data-vista]');
+        const form  = tarjeta.querySelector('[data-form]');
+        const input = tarjeta.querySelector('[data-input]');
+        const valorOriginal = input.defaultValue;
+
+        boton.addEventListener('click', function () {
+            boton.classList.add('d-none');
+            vista.classList.add('d-none');
+            form.classList.remove('d-none');
+            input.focus();
+            input.select();
+        });
+
+        tarjeta.querySelector('[data-cancelar]').addEventListener('click', function () {
+            input.value = valorOriginal;
+            form.classList.add('d-none');
+            vista.classList.remove('d-none');
+            boton.classList.remove('d-none');
+        });
+    });
+</script>
+@endpush

@@ -18,25 +18,44 @@ class VehicleController extends Controller
 {
     public function index()
     {
-        $categories = Category::orderBy('name', 'asc')->get();
-        $vehicles = Vehicle::with('category')->orderBy('name', 'asc')->get();
-        return view('vehiculos.index', compact('categories', 'vehicles'));
+        $categories   = Category::withCount('vehicles')->orderBy('name', 'asc')->get();
+        $sinCategoria = Vehicle::whereNull('category_id')->count();
+        return view('vehiculos.index', compact('categories', 'sinCategoria'));
+    }
+
+    // Lista de vehículos de una categoría ('sin-categoria' = vehículos cuya categoría fue eliminada)
+    public function porCategoria($id)
+    {
+        $category = $id === 'sin-categoria' ? null : Category::findOrFail($id);
+
+        $vehicles = Vehicle::with('rentasEnCurso')
+            ->where('category_id', $category?->id)
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return view('vehiculos.por_categoria', compact('category', 'vehicles'));
+    }
+
+    // Regresa a la lista de vehículos de la categoría correspondiente
+    private function redirectCategoria($categoryId)
+    {
+        return redirect()->route('vehiculos.categoria', $categoryId ?? 'sin-categoria');
     }
 
     public function catalogo()
     {
-        $vehicles = Vehicle::with('category')
-                           ->where('active', 1)
-                           ->orderBy('available', 'desc')
-                           ->orderBy('name', 'asc')
-                           ->get();
+        // Un auto disponible por categoría (sin renta en curso en este momento)
+        $vehicles = $this->autosDelCatalogo(
+            Vehicle::with('category')->disponibleAhora()->orderBy('name', 'asc')->get()
+        );
 
         $cities = State::whereHas('vehicles', fn($q) => $q->where('active', 1))
                         ->orderBy('name')
                         ->pluck('name');
 
-        $categories = \App\Models\Category::where('active', 1)->orderBy('name')->get();
-        $passengers = Vehicle::where('active', 1)->distinct()->orderBy('passengers')->pluck('passengers');
+        // Filtros basados solo en las tarjetas que se muestran
+        $categories = $vehicles->pluck('category')->sortBy('name')->values();
+        $passengers = $vehicles->pluck('passengers')->unique()->sort()->values();
 
         $sliderDesktop      = SliderImage::desktop()->active()->orderBy('orden')->get();
         $sliderMobile       = SliderImage::mobile()->active()->orderBy('orden')->get();
@@ -59,7 +78,7 @@ class VehicleController extends Controller
             // Excluir autos que ya tienen renta en ese rango de fechas
             ->when($fecha_entrega && $fecha_devolucion, function($q) use ($fecha_entrega, $fecha_devolucion) {
                 $q->whereDoesntHave('rentas', function($r) use ($fecha_entrega, $fecha_devolucion) {
-                    $r->whereIn('estado', ['reserva_confirmada', 'proxima_entrega', 'pendiente_pago', 'contrato_abierto'])
+                    $r->whereIn('estado', Vehicle::ESTADOS_OCUPAN)
                     ->where('fecha_entrega', '<=', $fecha_devolucion)
                     ->where('fecha_devolucion', '>=', $fecha_entrega);
                 });
@@ -67,18 +86,53 @@ class VehicleController extends Controller
             ->orderBy('name', 'asc')
             ->get();
 
+        // Un auto disponible por categoría entre los que cumplen la búsqueda
+        $vehicles = $this->autosDelCatalogo($vehicles);
+
         $cities = State::whereHas('vehicles', fn($q) => $q->where('active', 1))
             ->orderBy('name')
             ->pluck('name');
 
-        $categories = \App\Models\Category::where('active', 1)->orderBy('name')->get();
-        $passengers = Vehicle::where('active', 1)->distinct()->orderBy('passengers')->pluck('passengers');
+        // Filtros basados solo en las tarjetas que se muestran
+        $categories = $vehicles->pluck('category')->sortBy('name')->values();
+        $passengers = $vehicles->pluck('passengers')->unique()->sort()->values();
 
         $sliderDesktop      = SliderImage::desktop()->active()->orderBy('orden')->get();
         $sliderMobile       = SliderImage::mobile()->active()->orderBy('orden')->get();
         $totalReservaciones = SiteStat::get('total_reservations');
 
         return view('catalogo.index', compact('vehicles', 'cities', 'city', 'categories', 'passengers', 'fecha_entrega', 'fecha_devolucion', 'sliderDesktop', 'sliderMobile', 'totalReservaciones'));
+    }
+
+    // Catálogo público: por cada categoría activa se muestran los autos marcados con
+    // "mostrar en catálogo"; si ninguno de los marcados está disponible, se muestra el
+    // primero (por nombre) de esa categoría para que la categoría no desaparezca.
+    // $vehicles ya viene filtrado a los autos disponibles y ordenado por nombre.
+    private function autosDelCatalogo($vehicles)
+    {
+        return $vehicles
+            ->filter(fn($v) => $v->category && $v->category->active)
+            ->groupBy('category_id')
+            ->flatMap(function ($autos) {
+                $marcados = $autos->where('mostrar_en_catalogo', true);
+                return $marcados->isNotEmpty() ? $marcados : $autos->take(1);
+            })
+            ->sortBy('name')
+            ->values();
+    }
+
+    // Marca/desmarca el auto para mostrarse en el catálogo público (checkbox en las tarjetas)
+    public function toggleCatalogo($id)
+    {
+        $vehicle = Vehicle::with('rentasEnCurso')->findOrFail($id);
+        if (!$vehicle->disponible_ahora) {
+            return back()->with('error', "'{$vehicle->name}' no está disponible; no se puede cambiar su visibilidad en el catálogo");
+        }
+        $vehicle->update(['mostrar_en_catalogo' => !$vehicle->mostrar_en_catalogo]);
+
+        return back()->with('success', $vehicle->mostrar_en_catalogo
+            ? "'{$vehicle->name}' se mostrará en el catálogo"
+            : "'{$vehicle->name}' ya no se mostrará en el catálogo");
     }
 
     public function create()
@@ -100,13 +154,15 @@ class VehicleController extends Controller
             'model'        => 'nullable|string|max:100',
             'year'         => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
             'plate_number' => 'nullable|string|max:20|unique:vehicles',
+            'proveedor'    => 'nullable|string|max:255',
+            'fecha_pago_proveedor' => 'nullable|date',
+            'costo_por_dia'        => 'nullable|numeric|min:0',
             'transmission' => 'required|in:manual,automatic',
             'available'    => 'boolean',
             'active'       => 'boolean',
             'mileage'      => 'nullable|integer|min:0',
             'next_verification' => 'nullable|date',
-            'state_ids'    => 'nullable|array',
-            'state_ids.*'  => 'exists:states,id',
+            'state_id'     => 'nullable|exists:states,id',
         ]);
 
         if ($request->hasFile('image')) {
@@ -132,21 +188,23 @@ class VehicleController extends Controller
         $validated['slug']      = $slug;
         $validated['available'] = $request->has('available');
         $validated['active']    = $request->has('active');
+        $validated['mostrar_en_catalogo'] = $request->has('mostrar_en_catalogo');
 
-        $stateIds = $validated['state_ids'] ?? [];
-        unset($validated['state_ids']);
+        // Un vehículo opera en una sola ciudad (se sigue guardando en la pivot state_vehicle)
+        $stateIds = !empty($validated['state_id']) ? [$validated['state_id']] : [];
+        unset($validated['state_id']);
         unset($validated['motivo_inactivo']);
 
         $vehicle = Vehicle::create($validated);
         $vehicle->states()->sync($stateIds);
 
-        return redirect()->route('vehiculos.index')
+        return $this->redirectCategoria($vehicle->category_id)
             ->with('success', "Vehículo '{$vehicle->name}' creado exitosamente");
     }
 
     public function show($id)
     {
-        $vehicle = Vehicle::with(['category', 'images', 'states'])->findOrFail($id);
+        $vehicle = Vehicle::with(['category', 'images', 'states', 'rentasEnCurso'])->findOrFail($id);
         return view('vehiculos.detalles', compact('vehicle'));
     }
 
@@ -179,14 +237,16 @@ class VehicleController extends Controller
             'model'        => 'nullable|string|max:100',
             'year'         => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
             'plate_number' => ['nullable', 'string', 'max:20', Rule::unique('vehicles')->ignore($vehicle->id)],
+            'proveedor'    => 'nullable|string|max:255',
+            'fecha_pago_proveedor' => 'nullable|date',
+            'costo_por_dia'        => 'nullable|numeric|min:0',
             'transmission' => 'required|in:manual,automatic',
             'available'    => 'boolean',
             'active'       => 'boolean',
             'mileage'           => 'nullable|integer|min:0',
             'next_verification' => 'nullable|date',
             'motivo_inactivo'   => 'nullable|in:Servicio,Mtto Mayor,Traslado',
-            'state_ids'    => 'nullable|array',
-            'state_ids.*'  => 'exists:states,id',
+            'state_id'     => 'nullable|exists:states,id',
         ]);
 
         if ($request->hasFile('image')) {
@@ -218,15 +278,17 @@ class VehicleController extends Controller
 
         $validated['available'] = $request->has('available');
         $validated['active']    = $request->has('active');
+        $validated['mostrar_en_catalogo'] = $request->has('mostrar_en_catalogo');
         $validated['motivo_inactivo'] = $validated['active'] ? null : ($request->motivo_inactivo ?? null);
 
-        $stateIds = $validated['state_ids'] ?? [];
-        unset($validated['state_ids']);
+        // Un vehículo opera en una sola ciudad (se sigue guardando en la pivot state_vehicle)
+        $stateIds = !empty($validated['state_id']) ? [$validated['state_id']] : [];
+        unset($validated['state_id']);
 
         $vehicle->update($validated);
         $vehicle->states()->sync($stateIds);
 
-        return redirect()->route('vehiculos.index')
+        return $this->redirectCategoria($vehicle->category_id)
             ->with('success', 'Vehículo actualizado exitosamente');
     }
 
@@ -234,9 +296,10 @@ class VehicleController extends Controller
     {
         $vehicle     = Vehicle::findOrFail($id);
         $vehicleName = $vehicle->name;
+        $categoryId  = $vehicle->category_id;
         $vehicle->delete();
 
-        return redirect()->route('vehiculos.index')
+        return $this->redirectCategoria($categoryId)
             ->with('success', "Vehículo '{$vehicleName}' eliminado exitosamente");
     }
 

@@ -134,6 +134,7 @@
     "form.price_per_week": "Price per week",
     "form.price_per_month": "Price per month",
     "form.no_vehicles_category": "No vehicles available in this category at the moment.",
+    "form.vehicle_not_available": "This vehicle is not available to rent at the moment.",
     "form.step3": "Payment",
     "form.step3_header": "③ Payment Method",
     "form.card_payment_badge": "💳 Card payment",

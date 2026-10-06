@@ -27,7 +27,7 @@
                                 <input type="text" name="buscar" value="{{ $buscar }}" class="input_form_f_b w-100" placeholder="Buscar por nombre..." style="padding-left:10px;">
                             </div>
                             <div class="col-12 col-sm-12 col-md-2 px-1 my-1">
-                                <label class="label_form_f_b"># Registro</label>
+                                <label class="label_form_f_b">ID</label>
                                 <input type="number" name="registro" value="{{ $registro }}" class="input_form_f_b w-100" placeholder="ID..." style="padding-left:10px;">
                             </div>
                             <div class="col-12 col-sm-12 col-md-3 px-1 my-1">
@@ -49,9 +49,9 @@
                 </div>
                 <div class="w_150_movil" style="overflow-x:auto; width:100%">
                 <div class="bg_amarillo d-flex align-items-center justify-content-start" style="min-width:1180px">
-                    <p class="col-3 border_right px-1 text-dark my-1"><b># Cliente</b></p>
                     <p class="col-1 border_right px-1 text-dark my-1"><b>ID</b></p>
-                    <p class="col-2 border_right px-1 text-dark my-1 text_break"><b>Vehículo</b></p>
+                    <p class="col-3 border_right px-1 text-dark my-1"><b>Cliente</b></p>
+                    <p class="col-1 border_right px-1 text-dark my-1 text_break"><b>Vehículo</b></p>
                     <p class="col-1 border_right px-1 text-dark my-1"><b>Entrega</b></p>
                     <p class="col-1 border_right px-1 text-dark my-1 text_break"><b>Devolución</b></p>
                     <p class="col-1 border_right px-1 text-dark my-1"><b>Estado</b></p>
@@ -59,17 +59,25 @@
                 </div>
                  @forelse($rentas as $renta)
                 <div class="d-flex align-items-center justify-content-start border_gris_2_buttom" style="min-width:1180px">
+                    <p class="col-1 px-1 my-1">{{ $renta->id_flash_car ?? '-' }}</p>
                     <div class="col-3 display_flex_center_start px-1 my-1">
-                        {{ $renta->id }}
-                        <div class="px-2 display_flex_start_center_column over_hidden">
+                        <div class="display_flex_start_center_column over_hidden">
                             <b>{{ $renta->nombre_completo }}</b>
                             {{ $renta->correo }}
                         </div>
                     </div>
-                    <p class="col-1 px-1 my-1">{{ $renta->id_flash_car ?? '-' }}</p>
-                    <p class="col-2 px-1 my-1">{{ $renta->vehicle->name ?? '—' }}</p>
-                    <p class="col-1 px-1 my-1">{{ $renta->fecha_entrega->format('d/m/Y') }}</p>
-                    <p class="col-1 px-1 my-1">{{ $renta->fecha_devolucion->format('d/m/Y') }}</p>
+                    <div class="col-1 px-1 my-1 display_flex_start_center_column over_hidden">
+                        <b>{{ $renta->vehicle->name ?? '—' }}</b>
+                        <small class="text-muted">{{ $renta->vehicle?->category?->name ?? 'Sin categoría' }}</small>
+                    </div>
+                    <div class="col-1 px-1 my-1 display_flex_start_center_column">
+                        {{ $renta->fecha_entrega->format('d/m/Y') }}
+                        <small class="text-muted">{{ $renta->hora_entrega ? substr($renta->hora_entrega, 0, 5) : '—' }}</small>
+                    </div>
+                    <div class="col-1 px-1 my-1 display_flex_start_center_column">
+                        {{ $renta->fecha_devolucion->format('d/m/Y') }}
+                        <small class="text-muted">{{ $renta->hora_devolucion ? substr($renta->hora_devolucion, 0, 5) : '—' }}</small>
+                    </div>
                     <div class="col-1 px-1 my-1 d-flex flex-column align-items-start justify-content-center" style="gap:3px;">
                         @php
                             [$badgeClass, $badgeLabel] = match($renta->estado) {

@@ -13,7 +13,7 @@
                 <div class="col-12 d-flex align-items-start justify-content-center flex-column p-2 bg_gris_8">
                     <h1 class="fs-6 text_uppcase">Nuevo Vehículo</h1>
                     <div class="col-4 col-sm-4 col-md-2 col-lg-1">
-                        <a class="boton_forms b_sm rounded link_decoration_none display_flex_center_center" href="{{ route('vehiculos.index') }}">← Volver</a>
+                        <a class="boton_forms b_sm rounded link_decoration_none display_flex_center_center" href="{{ request('category_id') ? route('vehiculos.categoria', request('category_id')) : route('vehiculos.index') }}">← Volver</a>
                     </div>
                 </div>
 
@@ -48,7 +48,7 @@
                             <select class="input_form_f_b fs-6 p-1" name="category_id" required>
                                 <option value="">-- Selecciona una categoría --</option>
                                 @foreach($categories as $category)
-                                    <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                    <option value="{{ $category->id }}" {{ old('category_id', request('category_id')) == $category->id ? 'selected' : '' }}>
                                         {{ $category->name }}
                                     </option>
                                 @endforeach
@@ -86,6 +86,18 @@
                         <input class="input_form_f_b fs-6 p-1" type="text" name="plate_number" value="{{ old('plate_number') }}" placeholder="ABC-1234">
                     </div>
                     <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
+                        <label class="label_form_f_b fs-6 p-1"><b>Proveedor</b></label>
+                        <input class="input_form_f_b fs-6 p-1" type="text" name="proveedor" value="{{ old('proveedor') }}" maxlength="255" placeholder="Nombre del proveedor">
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
+                        <label class="label_form_f_b fs-6 p-1"><b>Fecha de pago a proveedor</b></label>
+                        <input class="input_form_f_b fs-6 p-1" type="date" name="fecha_pago_proveedor" value="{{ old('fecha_pago_proveedor') }}">
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
+                        <label class="label_form_f_b fs-6 p-1"><b>Costo por día</b></label>
+                        <input class="input_form_f_b fs-6 p-1" type="number" name="costo_por_dia" value="{{ old('costo_por_dia') }}" min="0" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Transmisión *</b></label>
                         <select class="input_form_f_b fs-6 p-1" name="transmission" required>
                             <option value="automatic" {{ old('transmission') == 'automatic' ? 'selected' : '' }}>Automático</option>
@@ -101,19 +113,16 @@
                         <input class="input_form_f_b fs-6 p-1" type="date" name="next_verification" value="{{ old('next_verification', $vehicle->next_verification ?? '') }}">
                     </div>
                     <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Ciudades disponibles</b></label>
-                        <div class="input_form_f_b p-2 d-flex flex-wrap">
+                        <label class="label_form_f_b fs-6 p-1"><b>Ciudad disponible</b></label>
+                        <select class="input_form_f_b fs-6 p-1" name="state_id">
+                            <option value="">-- Selecciona una ciudad --</option>
                             @foreach($states as $state)
-                                <label class="d-flex align-items-center fs-6 me-3 mb-1">
-                                    <input type="checkbox" name="state_ids[]" value="{{ $state->id }}"
-                                        {{ in_array($state->id, old('state_ids', [])) ? 'checked' : '' }}>
-                                    <span class="ms-1">{{ $state->name }}</span>
-                                </label>
+                                <option value="{{ $state->id }}" {{ old('state_id') == $state->id ? 'selected' : '' }}>{{ $state->name }}</option>
                             @endforeach
-                            @if($states->isEmpty())
-                                <span class="text-muted fs-6">No hay ciudades registradas</span>
-                            @endif
-                        </div>
+                        </select>
+                        @if($states->isEmpty())
+                            <small class="text-muted">No hay ciudades registradas</small>
+                        @endif
                     </div>
                 </div>
 
@@ -129,6 +138,12 @@
                     </div>
                     <div class="col-12 col-sm-12 col-md-3 fila_form_f_b py-2">
                         <label class="label_form_f_b d-flex align-items-center justify-content-start fs-6 py-1 px-1">
+                            <input class="check_box_form" type="checkbox" name="mostrar_en_catalogo" value="1" {{ old('mostrar_en_catalogo', false) ? 'checked' : '' }}>
+                            <b class="mx-2">Mostrar en catálogo público</b>
+                        </label>
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-3 fila_form_f_b py-2">
+                        <label class="label_form_f_b d-flex align-items-center justify-content-start fs-6 py-1 px-1">
                             <input class="check_box_form" type="checkbox" name="active" value="1" {{ old('active', true) ? 'checked' : '' }}>
                             <b class="mx-2">Vehículo activo</b>
                         </label>
@@ -136,7 +151,7 @@
                 </div>
 
                 <div class="col-12 py-2 d-flex align-items-center justify-content-center">
-                    <a href="{{ route('vehiculos.index') }}" class="boton_link_lg rounded">Cancelar</a>
+                    <a href="{{ request('category_id') ? route('vehiculos.categoria', request('category_id')) : route('vehiculos.index') }}" class="boton_link_lg rounded">Cancelar</a>
                     <button type="submit" class="boton_link_lg rounded">Guardar</button>
                 </div>
 

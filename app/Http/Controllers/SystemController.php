@@ -16,7 +16,14 @@ class SystemController extends Controller
 
     public function runMigrations()
     {
-        Artisan::call('migrate', ['--force' => true]);
+        try {
+            Artisan::call('migrate', ['--force' => true]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Error al ejecutar migraciones: ' . $e->getMessage());
+        }
+
         $output = trim(Artisan::output());
 
         if (empty($output)) {

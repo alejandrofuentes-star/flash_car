@@ -13,7 +13,7 @@
                 <div class="col-12 d-flex align-items-start justify-content-center flex-column p-2 bg_gris_8">
                     <h1 class="fs-6 text_uppcase">Editar Vehículo: {{ $vehicle->name }}</h1>
                     <div class="col-4 col-sm-4 col-md-2 col-lg-1">
-                        <a class="boton_forms b_sm rounded link_decoration_none display_flex_center_center" href="{{ route('vehiculos.index') }}">← Volver</a>
+                        <a class="boton_forms b_sm rounded link_decoration_none display_flex_center_center" href="{{ route('vehiculos.categoria', $vehicle->category_id ?? 'sin-categoria') }}">← Volver</a>
                     </div>
                 </div>
 
@@ -89,6 +89,18 @@
                         <input class="input_form_f_b fs-6 p-1" type="text" name="plate_number" value="{{ old('plate_number', $vehicle->plate_number) }}" placeholder="ABC-1234">
                     </div>
                     <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
+                        <label class="label_form_f_b fs-6 p-1"><b>Proveedor</b></label>
+                        <input class="input_form_f_b fs-6 p-1" type="text" name="proveedor" value="{{ old('proveedor', $vehicle->proveedor) }}" maxlength="255" placeholder="Nombre del proveedor">
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
+                        <label class="label_form_f_b fs-6 p-1"><b>Fecha de pago a proveedor</b></label>
+                        <input class="input_form_f_b fs-6 p-1" type="date" name="fecha_pago_proveedor" value="{{ old('fecha_pago_proveedor', $vehicle->fecha_pago_proveedor ?? '') }}">
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
+                        <label class="label_form_f_b fs-6 p-1"><b>Costo por día</b></label>
+                        <input class="input_form_f_b fs-6 p-1" type="number" name="costo_por_dia" value="{{ old('costo_por_dia', $vehicle->costo_por_dia) }}" min="0" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Transmisión *</b></label>
                         <select class="input_form_f_b fs-6 p-1" name="transmission" required>
                             <option value="automatic" {{ old('transmission', $vehicle->transmission) == 'automatic' ? 'selected' : '' }}>Automático</option>
@@ -104,20 +116,16 @@
                         <input class="input_form_f_b fs-6 p-1" type="date" name="next_verification" value="{{ old('next_verification', $vehicle->next_verification ?? '') }}">
                     </div>
                     <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Ciudades disponibles</b></label>
-                        <div class="input_form_f_b p-2 d-flex flex-wrap">
-                            @php $selectedStates = old('state_ids', $vehicle->states->pluck('id')->toArray()); @endphp
+                        <label class="label_form_f_b fs-6 p-1"><b>Ciudad disponible</b></label>
+                        <select class="input_form_f_b fs-6 p-1" name="state_id">
+                            <option value="">-- Selecciona una ciudad --</option>
                             @foreach($states as $state)
-                                <label class="d-flex align-items-center fs-6 me-3 mb-1">
-                                    <input type="checkbox" name="state_ids[]" value="{{ $state->id }}"
-                                        {{ in_array($state->id, $selectedStates) ? 'checked' : '' }}>
-                                    <span class="ms-1">{{ $state->name }}</span>
-                                </label>
+                                <option value="{{ $state->id }}" {{ old('state_id', $vehicle->states->first()?->id) == $state->id ? 'selected' : '' }}>{{ $state->name }}</option>
                             @endforeach
-                            @if($states->isEmpty())
-                                <span class="text-muted fs-6">No hay ciudades registradas</span>
-                            @endif
-                        </div>
+                        </select>
+                        @if($states->isEmpty())
+                            <small class="text-muted">No hay ciudades registradas</small>
+                        @endif
                     </div>
                 </div>
 
@@ -129,6 +137,12 @@
                         <label class="label_form_f_b d-flex align-items-center justify-content-start fs-6 py-1 px-1">
                             <input class="check_box_form" type="checkbox" name="available" value="1" {{ old('available', $vehicle->available) ? 'checked' : '' }}>
                             <b class="mx-2">Disponible para rentar</b>
+                        </label>
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-3 fila_form_f_b py-2">
+                        <label class="label_form_f_b d-flex align-items-center justify-content-start fs-6 py-1 px-1">
+                            <input class="check_box_form" type="checkbox" name="mostrar_en_catalogo" value="1" {{ old('mostrar_en_catalogo', $vehicle->mostrar_en_catalogo) ? 'checked' : '' }}>
+                            <b class="mx-2">Mostrar en catálogo público</b>
                         </label>
                     </div>
                     <div class="col-12 col-sm-12 col-md-3 fila_form_f_b py-2">
@@ -166,7 +180,7 @@
                 </div>
 
                 <div class="col-12 py-2 d-flex align-items-center justify-content-center">
-                    <a href="{{ route('vehiculos.index') }}" class="boton_link_lg rounded">Cancelar</a>
+                    <a href="{{ route('vehiculos.categoria', $vehicle->category_id ?? 'sin-categoria') }}" class="boton_link_lg rounded">Cancelar</a>
                     <button type="submit" class="boton_link_lg rounded">Guardar</button>
                 </div>
 
@@ -179,7 +193,7 @@
                 </div>
 
                 {{-- Fotos actuales --}}
-                <div class="col-12 d-flex align-items-start justify-content-start flex-wrap p-2">
+                <div id="galeria_fotos" class="col-12 d-flex align-items-start justify-content-start flex-wrap p-2">
                     @forelse($vehicle->images as $image)
                     <div class="col-6 col-sm-4 col-md-3 col-lg-2 p-1 position-relative">
                         <img src="{{ Storage::url($image->image_path) }}" alt="Foto galería" width="100%" class="rounded shadow-sm">
@@ -193,7 +207,7 @@
                         </form>
                     </div>
                     @empty
-                        <p class="text-muted fs-6 p-2">No hay fotos en la galería aún.</p>
+                        <p id="galeria_vacia" class="text-muted fs-6 p-2">No hay fotos en la galería aún.</p>
                     @endforelse
                 </div>
 
@@ -204,12 +218,13 @@
                         @csrf
                         <div class="col-12 col-md-6 fila_form_f_b py-2">
                             <label class="label_form_f_b fs-6 p-1"><b>Agregar fotos</b></label>
-                            <input class="input_form_f_b fs-6 p-1" type="file" name="images[]" multiple
+                            <input class="input_form_f_b fs-6 p-1" type="file" id="input_galeria" name="images[]" multiple
+                                data-disponibles="{{ 5 - $vehicle->images->count() }}"
                                 accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
                             <small class="text-muted">Puedes subir hasta {{ 5 - $vehicle->images->count() }} foto(s) más. Formatos: JPG, PNG, WEBP. Máx: 2MB c/u</small>
                         </div>
                         <div class="col-12 col-md-2 py-2 px-1">
-                            <button type="submit" class="boton_link_lg rounded w-100">Subir fotos</button>
+                            <button type="submit" id="btn_subir_fotos" class="boton_link_lg rounded w-100" disabled>Subir fotos</button>
                         </div>
                     </form>
                 </div>
@@ -243,6 +258,84 @@ document.getElementById('chk_active').addEventListener('change', function () {
         document.querySelectorAll('input[name="motivo_inactivo"]').forEach(r => r.checked = false);
     }
 });
+
+// Vista previa de la imagen principal
+document.getElementById('image').addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => document.getElementById('preview').src = e.target.result;
+    reader.readAsDataURL(file);
+});
+
+// Vista previa de las fotos de galería antes de subirlas
+(function () {
+    const input = document.getElementById('input_galeria');
+    if (!input) return;
+
+    const galeria     = document.getElementById('galeria_fotos');
+    const vacia       = document.getElementById('galeria_vacia');
+    const btnSubir    = document.getElementById('btn_subir_fotos');
+    const disponibles = parseInt(input.dataset.disponibles, 10);
+    let seleccionadas = new DataTransfer();
+
+    function render() {
+        galeria.querySelectorAll('.foto_nueva').forEach(el => el.remove());
+
+        Array.from(seleccionadas.files).forEach((file, idx) => {
+            const cont = document.createElement('div');
+            cont.className = 'col-6 col-sm-4 col-md-3 col-lg-2 p-1 position-relative foto_nueva';
+
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.onload = () => URL.revokeObjectURL(img.src);
+            img.style.width = '100%';
+            img.style.outline = '3px dashed var(--amarillo)';
+            img.className = 'rounded shadow-sm';
+
+            const badge = document.createElement('span');
+            badge.className = 'position-absolute top-0 start-0 bg_amarillo text-dark rounded px-2 m-2';
+            badge.style.fontSize = '0.7rem';
+            badge.textContent = 'Nueva';
+
+            const quitar = document.createElement('button');
+            quitar.type = 'button';
+            quitar.className = 'position-absolute top-0 end-0 bg-danger text-white border-0 rounded px-2 py-1 m-1';
+            quitar.style.fontSize = '0.75rem';
+            quitar.textContent = '✕';
+            quitar.title = 'Quitar de la selección';
+            quitar.addEventListener('click', () => {
+                const dt = new DataTransfer();
+                Array.from(seleccionadas.files).forEach((f, i) => { if (i !== idx) dt.items.add(f); });
+                seleccionadas = dt;
+                input.files = seleccionadas.files;
+                render();
+            });
+
+            cont.append(img, badge, quitar);
+            galeria.appendChild(cont);
+        });
+
+        const hay = seleccionadas.files.length > 0;
+        if (vacia) vacia.style.display = hay ? 'none' : '';
+        btnSubir.disabled = !hay;
+    }
+
+    input.addEventListener('change', function () {
+        // Acumula con lo ya seleccionado, respetando el límite de 5 fotos
+        const dt = new DataTransfer();
+        Array.from(seleccionadas.files).forEach(f => dt.items.add(f));
+        Array.from(this.files).forEach(f => { if (dt.files.length < disponibles) dt.items.add(f); });
+
+        if (seleccionadas.files.length + this.files.length > disponibles) {
+            alert(`Solo puedes agregar ${disponibles} foto(s) más.`);
+        }
+
+        seleccionadas = dt;
+        input.files = seleccionadas.files;
+        render();
+    });
+})();
 </script>
 @endpush
 

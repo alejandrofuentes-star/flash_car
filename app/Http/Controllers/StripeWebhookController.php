@@ -90,10 +90,13 @@ class StripeWebhookController extends Controller
 
         $vehicleId = $meta->vehicle_id ?? null;
         if (!$vehicleId && !empty($meta->category_id)) {
-            $vehicleId = Vehicle::where('category_id', $meta->category_id)
-                ->where('available', 1)
-                ->where('active', 1)
-                ->value('id');
+            $entrega    = $meta->fecha_entrega . ' ' . substr($meta->hora_entrega, 0, 5);
+            $devolucion = $meta->fecha_devolucion . ' ' . substr($meta->hora_devolucion, 0, 5);
+            $vehicleId  = Vehicle::where('category_id', $meta->category_id)->libreEntre($entrega, $devolucion)->value('id')
+                ?? Vehicle::where('category_id', $meta->category_id)
+                    ->where('available', 1)
+                    ->where('active', 1)
+                    ->value('id');
         }
         if (!$vehicleId) return null;
 
@@ -113,6 +116,9 @@ class StripeWebhookController extends Controller
                 'num_pasajeros'     => (int) $meta->num_pasajeros,
                 'total_dias'        => (int) $meta->total_dias,
                 'costo_total'       => (float) $meta->costo_total,
+                'precio_dia'        => isset($meta->precio_dia) ? (float) $meta->precio_dia : null,
+                'precio_semana'     => isset($meta->precio_semana) ? (float) $meta->precio_semana : null,
+                'precio_mes'        => isset($meta->precio_mes) ? (float) $meta->precio_mes : null,
                 'metodo_pago'       => 'tarjeta',
                 'payment_intent_id' => $intent->id,
                 'monto_anticipo'    => ($intent->amount ?? 0) / 100,

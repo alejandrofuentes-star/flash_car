@@ -295,6 +295,94 @@ body
 {
     border: 3px solid var(--amarillo);
 }
+.campana_notificaciones
+{
+    position: relative;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: var(--gris_1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.campana_notificaciones:hover
+{
+    background-color: var(--amarillo);
+}
+.badge_notificaciones
+{
+    position: absolute;
+    top: 2px;
+    right: 0px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background-color: #dc3545;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    line-height: 18px;
+    text-align: center;
+}
+.panel_notificaciones
+{
+    z-index: 1050;
+    position: fixed;
+    top: 62px;
+    right: 20px;
+    width: 340px;
+    max-width: calc(100% - 32px);
+    max-height: 70vh;
+    overflow-y: auto;
+    border-radius: 5px;
+    background-color: white;
+    border: 1px solid var(--gris_9);
+}
+.titulo_panel_notificaciones
+{
+    border-bottom: 1px solid var(--gris_9);
+    color: var(--gris_1);
+}
+.item_notificacion
+{
+    text-decoration: none;
+    color: var(--gris_1);
+    border-bottom: 1px solid var(--gris_10);
+    transition: all 0.3s ease;
+}
+.item_notificacion:hover
+{
+    background-color: var(--amarillo_bajo);
+    color: var(--gris_1);
+}
+.item_notificacion.leida
+{
+    opacity: 0.55;
+}
+.boton_marcar_todas
+{
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: 0.75rem;
+    color: var(--gris_4);
+    text-decoration: underline;
+    cursor: pointer;
+}
+.boton_marcar_todas:hover
+{
+    color: var(--gris_1);
+}
+.icono_notificacion
+{
+    font-size: 1.3rem;
+    line-height: 1.2;
+}
 .letra_perfil_submenu
 {
     width: 100%;
@@ -802,3 +890,18 @@ body
     margin: 1px;
 }
 
+/* Botón de edición rápida (lápiz) dentro de tarjetas del detalle de renta */
+.boton_editar_rapido
+{
+    border: none;
+    background: none;
+    padding: 2px 6px;
+    color: var(--gris_5);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+.boton_editar_rapido:hover
+{
+    background-color: var(--amarillo);
+    color: var(--gris_1);
+}
