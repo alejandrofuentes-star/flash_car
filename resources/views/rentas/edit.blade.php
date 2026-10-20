@@ -116,7 +116,7 @@
                 <div class="col-12 d-flex align-items-center justify-content-start flex-wrap p-1">
                     <div class="col-12 col-md-4 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Fecha de Entrega *</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="date" name="fecha_entrega" value="{{ old('fecha_entrega', $renta->fecha_entrega->format('Y-m-d')) }}" required>
+                        <input class="input_form_f_b fs-6 p-1 fecha_calendario" type="text" id="fecha_entrega" name="fecha_entrega" value="{{ old('fecha_entrega', $renta->fecha_entrega->format('Y-m-d')) }}" required>
                     </div>
                     <div class="col-12 col-md-4 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Hora de Entrega *</b></label>
@@ -137,7 +137,7 @@
                 <div class="col-12 d-flex align-items-center justify-content-start flex-wrap p-1">
                     <div class="col-12 col-md-4 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Fecha de Devolución *</b></label>
-                        <input class="input_form_f_b fs-6 p-1" type="date" name="fecha_devolucion" value="{{ old('fecha_devolucion', $renta->fecha_devolucion->format('Y-m-d')) }}" required>
+                        <input class="input_form_f_b fs-6 p-1 fecha_calendario" type="text" id="fecha_devolucion" name="fecha_devolucion" value="{{ old('fecha_devolucion', $renta->fecha_devolucion->format('Y-m-d')) }}" required>
                     </div>
                     <div class="col-12 col-md-4 fila_form_f_b py-2">
                         <label class="label_form_f_b fs-6 p-1"><b>Hora de Devolución *</b></label>
@@ -151,11 +151,11 @@
                     </div>
                 </div>
 
-                {{-- Los montos (días, costo total, desglose, costo por día, descuentos) no se editan aquí:
-                     se quedan como se registraron; costo por día y descuentos se editan desde el detalle --}}
+                {{-- Días y costo total se recalculan en update() si cambian fechas/horas o la categoría del auto;
+                     costo por día y descuentos se editan desde el detalle --}}
                 <div class="col-12 px-2 pt-2">
                     <p class="mb-0" style="font-size:0.8rem; color:#6b7280;">
-                        <i class="bi bi-info-circle me-1"></i>Los días, el costo total y el desglose no se modifican desde esta pantalla, aunque cambien las fechas o el vehículo.
+                        <i class="bi bi-info-circle me-1"></i>Al guardar, si cambian las fechas, las horas o la categoría del vehículo, se recalculan los días y el costo total. El desglose original se conserva en el detalle.
                     </p>
                 </div>
 
@@ -251,5 +251,37 @@
         });
     });
 </script>
+
+{{-- Calendario de fechas (flatpickr): siempre se abre arriba del input; envía la fecha en Y-m-d --}}
+@push('styles')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
+<style>
+    .fecha_calendario[readonly] { background-color: #f5f6f8; cursor: pointer; }
+    .flatpickr-day.selected, .flatpickr-day.selected:hover { background: var(--amarillo); border-color: var(--amarillo); color: #000; }
+</style>
+@endpush
+@push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/es.min.js"></script>
+<script>
+    (function () {
+        const opciones = {
+            locale: 'es',
+            dateFormat: 'Y-m-d',
+            altInput: true,
+            altFormat: 'd/m/Y',
+            position: 'above',
+            disableMobile: true,
+        };
+
+        const devolucion = flatpickr('#fecha_devolucion', opciones);
+        flatpickr('#fecha_entrega', Object.assign({}, opciones, {
+            // La devolución no puede ser antes de la entrega
+            onChange: function (fechas) { devolucion.set('minDate', fechas[0] || null); },
+            onReady:  function (fechas) { devolucion.set('minDate', fechas[0] || null); },
+        }));
+    })();
+</script>
+@endpush
 
 @endsection

@@ -326,55 +326,8 @@ class RentaController extends Controller
     {
         $renta = Renta::with('vehicle.category')->findOrFail($id);
 
-        // Desglose con los precios guardados en la renta; las rentas anteriores a 2026-09-29 no los tienen
-        // y se usan los precios actuales de la categoría
-        $desglose = null;
-        if ($category = $renta->vehicle?->category) {
-            $preciosGuardados = $renta->precio_dia !== null;
-            $precios = $preciosGuardados
-                ? (new Category)->forceFill([
-                    'price_per_day'   => $renta->precio_dia,
-                    'price_per_week'  => $renta->precio_semana,
-                    'price_per_month' => $renta->precio_mes,
-                ])
-                : $category;
-
-            try {
-                $cargoExtra = RentaPricingCalculator::calcular(
-                    $renta->fecha_entrega->format('Y-m-d'), (string) $renta->hora_entrega,
-                    $renta->fecha_devolucion->format('Y-m-d'), (string) $renta->hora_devolucion,
-                    $category
-                )['cargo_extra'];
-            } catch (\InvalidArgumentException $e) {
-                $cargoExtra = false;
-            }
-
-            // Solo se cobra el día extra si la renta abarca más de un día de calendario
-            $totalDias  = (int) $renta->total_dias;
-            $cargoExtra = $cargoExtra && $totalDias > 1
-                && $renta->fecha_entrega->diffInDays($renta->fecha_devolucion) > 0;
-
-            // Con día extra: tarifa de los días base + 1 día a precio diario. Como el total se calcula
-            // sobre todos los días juntos, si al sumar el extra se completa una semana/mes la diferencia
-            // aparece como ajuste por tarifa (así la suma siempre da el total).
-            $diasBase = $cargoExtra ? $totalDias - 1 : $totalDias;
-            $partidas = RentaPricingCalculator::desglose($diasBase, $precios);
-            $subtotal = round(array_sum(array_column($partidas, 'subtotal')), 2);
-            $calculado = round(array_sum(array_column(RentaPricingCalculator::desglose($totalDias, $precios), 'subtotal')), 2);
-            $diaExtra = $cargoExtra ? (float) $precios->price_per_day : 0.0;
-
-            $desglose  = [
-                'partidas'    => $partidas,
-                'dias_base'   => $diasBase,
-                'subtotal'    => $subtotal,
-                'cargo_extra' => $cargoExtra,
-                'dia_extra'   => $diaExtra,
-                'ajuste'      => round($calculado - $subtotal - $diaExtra, 2),
-                'calculado'   => $calculado,
-                'coincide'    => abs($calculado - (float) $renta->costo_total) < 0.01,
-                'guardados'   => $preciosGuardados,
-            ];
-        }
+        $category = $renta->vehicle?->category;
+        $desglose = $category ? RentaPricingCalculator::desgloseDeRenta($renta, $category) : null;
 
         return view('rentas.show', compact('renta', 'desglose'));
     }
@@ -488,9 +441,7 @@ class RentaController extends Controller
             'estado'           => 'required|in:reserva_confirmada,proxima_entrega,pendiente_pago,contrato_abierto,contrato_finalizado,devolucion_exitosa,dano_faltante,garantia_pendiente,cancelada',
         ]);
 
-        // Aquí solo se edita la información general: total_dias, costo_total, precios, costo por día
-        // y descuentos se quedan como se registraron (no se recalculan aunque cambien fechas o vehículo)
-        $vehicle = Vehicle::findOrFail($validated['vehicle_id']);
+        $vehicle = Vehicle::with('category')->findOrFail($validated['vehicle_id']);
 
         // Si cambia el vehículo o las fechas (y la renta sigue ocupando el auto), el vehículo no puede
         // tener otra renta que se cruce con el nuevo rango
@@ -501,6 +452,37 @@ class RentaController extends Controller
             return back()
                 ->withErrors(['vehicle_id' => "El vehículo '{$vehicle->name}' ya tiene otra renta en esas fechas."])
                 ->withInput();
+        }
+
+        // Si cambian las fechas/horas o el auto pasa a otra categoría se recalculan total_dias y costo_total
+        // (el desglose original queda fijo en desglose_original). Se respetan los precios con que se registró
+        // la renta, salvo que cambie de categoría: entonces se toman los de la nueva. Costo por día del auto
+        // y descuento no se tocan; total_general se recalcula solo al guardar.
+        $categoriaAnterior = $renta->vehicle?->category_id;
+        $cambioCategoria   = (int) $vehicle->category_id !== (int) $categoriaAnterior;
+        $cambioFechas      = $rangoNuevo !== $this->rangoRenta($renta);
+        if (($cambioFechas || $cambioCategoria) && $vehicle->category) {
+            $precios = !$cambioCategoria && $renta->precio_dia !== null
+                ? (new Category)->forceFill([
+                    'price_per_day'   => $renta->precio_dia,
+                    'price_per_week'  => $renta->precio_semana,
+                    'price_per_month' => $renta->precio_mes,
+                ])
+                : $vehicle->category;
+
+            try {
+                $calculo = RentaPricingCalculator::calcular(
+                    $validated['fecha_entrega'], $validated['hora_entrega'],
+                    $validated['fecha_devolucion'], $validated['hora_devolucion'],
+                    $precios
+                );
+            } catch (\InvalidArgumentException $e) {
+                return back()->withErrors(['fecha_devolucion' => $e->getMessage()])->withInput();
+            }
+
+            $validated['total_dias']  = $calculo['total_dias'];
+            $validated['costo_total'] = $calculo['costo_total'];
+            $validated += $calculo['precios'];
         }
 
         $renta->update($validated);

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Category;
+use App\Models\Renta;
 use Carbon\Carbon;
 use InvalidArgumentException;
 
@@ -107,6 +108,60 @@ class RentaPricingCalculator
         }
 
         return $partidas;
+    }
+
+    /**
+     * Desglose de una renta ya registrada (lo que se muestra en rentas/show). Usa los precios guardados
+     * en la renta; las rentas anteriores a 2026-09-29 no los tienen y se usan los de la categoría.
+     *
+     * @return array{partidas:array, dias_base:int, subtotal:float, cargo_extra:bool, dia_extra:float, ajuste:float, calculado:float, coincide:bool, guardados:bool}
+     */
+    public static function desgloseDeRenta(Renta $renta, Category $category): array
+    {
+        $preciosGuardados = $renta->precio_dia !== null;
+        $precios = $preciosGuardados
+            ? (new Category)->forceFill([
+                'price_per_day'   => $renta->precio_dia,
+                'price_per_week'  => $renta->precio_semana,
+                'price_per_month' => $renta->precio_mes,
+            ])
+            : $category;
+
+        try {
+            $cargoExtra = self::calcular(
+                $renta->fecha_entrega->format('Y-m-d'), (string) $renta->hora_entrega,
+                $renta->fecha_devolucion->format('Y-m-d'), (string) $renta->hora_devolucion,
+                $category
+            )['cargo_extra'];
+        } catch (InvalidArgumentException $e) {
+            $cargoExtra = false;
+        }
+
+        // Solo se cobra el día extra si la renta abarca más de un día de calendario
+        $totalDias  = (int) $renta->total_dias;
+        $cargoExtra = $cargoExtra && $totalDias > 1
+            && $renta->fecha_entrega->diffInDays($renta->fecha_devolucion) > 0;
+
+        // Con día extra: tarifa de los días base + 1 día a precio diario. Como el total se calcula
+        // sobre todos los días juntos, si al sumar el extra se completa una semana/mes la diferencia
+        // aparece como ajuste por tarifa (así la suma siempre da el total).
+        $diasBase  = $cargoExtra ? $totalDias - 1 : $totalDias;
+        $partidas  = self::desglose($diasBase, $precios);
+        $subtotal  = round(array_sum(array_column($partidas, 'subtotal')), 2);
+        $calculado = round(array_sum(array_column(self::desglose($totalDias, $precios), 'subtotal')), 2);
+        $diaExtra  = $cargoExtra ? (float) $precios->price_per_day : 0.0;
+
+        return [
+            'partidas'    => $partidas,
+            'dias_base'   => $diasBase,
+            'subtotal'    => $subtotal,
+            'cargo_extra' => $cargoExtra,
+            'dia_extra'   => $diaExtra,
+            'ajuste'      => round($calculado - $subtotal - $diaExtra, 2),
+            'calculado'   => $calculado,
+            'coincide'    => abs($calculado - (float) $renta->costo_total) < 0.01,
+            'guardados'   => $preciosGuardados,
+        ];
     }
 
     private static function minutosDelDia(string $hora): int

@@ -2,10 +2,11 @@
     Tarjeta de "Resumen de Costo" con edición rápida (lápiz → input → PATCH rentas.campoRapido).
     Parámetros: $campo (columna de rentas, ver RentaController::CAMPOS_RAPIDOS), $titulo,
     $valor (monto a mostrar, puede venir de otro lado), $valorEditar (valor inicial del input),
-    $nota (texto chico bajo el monto, opcional), $vacio (texto si $valor es null).
+    $nota (texto chico bajo el monto, opcional), $vacio (texto si $valor es null),
+    $columna (clases de ancho, opcional).
 --}}
 @php $editando = $errors->has($campo); @endphp
-<div class="col-12 col-sm-12 col-md-4 col-lg-4 p-1" data-tarjeta-editable>
+<div class="{{ $columna ?? 'col-12 col-sm-12 col-md-4 col-lg-4' }} p-1" data-tarjeta-editable>
 <div class="h-100 rounded p-3 text-center position-relative" style="background:#f5f6f8; border:1px solid #e0e3e8;">
     <button type="button" class="boton_editar_rapido position-absolute top-0 end-0 m-1 {{ $editando ? 'd-none' : '' }}" data-editar title="Editar {{ mb_strtolower($titulo) }}">
         <i class="bi bi-pencil-fill"></i>

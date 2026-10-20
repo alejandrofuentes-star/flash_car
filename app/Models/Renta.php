@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\RentaPricingCalculator;
 use Illuminate\Database\Eloquent\Model;
 
 class Renta extends Model
@@ -25,6 +26,7 @@ class Renta extends Model
         'costo_por_dia'    => 'decimal:2',
         'descuento'        => 'decimal:2',
         'total_general'    => 'decimal:2',
+        'desglose_original' => 'array',
         'mail_enviado'     => 'boolean',
         'mail_enviado_at'  => 'datetime',
     ];
@@ -38,6 +40,32 @@ class Renta extends Model
             }
             $renta->total_general = $renta->calcularTotalGeneral();
         });
+
+        // Foto fija del desglose al generar la renta (historial); nunca se vuelve a modificar
+        static::creating(function ($renta) {
+            $renta->desglose_original ??= $renta->armarDesgloseOriginal();
+        });
+    }
+
+    // Fechas, días, precios y desglose de la renta tal como están ahora (null si el auto no tiene categoría)
+    public function armarDesgloseOriginal(): ?array
+    {
+        $category = $this->vehicle?->category;
+        if (!$category) {
+            return null;
+        }
+
+        return [
+            'fecha_entrega'    => $this->fecha_entrega->format('Y-m-d'),
+            'hora_entrega'     => substr((string) $this->hora_entrega, 0, 5),
+            'fecha_devolucion' => $this->fecha_devolucion->format('Y-m-d'),
+            'hora_devolucion'  => substr((string) $this->hora_devolucion, 0, 5),
+            'total_dias'       => (int) $this->total_dias,
+            'costo_total'      => (float) $this->costo_total,
+            'vehiculo'         => $this->vehicle->name,
+            'categoria'        => $category->name,
+            'generado_at'      => now(Vehicle::TZ_OPERACION)->toDateTimeString(),
+        ] + RentaPricingCalculator::desgloseDeRenta($this, $category);
     }
 
     // Costo por día de la renta o, si no tiene, el del vehículo (null si ninguno lo tiene)

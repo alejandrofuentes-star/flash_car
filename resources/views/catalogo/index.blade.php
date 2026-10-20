@@ -100,41 +100,6 @@
 
 </section>
 <!--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
-<!--contador de mundial-->
-<section>
-    <div class="py-5 bg_amarillo img_fondo_mundial">
-        <div class="container">
-            <div class="row">
-                <div class="col-12 d-flex align-items-center justify-content-center">
-                    <h2 class="fs-2 pb-2 text-center text_uppcase">{{ __('countdown.title') }}</h2>
-                </div>
-                <div class="linea_degradada_mundial"></div>
-                <div class="col-12 d-flex align-items-center justify-content-center py-2">
-                    <div class="col-2 d-flex align-items-center justify-content-center flex-column">
-                        <p class="fs-1 m-0"><b id="dias">0</b></p>
-                        <p class="fs-4 m-0">{{ __('countdown.days') }}</p>
-                    </div>
-                    <div class="col-2 d-flex align-items-center justify-content-center">
-                        <img src="{{ asset('./img/balon.png') }}" width="30%" alt="balón flash car">
-                    </div>
-                    <div class="col-2 d-flex align-items-center justify-content-center flex-column">
-                        <p class="fs-1 m-0"><b id="horas">0</b></p>
-                        <p class="fs-4 m-0">{{ __('countdown.hours') }}</p>
-                    </div>
-                    <div class="col-2 d-flex align-items-center justify-content-center">
-                        <img src="{{ asset('./img/balon.png') }}" width="30%" alt="balón flash car">
-                    </div>
-                    <div class="col-2 d-flex align-items-center justify-content-center flex-column">
-                        <p class="fs-1 m-0"><b id="minutos">0</b></p>
-                        <p class="fs-4 m-0">{{ __('countdown.minutes') }}</p>
-                    </div>
-                </div>
-                <div class="linea_degradada_mundial"></div>
-            </div>
-        </div>
-    </div>
-</section>
-<!--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
 <!--segunda sección - pasos-->
 <section>
     <div class="py-5 bg-white">
@@ -514,9 +479,7 @@
 
 @include('layout.burbujas')
 @include('layout.footer')
-<script src="{{ asset('./js/slider_principal.js') }}"></script>
-<script src="{{ asset('./js/contador_mundial.js') }}"></script>
-<script>
+<script src="{{ asset('./js/slider_principal.js') }}"></script><script>
 (function () {
     var el = document.getElementById('contador_visitantes');
     var tSingular = @json(__('hero.visiting_singular'));
