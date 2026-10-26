@@ -113,16 +113,20 @@
                         <input class="input_form_f_b fs-6 p-1" type="date" name="next_verification" value="{{ old('next_verification', $vehicle->next_verification ?? '') }}">
                     </div>
                     <div class="col-12 col-sm-12 col-md-6 col-lg-4 fila_form_f_b py-2">
-                        <label class="label_form_f_b fs-6 p-1"><b>Ciudad disponible</b></label>
-                        <select class="input_form_f_b fs-6 p-1" name="state_id">
-                            <option value="">-- Selecciona una ciudad --</option>
+                        <label class="label_form_f_b fs-6 p-1"><b>Ciudades disponibles</b></label>
+                        <div class="input_form_f_b p-2 d-flex flex-wrap">
+                            @php $selectedStates = old('state_ids', []); @endphp
                             @foreach($states as $state)
-                                <option value="{{ $state->id }}" {{ old('state_id') == $state->id ? 'selected' : '' }}>{{ $state->name }}</option>
+                                <label class="d-flex align-items-center fs-6 me-3 mb-1">
+                                    <input type="checkbox" name="state_ids[]" value="{{ $state->id }}"
+                                        {{ in_array($state->id, $selectedStates) ? 'checked' : '' }}>
+                                    <span class="ms-1">{{ $state->name }}</span>
+                                </label>
                             @endforeach
-                        </select>
-                        @if($states->isEmpty())
-                            <small class="text-muted">No hay ciudades registradas</small>
-                        @endif
+                            @if($states->isEmpty())
+                                <span class="text-muted fs-6">No hay ciudades registradas</span>
+                            @endif
+                        </div>
                     </div>
                 </div>
 

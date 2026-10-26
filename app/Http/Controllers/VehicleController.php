@@ -162,7 +162,8 @@ class VehicleController extends Controller
             'active'       => 'boolean',
             'mileage'      => 'nullable|integer|min:0',
             'next_verification' => 'nullable|date',
-            'state_id'     => 'nullable|exists:states,id',
+            'state_ids'    => 'nullable|array',
+            'state_ids.*'  => 'exists:states,id',
         ]);
 
         if ($request->hasFile('image')) {
@@ -190,9 +191,9 @@ class VehicleController extends Controller
         $validated['active']    = $request->has('active');
         $validated['mostrar_en_catalogo'] = $request->has('mostrar_en_catalogo');
 
-        // Un vehículo opera en una sola ciudad (se sigue guardando en la pivot state_vehicle)
-        $stateIds = !empty($validated['state_id']) ? [$validated['state_id']] : [];
-        unset($validated['state_id']);
+        // Un vehículo puede operar en varias ciudades (pivot state_vehicle)
+        $stateIds = $validated['state_ids'] ?? [];
+        unset($validated['state_ids']);
         unset($validated['motivo_inactivo']);
 
         $vehicle = Vehicle::create($validated);
@@ -246,7 +247,8 @@ class VehicleController extends Controller
             'mileage'           => 'nullable|integer|min:0',
             'next_verification' => 'nullable|date',
             'motivo_inactivo'   => 'nullable|in:Servicio,Mtto Mayor,Traslado',
-            'state_id'     => 'nullable|exists:states,id',
+            'state_ids'    => 'nullable|array',
+            'state_ids.*'  => 'exists:states,id',
         ]);
 
         if ($request->hasFile('image')) {
@@ -281,9 +283,9 @@ class VehicleController extends Controller
         $validated['mostrar_en_catalogo'] = $request->has('mostrar_en_catalogo');
         $validated['motivo_inactivo'] = $validated['active'] ? null : ($request->motivo_inactivo ?? null);
 
-        // Un vehículo opera en una sola ciudad (se sigue guardando en la pivot state_vehicle)
-        $stateIds = !empty($validated['state_id']) ? [$validated['state_id']] : [];
-        unset($validated['state_id']);
+        // Un vehículo puede operar en varias ciudades (pivot state_vehicle)
+        $stateIds = $validated['state_ids'] ?? [];
+        unset($validated['state_ids']);
 
         $vehicle->update($validated);
         $vehicle->states()->sync($stateIds);
