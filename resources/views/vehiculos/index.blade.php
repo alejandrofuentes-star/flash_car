@@ -25,7 +25,8 @@
                     </div>
 
                     <div class="col-12">
-                        <div class="col-12 over_max_height_70">
+                        <div class="col-12 over_max_height_70" style="overflow-x:auto;">
+                        <div style="min-width:1000px">
                             {{-- Encabezado dentro del contenedor con scroll: así comparte el mismo ancho que las filas --}}
                             <div class="col-12 bg_amarillo d-flex align-items-center justify-content-start" style="position:sticky; top:0; z-index:2;">
                                 <p class="col-3 col-sm-3 col-md-3 col-lg-3 border_right px-1 text-dark my-1"><b>Nombre</b></p>
@@ -37,7 +38,7 @@
                                 <p class="col-4 col-sm-4 col-md-4 col-lg-4 px-1 text-dark my-1"><b></b></p>
                             </div>
                             @forelse($categories as $category)
-                            <div class="col-12 d-flex align-items-center justify-content-start flex-wrap border_gris_2_buttom">
+                            <div class="col-12 d-flex align-items-center justify-content-start border_gris_2_buttom">
                                 <p class="col-3 col-sm-3 col-md-3 col-lg-3 border_right_dato px-1 my-1">{{ $category->name }}</p>
                                 <p class="col-1 col-sm-1 col-md-1 col-lg-1 border_right_dato px-1 my-1">{{ $category->formatted_price_per_day }}</p>
                                 <p class="col-1 col-sm-1 col-md-1 col-lg-1 border_right_dato px-1 my-1">{{ $category->formatted_price_per_week }}</p>
@@ -82,7 +83,7 @@
 
                             {{-- Vehículos cuya categoría fue eliminada (category_id = null) --}}
                             @if($sinCategoria > 0)
-                            <div class="col-12 d-flex align-items-center justify-content-start flex-wrap border_gris_2_buttom">
+                            <div class="col-12 d-flex align-items-center justify-content-start border_gris_2_buttom">
                                 <p class="col-3 col-sm-3 col-md-3 col-lg-3 border_right_dato px-1 my-1"><span class="sin_categoria_etiqueta">Sin categoría</span></p>
                                 <p class="col-1 col-sm-1 col-md-1 col-lg-1 border_right_dato px-1 my-1">—</p>
                                 <p class="col-1 col-sm-1 col-md-1 col-lg-1 border_right_dato px-1 my-1">—</p>
@@ -94,6 +95,7 @@
                                 </div>
                             </div>
                             @endif
+                        </div>{{-- fin min-width --}}
                         </div>
                     </div>
                 </div>
