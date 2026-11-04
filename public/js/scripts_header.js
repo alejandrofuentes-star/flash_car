@@ -71,7 +71,6 @@ $('.click_any_side').click(function()
 $("#submenu_clientes").css("opacity","1");
 $(".click_any_side").css("opacity","1");
 //campana de notificaciones (se cierra al hacer clic fuera, sin usar .click_any_side)
-$("#panel_notificaciones").hide();
 
 $('#boton_notificaciones').click(function(e)
 {

@@ -331,6 +331,7 @@ body
 }
 .panel_notificaciones
 {
+    display: none; /* oculto desde el CSS para que no se vea mientras carga el JS */
     z-index: 1050;
     position: fixed;
     top: 62px;
