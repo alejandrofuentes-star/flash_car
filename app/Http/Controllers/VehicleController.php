@@ -54,7 +54,7 @@ class VehicleController extends Controller
                         ->pluck('name');
 
         // Filtros basados solo en las tarjetas que se muestran
-        $categories = $vehicles->pluck('category')->unique('id')->sortBy('name')->values();
+        $categories = $this->ordenarCategoriasCatalogo($vehicles->pluck('category')->unique('id'));
         $passengers = $vehicles->pluck('passengers')->unique()->sort()->values();
 
         $sliderDesktop      = SliderImage::desktop()->active()->orderBy('orden')->get();
@@ -94,7 +94,7 @@ class VehicleController extends Controller
             ->pluck('name');
 
         // Filtros basados solo en las tarjetas que se muestran
-        $categories = $vehicles->pluck('category')->unique('id')->sortBy('name')->values();
+        $categories = $this->ordenarCategoriasCatalogo($vehicles->pluck('category')->unique('id'));
         $passengers = $vehicles->pluck('passengers')->unique()->sort()->values();
 
         $sliderDesktop      = SliderImage::desktop()->active()->orderBy('orden')->get();
@@ -108,6 +108,35 @@ class VehicleController extends Controller
     // "mostrar en catálogo"; si ninguno de los marcados está disponible, se muestra el
     // primero (por nombre) de esa categoría para que la categoría no desaparezca.
     // $vehicles ya viene filtrado a los autos disponibles y ordenado por nombre.
+    // Orden del filtro de categorías del catálogo público. Se compara el nombre sin
+    // mayúsculas, acentos ni espacios extra; las categorías que no estén aquí van al final por nombre.
+    private const ORDEN_CATEGORIAS_CATALOGO = [
+        'intermedio',
+        'fullsize',
+        'suv',
+        'suv 7',
+        'suv lux',
+        'minivan',
+        'pickup',
+        'suburban',
+        'van pasajeros',
+        'van carga',
+        'van de carga',
+        'van sprinter',
+        'golf kart 4',
+        'golf kart 6',
+    ];
+
+    private function ordenarCategoriasCatalogo($categories)
+    {
+        $orden = array_flip(self::ORDEN_CATEGORIAS_CATALOGO);
+        $clave = fn($c) => Str::of($c->name)->ascii()->lower()->squish()->toString();
+
+        return $categories
+            ->sortBy(fn($c) => [$orden[$clave($c)] ?? PHP_INT_MAX, $clave($c)])
+            ->values();
+    }
+
     private function autosDelCatalogo($vehicles)
     {
         return $vehicles
