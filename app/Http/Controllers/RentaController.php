@@ -445,18 +445,10 @@ class RentaController extends Controller
 
         // Si cambia el vehículo o las fechas (y la renta sigue ocupando el auto), el vehículo no puede
         // tener otra renta que se cruce con el nuevo rango
+        // Se permite mover la entrega a fechas/horas pasadas (corregir rentas ya ocurridas).
         $rangoNuevo  = $this->rangoRenta($validated);
 
-        // Si se mueve la entrega, no puede quedar en una fecha/hora que ya pasó (hora local de operación).
-        // Si no se toca, se permite editar rentas cuya entrega ya ocurrió.
-        if ($rangoNuevo[0] !== $this->rangoRenta($renta)[0]
-            && $rangoNuevo[0] < now(Vehicle::TZ_OPERACION)->format('Y-m-d H:i')) {
-            return back()
-                ->withErrors(['fecha_entrega' => 'La fecha y hora de entrega no pueden ser anteriores al momento actual.'])
-                ->withInput();
-        }
-
-        $cambioAlgo  =(int) $vehicle->id !== (int) $renta->vehicle_id || $rangoNuevo !== $this->rangoRenta($renta);
+        $cambioAlgo  = (int) $vehicle->id !== (int) $renta->vehicle_id || $rangoNuevo !== $this->rangoRenta($renta);
         if ($cambioAlgo && in_array($validated['estado'], Vehicle::ESTADOS_OCUPAN)
             && !$vehicle->estaLibreEntre($rangoNuevo[0], $rangoNuevo[1], $renta->id)) {
             return back()
