@@ -54,7 +54,7 @@ class VehicleController extends Controller
                         ->pluck('name');
 
         // Filtros basados solo en las tarjetas que se muestran
-        $categories = $vehicles->pluck('category')->sortBy('name')->values();
+        $categories = $vehicles->pluck('category')->unique('id')->sortBy('name')->values();
         $passengers = $vehicles->pluck('passengers')->unique()->sort()->values();
 
         $sliderDesktop      = SliderImage::desktop()->active()->orderBy('orden')->get();
@@ -94,7 +94,7 @@ class VehicleController extends Controller
             ->pluck('name');
 
         // Filtros basados solo en las tarjetas que se muestran
-        $categories = $vehicles->pluck('category')->sortBy('name')->values();
+        $categories = $vehicles->pluck('category')->unique('id')->sortBy('name')->values();
         $passengers = $vehicles->pluck('passengers')->unique()->sort()->values();
 
         $sliderDesktop      = SliderImage::desktop()->active()->orderBy('orden')->get();
