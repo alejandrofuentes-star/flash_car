@@ -395,13 +395,18 @@ class RentaController extends Controller
             ->orderBy('name')
             ->get();
 
-        // Solo vehículos libres en las fechas de esta renta (sin contar la propia renta);
-        // el vehículo actual de la renta siempre se incluye para no perderlo del select.
+        // Se listan todos los vehículos; los que no están libres en las fechas de esta renta
+        // (sin contar la propia renta) se muestran deshabilitados con el motivo.
+        // El vehículo actual de la renta siempre queda seleccionable.
         [$entrega, $devolucion] = $this->rangoRenta($renta);
-        $vehicles = Vehicle::where(fn($q) => $q->libreEntre($entrega, $devolucion, $renta->id))
-            ->orWhere('id', $renta->vehicle_id)
-            ->orderBy('name')
-            ->get(['id', 'name', 'plate_number', 'category_id']);
+        $idsLibres = Vehicle::libreEntre($entrega, $devolucion, $renta->id)->pluck('id')->flip();
+        $vehicles = Vehicle::orderBy('name')
+            ->get(['id', 'name', 'plate_number', 'category_id', 'active', 'available'])
+            ->each(function ($v) use ($idsLibres, $renta) {
+                $v->seleccionable = $v->id == $renta->vehicle_id || $idsLibres->has($v->id);
+                $v->motivo_no_disponible = $v->seleccionable ? null
+                    : (! $v->active ? 'inactivo' : (! $v->available ? 'no disponible' : 'ocupado en esas fechas'));
+            });
 
         $categories = Category::where('active', 1)
             ->orWhere('id', $renta->vehicle?->category_id)

@@ -101,8 +101,8 @@
                         <select class="input_form_f_b fs-6 p-1" name="vehicle_id" id="select_vehiculo" required>
                             <option value="">-- Selecciona un vehículo --</option>
                             @foreach($vehicles as $vehicle)
-                                <option value="{{ $vehicle->id }}" data-categoria="{{ $vehicle->category_id }}" {{ $vehiculoActualId == $vehicle->id ? 'selected' : '' }}>
-                                    {{ $vehicle->name }}{{ $vehicle->plate_number ? ' — ' . $vehicle->plate_number : '' }}
+                                <option value="{{ $vehicle->id }}" data-categoria="{{ $vehicle->category_id }}" data-seleccionable="{{ $vehicle->seleccionable ? 1 : 0 }}" {{ $vehiculoActualId == $vehicle->id ? 'selected' : '' }}>
+                                    {{ $vehicle->name }}{{ $vehicle->plate_number ? ' — ' . $vehicle->plate_number : '' }}{{ $vehicle->motivo_no_disponible ? ' (' . $vehicle->motivo_no_disponible . ')' : '' }}
                                 </option>
                             @endforeach
                         </select>
@@ -184,7 +184,8 @@
     </div>
 </div>
 <script>
-    // Filtra el select de vehículos para mostrar solo los de la categoría elegida
+    // Filtra el select de vehículos para mostrar todos los de la categoría elegida;
+    // los que no están libres en las fechas de la renta salen deshabilitados
     const selectCategoria = document.getElementById('select_categoria');
     const selectVehiculo  = document.getElementById('select_vehiculo');
 
@@ -194,7 +195,7 @@
             if (!opt.value) return;
             const visible = catId !== '' && opt.dataset.categoria === catId;
             opt.hidden   = !visible;
-            opt.disabled = !visible;
+            opt.disabled = !visible || opt.dataset.seleccionable !== '1';
         });
         const actual = selectVehiculo.selectedOptions[0];
         if (actual && actual.value && actual.disabled) selectVehiculo.value = '';
