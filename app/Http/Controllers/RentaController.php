@@ -8,10 +8,13 @@ use App\Models\Category;
 use App\Models\Renta;
 use App\Models\SiteSetting;
 use App\Models\SiteStat;
+use App\Models\SolicitudNoAtendida;
 use App\Models\Vehicle;
 use App\Services\RentaPricingCalculator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
@@ -80,6 +83,75 @@ class RentaController extends Controller
         ];
     }
 
+    /**
+     * Registra una solicitud rechazada por falta de auto libre en las fechas pedidas (demanda no
+     * atendida para reportes). Los reintentos del mismo cliente (correo) para la misma categoría,
+     * auto y fechas en el mismo día suman `intentos` en lugar de duplicar la solicitud.
+     * Nunca interrumpe el flujo de la renta: cualquier error solo se registra en el log.
+     */
+    private function registrarNoAtendida(Request $request, string $origen, ?Vehicle $vehicle = null): void
+    {
+        try {
+            $entrega    = Carbon::parse($request->input('fecha_entrega'));
+            $devolucion = Carbon::parse($request->input('fecha_devolucion'));
+            if ($devolucion->lt($entrega)) {
+                return;
+            }
+
+            $categoryId = $vehicle?->category_id ?? ($request->filled('category_id') ? (int) $request->input('category_id') : null);
+            if ($categoryId && !Category::whereKey($categoryId)->exists()) {
+                $categoryId = null;
+            }
+
+            $correo = filter_var($request->input('correo'), FILTER_VALIDATE_EMAIL) ? mb_strtolower(trim($request->input('correo'))) : null;
+            $hora   = fn ($h) => $h ? substr((string) $h, 0, 5) : null;
+
+            $datos = [
+                'category_id'      => $categoryId,
+                'vehicle_id'       => $vehicle?->id,
+                'fecha_entrega'    => $entrega->toDateString(),
+                'hora_entrega'     => $hora($request->input('hora_entrega')),
+                'fecha_devolucion' => $devolucion->toDateString(),
+                'hora_devolucion'  => $hora($request->input('hora_devolucion')),
+            ];
+
+            // Días solicitados con la misma regla que el cobro (tolerancia incluida); si no hay categoría
+            // con precios, días calendario entre entrega y devolución
+            $dias = max(1, (int) $entrega->copy()->startOfDay()->diffInDays($devolucion->copy()->startOfDay()));
+            $categoria = $categoryId ? Category::find($categoryId) : null;
+            if ($categoria && $datos['hora_entrega'] && $datos['hora_devolucion']) {
+                try {
+                    $dias = (int) RentaPricingCalculator::calcular(
+                        $datos['fecha_entrega'], $datos['hora_entrega'],
+                        $datos['fecha_devolucion'], $datos['hora_devolucion'],
+                        $categoria
+                    )['total_dias'];
+                } catch (\InvalidArgumentException $e) {
+                    // se queda el cálculo por días calendario
+                }
+            }
+
+            $existente = SolicitudNoAtendida::where($datos)
+                ->where('correo', $correo)
+                ->whereDate('created_at', now()->toDateString())
+                ->first();
+
+            if ($existente) {
+                $existente->increment('intentos');
+                return;
+            }
+
+            SolicitudNoAtendida::create($datos + [
+                'total_dias'      => $dias,
+                'nombre_completo' => mb_substr((string) $request->input('nombre_completo'), 0, 150) ?: null,
+                'correo'          => $correo,
+                'origen'          => $origen,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('No se pudo registrar la solicitud no atendida: ' . $e->getMessage());
+        }
+    }
+
     public function createPaymentIntent(Request $request)
     {
         // Formulario general: resolver vehículo a partir de categoría (misma lógica que store())
@@ -93,6 +165,8 @@ class RentaController extends Controller
                 ->first();
             if ($vehicleResuelto) {
                 $request->merge(['vehicle_id' => $vehicleResuelto->id]);
+            } elseif ($request->filled(['fecha_entrega', 'fecha_devolucion'])) {
+                $this->registrarNoAtendida($request, 'pago_categoria');
             }
         }
 
@@ -121,6 +195,7 @@ class RentaController extends Controller
 
         // Se valida antes de cobrar: el auto no puede tener otra renta que se cruce con esas fechas
         if (!$vehicle->estaLibreEntre(...$this->rangoRenta($validated))) {
+            $this->registrarNoAtendida($request, 'pago_vehiculo', $vehicle);
             return response()->json(['error' => __('form.vehicle_not_available')], 422);
         }
 
@@ -208,6 +283,9 @@ class RentaController extends Controller
                     ->first();
             }
             if (!$vehicle) {
+                if ($request->filled(['fecha_entrega', 'fecha_devolucion'])) {
+                    $this->registrarNoAtendida($request, 'formulario');
+                }
                 return back()
                     ->withErrors(['category_id' => __('form.no_vehicles_category')])
                     ->withInput();
@@ -245,6 +323,7 @@ class RentaController extends Controller
 
         // Sin pago con tarjeta no hay cobro previo que proteger: se rechaza si el auto ya está rentado en esas fechas
         if (SiteSetting::get('pago_tarjeta', '1') !== '1' && !$vehicle->estaLibreEntre(...$this->rangoRenta($validated))) {
+            $this->registrarNoAtendida($request, 'formulario', $vehicle);
             return back()
                 ->withErrors(['vehicle_id' => __('form.vehicle_not_available')])
                 ->withInput();
@@ -359,8 +438,12 @@ class RentaController extends Controller
         $renta = Renta::findOrFail($id);
         $request->validate([
             'estado' => 'required|in:reserva_confirmada,proxima_entrega,pendiente_pago,contrato_abierto,contrato_finalizado,devolucion_exitosa,dano_faltante,garantia_pendiente,cancelada',
+            'motivo_cancelacion' => 'nullable|required_if:estado,cancelada|in:' . implode(',', array_keys(Renta::MOTIVOS_CANCELACION)),
+        ], [
+            'motivo_cancelacion.required_if' => 'Selecciona el motivo de la cancelación.',
         ]);
-        $renta->update(['estado' => $request->estado]);
+        // El modelo limpia el motivo si el estado no es "cancelada"
+        $renta->update(['estado' => $request->estado, 'motivo_cancelacion' => $request->motivo_cancelacion]);
 
         return back()->with('success', 'Estado actualizado correctamente');
     }
@@ -444,6 +527,9 @@ class RentaController extends Controller
             'lugar_devolucion' => 'required|string|max:255',
             'num_pasajeros'    => 'required|integer|min:1',
             'estado'           => 'required|in:reserva_confirmada,proxima_entrega,pendiente_pago,contrato_abierto,contrato_finalizado,devolucion_exitosa,dano_faltante,garantia_pendiente,cancelada',
+            'motivo_cancelacion' => 'nullable|required_if:estado,cancelada|in:' . implode(',', array_keys(Renta::MOTIVOS_CANCELACION)),
+        ], [
+            'motivo_cancelacion.required_if' => 'Selecciona el motivo de la cancelación.',
         ]);
 
         $vehicle = Vehicle::with('category')->findOrFail($validated['vehicle_id']);

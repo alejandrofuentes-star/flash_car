@@ -53,9 +53,19 @@ Middleware de roles: `role:admin,super_admin` — definido en `app/Http/Middlewa
 - Edición rápida en `rentas/show` (tarjetas con lápiz del Resumen de Costo): partial `rentas/partials/tarjeta_editable.blade.php` + `PATCH /rentas/{id}/campo/{campo}` (`rentas.campoRapido` → `updateCampoRapido()`). Campos permitidos en `RentaController::CAMPOS_RAPIDOS` (la ruta rechaza otros con 404); para agregar uno: columna + fillable + entrada en esa constante + `@include` del partial. Vacío = null.
 - `estado` valores: `reserva_confirmada` | `proxima_entrega` | `pendiente_pago` | `contrato_abierto` | `contrato_finalizado` | `devolucion_exitosa` | `dano_faltante` | `garantia_pendiente` | `cancelada`
 - Estado inicial al crear una renta: `reserva_confirmada` (default en BD)
+- `motivo_cancelacion` (string, nullable, migración `2026_11_12_000001`): obligatorio al pasar a `cancelada` (`updateEstado()` y `update()`, `required_if`); valores en `Renta::MOTIVOS_CANCELACION` (`falta_disponibilidad`, `cliente_desistio`, `pago_no_completado`, `otro`). El evento `saving` lo limpia si el estado no es `cancelada`. Selector en el partial `rentas/partials/motivo_cancelacion.blade.php` (incluido en el form de estado de `rentas/show` y en `rentas/edit`; se muestra solo con estado cancelada). `falta_disponibilidad` cuenta como demanda no atendida en Reportes. Rentas canceladas antes de la migración quedan sin motivo.
 - `mail_enviado`: bool — indica si el correo de confirmación se envió sin errores
 - `mail_enviado_at`: timestamp del envío exitoso
 - Relación: `belongsTo(Vehicle)`
+
+### `SolicitudNoAtendida` (tabla `solicitudes_no_atendidas`, migración `2026_11_12_000002`)
+- Solicitud de renta rechazada por falta de auto libre (nunca llega a ser `Renta`): `category_id`, `vehicle_id` (solo si pidió un auto específico), fechas/horas, `total_dias` (con `RentaPricingCalculator`), `nombre_completo`, `correo`, `origen` (`SolicitudNoAtendida::ORIGENES`: `pago_categoria`, `pago_vehiculo`, `formulario`), `intentos`.
+- La llena `RentaController::registrarNoAtendida()` en los rechazos de `createPaymentIntent()` (categoría sin autos libres / auto elegido ocupado) y de `store()` (sin autos en la categoría / sin tarjeta y auto ocupado). Reintentos del mismo correo + categoría + auto + fechas el mismo día suman `intentos`. Nunca rompe el flujo (errores solo al log). El webhook de Stripe no rechaza rentas pagadas, así que no registra.
+
+### `VehiculoDisponibilidad` (tabla `vehiculo_disponibilidad`, migración `2026_11_12_000003`)
+- Historial de la flota: `vehicle_id` (sin FK a propósito, se conserva si se borra el auto), `active`, `available`, `desde` (UTC), `reconstruido`. Lo llenan eventos de `Vehicle`: `created`, `updated` (si cambia `active`/`available`) y `deleted` (registra baja). El estado de un auto en una fecha = su último registro con `desde` ≤ cierre del día (hora de operación).
+- La migración sembró un registro por auto existente con su estado actual desde `min(created_at, primera fecha_entrega)` y `reconstruido = true` (aproximación: antes no había historial).
+- No actualizar `active`/`available` con `->update()` masivo por query builder: se saltaría el historial.
 
 ### `SliderImage`
 - Campos: `type` (enum: desktop/mobile), `image_path`, `orden`, `active`
@@ -98,31 +108,54 @@ Middleware de roles: `role:admin,super_admin` — definido en `app/Http/Middlewa
 - Datos: view composer de `layout.header` en `AppServiceProvider::boot()` → `$notificaciones` (colección de `['icono','titulo','detalle','urgente','url']`). Solo se llena para `hasAdminAccess()`.
 - Se calculan al vuelo en cada carga. Para agregar otra alerta, sumar elementos a esa colección con una `clave` única (`tipo:id:fecha`); incluir la fecha hace que la alerta vuelva a salir cuando cambia (ej. siguiente pago).
 - Leído/no leído: tabla `notificaciones_leidas` (`user_id`, `clave`, único por par) — modelo `NotificacionLeida`, por usuario. `POST /notificaciones/leidas` (`notificaciones.leidas`, `NotificacionController::marcarLeidas`, recibe `claves[]`) se llama por fetch al hacer clic en una alerta o en "Marcar todas como leídas"; borra marcas de más de 60 días. El badge cuenta solo las no leídas; las leídas se muestran al final con opacidad.
-- Alerta actual: pago a proveedor — `Vehicle::scopePagoProveedorProximo()` = `fecha_pago_proveedor` entre hoy y hoy + `Vehicle::DIAS_AVISO_PAGO_PROVEEDOR` (3) en hora local; urgente (rojo) si es hoy o mañana; enlaza a `vehicles.show`.
+- Alerta: pago a proveedor — `Vehicle::scopePagoProveedorProximo()` = `fecha_pago_proveedor` entre hoy y hoy + `Vehicle::DIAS_AVISO_PAGO_PROVEEDOR` (3) en hora local; urgente (rojo) si es hoy o mañana; enlaza a `vehicles.show`.
+- Alerta: devolución vencida sin cerrar — `Renta::scopeDevolucionVencida()` = estado en `Renta::ESTADOS_SIN_CERRAR` (`reserva_confirmada`, `proxima_entrega`, `contrato_abierto`) con fecha+hora de devolución ya pasada (hora local); clave `renta_vencida:id:fecha:estado`; urgente si lleva ≥1 día; enlaza a `rentas.show`. Sirve para que el personal cierre los estados y los reportes cuenten bien.
 
 ## Módulo de Reportes (`ReporteController` / `reportes/index.blade.php`)
-Dashboard ejecutivo con filtros de periodo (`7d`, `30d`, `mes`, `anio`, `personalizado`) y filtro de estado. Basado en el manual funcional `reportes.md` (referencia, no eliminar — documenta fórmulas de KPIs de renta de autos en general, solo una parte está implementada).
+Dashboard ejecutivo con filtros de periodo (`7d`, `30d`, `mes`, `anio`, `personalizado`) y de **categoría** (`categoria`, sustituyó al filtro de estado el 2026-11-12; aplica a todo el reporte usando la categoría actual de cada auto: flota, rentas, devengado, solicitudes no atendidas y rankings). Basado en el manual funcional `reportes.md` (referencia, no eliminar — documenta fórmulas de KPIs de renta de autos en general).
 
 **Principio del documento:** no mezclar conceptos que son matemáticamente distintos — **ocupación** (foto diaria, 0–100%), **utilización** (acumulado del periodo, vehículo-días), **demanda** (solicitudes recibidas vs. concretadas) y **productividad de flota** (ingresos) son 4 cosas separadas. Si la demanda supera la capacidad, se reporta como "demanda no atendida", nunca como ocupación >100%.
 
-**Estados de `Renta` considerados "renta efectiva" (venta lograda):** `contrato_abierto`, `contrato_finalizado`, `devolucion_exitosa` — constante `ReporteController::ESTADOS_INGRESO`. Se usa tanto para ingresos como para "rentas concretadas" en la gráfica de demanda. Si se agregan más KPIs del documento, reusar esta misma constante (no definir otra lista de estados en otro lado).
+**Estados de `Renta` considerados "renta efectiva" (el auto sí se rentó):** `contrato_abierto`, `contrato_finalizado`, `devolucion_exitosa`, `dano_faltante`, `garantia_pendiente` (los dos últimos agregados el 2026-11-12) — constante pública `ReporteController::ESTADOS_INGRESO`. Base de ingresos, ventas, vehículo-días, ocupación, rentas concretadas y de "Ingresos del mes" del dashboard. Si se agregan más KPIs, reusar esta misma constante (no definir otra lista de estados en otro lado).
 
-**Ingreso = `rentas.total_general`** (sesión 2026-09-30), no `costo_total`: KPI "Ingresos del periodo", comparativo contra el periodo anterior, gráfica de Ingresos e "Ingresos del mes" del dashboard. Se toma de la constante `ReporteController::CAMPO_INGRESO`; si se agrega otro KPI de dinero, usar esa constante.
+**Ingreso = `rentas.total_general`** (sesión 2026-09-30), no `costo_total`; se toma de `ReporteController::CAMPO_INGRESO`. Desde 2026-11-12 hay dos medidas:
+- **Ingreso devengado** (`calcularIngresoDevengado()`): el total generado de cada renta efectiva se reparte en partes iguales entre sus noches y al periodo le toca lo de los días dentro del rango que ya ocurrieron. Es el KPI "Ingreso devengado" (con comparativo), la línea principal de la gráfica de Ingresos, ingreso por día rentado, ingreso por vehículo y el Top por ingreso.
+- **Ventas** (por `created_at`): total generado de las rentas efectivas creadas en el periodo. Tarjeta "Ventas del periodo", línea punteada de la gráfica, base del ticket promedio, y "Ingresos del mes" del dashboard.
+- El comparativo de ingreso en un periodo que no ha terminado usa los mismos días transcurridos del periodo anterior; si el periodo aún no empieza no hay comparativo.
+- El sistema no maneja IVA: la sección Ingresos lo aclara ("importes tal como se cobran"). Pendiente que el cliente defina si los precios incluyen IVA.
 
 **Gráfica de Ocupación (corregida sesión 2026-09-18):**
 - Antes sumaba `total_dias` de rentas *creadas* ese día / vehículos activos → podía dar 150%, 240%, etc. (bug descrito en el documento).
-- Ahora: `calcularOcupacionDiaria()` cuenta vehículos **únicos** (solo flota `active=true`) con una renta no cancelada cuyo rango `fecha_entrega`–`fecha_devolucion` cubre ese día, dividido entre el total de flota activa. Numerador y denominador restringidos a la misma flota activa actual → nunca puede superar 100% (el chart además fija el eje Y en 0–100%).
-- No hay historial de disponibilidad por fecha en el sistema (el documento lo pide en la sección 1) — se usa la flota activa **actual** como aproximación tanto para el día de hoy como para fechas pasadas. Si se necesita precisión histórica real habría que guardar snapshots de disponibilidad por fecha.
+- Ahora: `calcularOcupacionDiaria()` cuenta vehículos **únicos** (solo flota `active=true`) con una renta en `ESTADOS_INGRESO` cuyo rango `fecha_entrega`–`fecha_devolucion` cubre ese día, dividido entre el total de flota activa (desde 2026-11-12 sale del mapa de `calcularVehiculoDias()`, ver abajo). Numerador y denominador restringidos a la misma flota activa actual → nunca puede superar 100% (el chart además fija el eje Y en 0–100%).
+- Desde 2026-11-12 el denominador sale del historial `VehiculoDisponibilidad` (ver "Flota histórica" abajo); antes de esa fecha el historial es reconstruido con el estado actual de cada auto.
 - En rangos largos (>62 días, ej. filtro "año") el bucket mensual es el **promedio** de la ocupación diaria de ese mes, no una fórmula distinta.
 
 **Gráfica de Demanda (corregida sesión 2026-09-18):**
 - Antes era una sola línea, etiquetada "reservas concretadas" pero en realidad contaba reservas no-canceladas creadas ese día (ni era demanda total ni eran solo las concretadas).
 - Ahora son dos líneas basadas en `created_at`: **Demanda recibida** (todas las rentas creadas ese día/mes, cualquier estado) y **Rentas concretadas** (estado en `ESTADOS_INGRESO`).
 
+**Vehículo-días (sesión 2026-11-12):** `calcularVehiculoDias($desde, $hasta, $flotaPorDia)` es la base única de Ocupación, Utilización, Días rentados, Top 5, Categoría más rentada y el comparativo de utilización. Devuelve `['Y-m-d' => [vehicle_id => true]]`: solo rentas en `ESTADOS_INGRESO`, días **por noches** (`nochesDeRenta()`: de `fecha_entrega` al día anterior a `fecha_devolucion`; si son el mismo día cuenta 1; coincide con lo cobrado), solo los que caen en el rango, máximo 1 vehículo-día por auto y fecha, y solo si ese día el auto estaba en la flota. Helpers: `sumarVehiculoDias()`, `diasPorVehiculo()`, `rentasQueCruzan()`.
+
+**Días futuros:** `calcularFlotaPorDia()` deja sin flota los días posteriores a hoy (hora local), así no suman capacidad ni utilización; el devengado tampoco cuenta días futuros. En la vista, capacidad usa `diasTranscurridos` y las series quedan en null (hueco) para fechas futuras. "Ocupación del último día" = último día del rango que ya ocurrió.
+
+**KPIs de la sección 13 (sesión 2026-11-12):** la columna izquierda de `reportes/index` tiene 3 bloques (Flota y ocupación · Ingresos · Comercial) armados con el partial `reportes/partials/kpi.blade.php` (titulo, valor, unidad, detalle, detalleClase, detalleIcono, color, ayuda = tooltip con la fórmula). Definiciones en `index()`:
+- Flota activa (base de los %) + `Vehicle::disponibleAhora()` como "disponibles para rentar ahora"; ocupación del último día del rango; capacidad = activos × días; vehículos utilizados = autos con ≥1 vehículo-día.
+- Demanda recibida / en días = todas las rentas creadas en el periodo (cualquier estado) + solicitudes no atendidas; concretadas = `ESTADOS_INGRESO`; conversión = concretadas / recibidas.
+- Clientes únicos = correo en minúsculas (o teléfono si no hay correo) de las concretadas — no existe `customer_id`.
+- Ticket = ventas / concretadas; duración promedio = `total_dias` de las concretadas / concretadas (no vehículo-días del rango, para no partir contratos); ingreso por día rentado = devengado / vehículo-días; ingreso por vehículo = devengado / flota promedio (capacidad ÷ días transcurridos).
+
+**Gráficas y Top 5 (sesión 2026-11-12):**
+- Gráficas en 2×2: Ocupación diaria (línea punteada = promedio del periodo; tooltip "X de Y autos rentados", en buckets mensuales "promedio X de Y autos por día") · Utilización acumulada (Σ vehículo-días rentados / Σ disponibles desde el inicio del rango; el último punto = KPI "Utilización del periodo") · Ingresos · Demanda. Datos en `construirSeries()`: `rentados`, `ocupacionPromedio`, `flotaActiva`, `utilizacionAcumulada`, `rentadosAcumulados`, `capacidadAcumulada`, `mensual`.
+- Top 5 alternable sin recargar (botones Vehículos/Categorías + select de criterio, listas `.lista_top` renderizadas en servidor) con `ReporteController::CRITERIOS_RANKING` (dias, utilizacion, ingreso, contratos, no_atendida), armado en `construirRankings()`. Días = vehículo-días del rango; utilización = días / días en flota (historial) del auto o de los autos de la categoría; ingreso = devengado; contratos = rentas concretadas creadas en el periodo. "Categoría más rentada" = primer lugar de `categorias.dias`.
+
+**Flota histórica y demanda no atendida (sesión 2026-11-12):**
+- `calcularFlotaPorDia($desde, $hasta)` arma `['Y-m-d' => [vehicle_id => true]]` desde `VehiculoDisponibilidad` (un auto cuenta si está activo; si `ReporteController::FLOTA_REQUIERE_AVAILABLE` = true, además debe estar marcado disponible — regla que define FlashCar, hoy false). Es el denominador de ocupación, utilización, capacidad, utilización por vehículo/categoría y del comparativo. `calcularVehiculoDias()` solo cuenta un auto rentado si ese día estaba en la flota → nunca >100%. Los días sin flota quedan en null en la serie de ocupación (hueco), y `ocupacionPromedio` es ponderado (Σ rentados / Σ flota = utilización).
+- Demanda no atendida = `SolicitudNoAtendida` creadas en el periodo + rentas creadas en el periodo canceladas con `falta_disponibilidad`. Tarjeta "Demanda no atendida" (solicitudes y días), serie `noAtendida` (3ª línea punteada roja en Demanda), criterio `no_atendida` del Top 5 (categoría: por `category_id`; vehículo: solo cuando se pidió ese auto). "Demanda recibida" / "Demanda en días" (y por lo tanto la conversión) incluyen las solicitudes no atendidas, como el ejemplo de la sección 5 del manual.
+
 **Pendiente del documento `reportes.md` (no implementado, fuera de alcance de la sesión 2026-09-18):**
-- Utilización de flota, Ingresos, Días rentados y Top 5 vehículos siguen calculándose sobre `total_dias`/`costo_total` de rentas filtradas por `created_at`, sin recortar la porción del contrato que cae fuera del rango filtrado (mismo tipo de bug ya corregido en Ocupación, pero en otros KPIs — ver secciones 2, 6, 7 y 8 del documento).
-- Demanda no atendida (sección 5 del documento): no existe forma de distinguir una reserva cancelada por falta de disponibilidad de una cancelada por otro motivo. Requeriría agregar un campo/motivo de cancelación a `Renta`.
-- Tasa de conversión, ticket promedio, duración promedio, clientes únicos (secciones 4, 6, 7): no implementados.
+- Ingresos siguen tomándose por `created_at` de la renta (falta definir con el cliente la fecha de reconocimiento del ingreso). Utilización, Días rentados, Top 5 y Categoría ya se corrigieron (2026-11-12).
+- Serie opcional de días solicitados en Demanda (no se agregó para no usar doble eje).
+- Decisiones pendientes con el cliente: si los precios incluyen IVA y si un auto "no disponible" cuenta como capacidad (`FLOTA_REQUIERE_AVAILABLE`, hoy false). Ya aplicado 2026-11-12: días por noches, devengado + ventas, daño/faltante y garantía pendiente como renta efectiva, filtro de categoría, días futuros sin capacidad, aviso de devoluciones vencidas.
 
 ## CSS — dos archivos separados
 

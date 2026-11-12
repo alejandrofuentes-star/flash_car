@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\NotificacionLeida;
+use App\Models\Renta;
 use App\Models\Vehicle;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -54,6 +55,36 @@ class AppServiceProvider extends ServiceProvider
                             'url'     => route('vehicles.show', $vehicle->id),
                         ];
                     });
+
+                // Rentas con la devolución vencida que siguen reservadas / por entregar / abiertas:
+                // el estado no se actualizó y los reportes no las cuentan bien hasta que se cierre.
+                // La clave incluye el estado: si cambia a otro estado sin cerrar, vuelve a avisar.
+                $etiquetasEstado = [
+                    'reserva_confirmada' => 'Reserva confirmada',
+                    'proxima_entrega'    => 'Próxima entrega',
+                    'contrato_abierto'   => 'Contrato abierto',
+                ];
+                $vencidas = Renta::devolucionVencida()
+                    ->with('vehicle:id,name')
+                    ->orderBy('fecha_devolucion')
+                    ->get(['id', 'vehicle_id', 'nombre_completo', 'fecha_devolucion', 'estado'])
+                    ->map(function ($renta) use ($hoy, $etiquetasEstado) {
+                        $fecha = Carbon::parse($renta->fecha_devolucion->toDateString(), Vehicle::TZ_OPERACION)->startOfDay();
+                        $dias  = (int) $fecha->diffInDays($hoy);
+
+                        return [
+                            'clave'   => "renta_vencida:{$renta->id}:{$fecha->toDateString()}:{$renta->estado}",
+                            'icono'   => 'bi-exclamation-triangle-fill',
+                            'titulo'  => 'Devolución vencida sin cerrar (' . ($etiquetasEstado[$renta->estado] ?? $renta->estado) . ')',
+                            'detalle' => "#{$renta->id} {$renta->nombre_completo}"
+                                . ($renta->vehicle ? " · {$renta->vehicle->name}" : '')
+                                . ' · devolvía ' . $fecha->format('d/m/Y')
+                                . ($dias > 0 ? " (hace {$dias} " . ($dias === 1 ? 'día' : 'días') . ')' : ' (hoy)'),
+                            'urgente' => $dias >= 1,
+                            'url'     => route('rentas.show', $renta->id),
+                        ];
+                    });
+                $notificaciones = $notificaciones->concat($vencidas);
 
                 $leidas = NotificacionLeida::where('user_id', Auth::id())
                     ->whereIn('clave', $notificaciones->pluck('clave'))

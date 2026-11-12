@@ -75,6 +75,15 @@ class Vehicle extends Model
             }
         });
 
+        // Historial de disponibilidad para reportes (ver VehiculoDisponibilidad)
+        static::created(fn ($vehicle) => VehiculoDisponibilidad::registrar($vehicle));
+        static::updated(function ($vehicle) {
+            if ($vehicle->wasChanged(['active', 'available'])) {
+                VehiculoDisponibilidad::registrar($vehicle);
+            }
+        });
+        static::deleted(fn ($vehicle) => VehiculoDisponibilidad::registrar($vehicle, false, false));
+
         static::deleting(function ($vehicle) {
             if ($vehicle->image_path && Storage::disk('public')->exists($vehicle->image_path)) {
                 Storage::disk('public')->delete($vehicle->image_path);

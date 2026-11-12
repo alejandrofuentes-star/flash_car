@@ -51,6 +51,11 @@
                             @endphp
                             <span class="badge bg-{{ $badgeClass }} fs-6">{{ $badgeLabel }}</span>
                         </span>
+                        @if($renta->estado === 'cancelada')
+                            <span class="d-block text-muted px-1" style="font-size:0.8rem;">
+                                Motivo: {{ \App\Models\Renta::MOTIVOS_CANCELACION[$renta->motivo_cancelacion] ?? 'Sin motivo registrado' }}
+                            </span>
+                        @endif
                     </div>
                     <div class="col-12 col-sm-12 col-md-6 col-lg-6 fila_form_f_b py-2">
                         <form class="col-12" method="POST" action="{{ route('rentas.estado', $renta->id) }}" class="d-flex align-items-center gap-2">
@@ -67,6 +72,7 @@
                                 <option value="garantia_pendiente"  {{ $renta->estado == 'garantia_pendiente'  ? 'selected' : '' }}>Dev. garantía pendiente</option>
                                 <option value="cancelada"           {{ $renta->estado == 'cancelada'           ? 'selected' : '' }}>Cancelada</option>
                             </select>
+                            @include('rentas.partials.motivo_cancelacion')
                             <button type="submit" class="boton_link_xxl my-3 b_sm rounded">Actualizar</button>
                         </form>
                     </div>

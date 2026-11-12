@@ -16,7 +16,8 @@ class DashboardController extends Controller
         $confirmadas           = Renta::where('estado', 'contrato_abierto')->count();
         $vehiculos_disponibles = Vehicle::disponibleAhora()->count();
         $vehiculos_total       = Vehicle::count();
-        $ingresos_mes          = Renta::whereIn('estado', ['contrato_abierto', 'contrato_finalizado', 'devolucion_exitosa'])
+        // Ventas del mes: rentas efectivas creadas este mes (misma lista de estados que Reportes)
+        $ingresos_mes          = Renta::whereIn('estado', ReporteController::ESTADOS_INGRESO)
                                     ->whereMonth('created_at', now()->month)
                                     ->whereYear('created_at', now()->year)
                                     ->sum(ReporteController::CAMPO_INGRESO);

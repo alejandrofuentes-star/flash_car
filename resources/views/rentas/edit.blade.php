@@ -41,6 +41,9 @@
                             <option value="cancelada"           {{ old('estado', $renta->estado) == 'cancelada'           ? 'selected' : '' }}>Cancelada</option>
                         </select>
                     </div>
+                    <div class="col-12 col-md-4 fila_form_f_b py-2">
+                        @include('rentas.partials.motivo_cancelacion')
+                    </div>
                 </div>
 
                 {{-- Datos del cliente --}}
