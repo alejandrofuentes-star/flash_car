@@ -31,6 +31,12 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 419);
             }
 
+            // Formulario que llegó vacío (sin token): el servidor lo descartó por rebasar post_max_size
+            if ($request->isMethod('post') && empty($request->all())) {
+                return back()->with('error', 'El servidor rechazó el envío porque pesa más de lo permitido (post_max_size = '
+                    . ini_get('post_max_size') . '). Por favor avisa al administrador.');
+            }
+
             return back()
                 ->withInput($request->except('password', 'password_confirmation'))
                 ->with('error', 'Tu sesión expiró por inactividad. Por favor intenta de nuevo.');

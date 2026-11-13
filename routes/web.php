@@ -168,6 +168,11 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
 
     // Reportes
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
+    Route::post('/reportes/pdf', [ReporteController::class, 'pdf'])->name('reportes.pdf');
+    // Si la descarga llega como GET (recarga, redirección del servidor), regresa a Reportes con los mismos filtros
+    Route::get('/reportes/pdf', fn (\Illuminate\Http\Request $request) => redirect()
+        ->route('reportes.index', $request->query())
+        ->with('error', 'No se pudo generar el PDF. Vuelve a dar clic en "Descargar PDF".'));
 
     // Notificaciones (campana del header)
     Route::post('/notificaciones/leidas', [NotificacionController::class, 'marcarLeidas'])->name('notificaciones.leidas');

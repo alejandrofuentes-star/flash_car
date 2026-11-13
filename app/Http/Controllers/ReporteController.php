@@ -7,10 +7,14 @@ use App\Models\Renta;
 use App\Models\SolicitudNoAtendida;
 use App\Models\Vehicle;
 use App\Models\VehiculoDisponibilidad;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 
 class ReporteController extends Controller
 {
@@ -35,7 +39,76 @@ class ReporteController extends Controller
         'no_atendida' => 'Más demanda no atendida (días)',
     ];
 
+    // Gráficas que el navegador manda como imagen JPEG/PNG (base64) al descargar el PDF
+    private const GRAFICAS_PDF = ['ocupacion', 'utilizacion', 'ingresos', 'demanda'];
+
     public function index(Request $request)
+    {
+        return view('reportes.index', $this->datosReporte($request));
+    }
+
+    /**
+     * Descarga el reporte en PDF con los mismos filtros (periodo y categoría, en la query string)
+     * y los mismos cálculos que la pantalla. Dompdf no ejecuta JavaScript, así que las gráficas
+     * de Chart.js llegan del navegador como imágenes JPEG en base64 (campos graficas[clave]).
+     */
+    public function pdf(Request $request)
+    {
+        $datos = $this->datosReporte($request);
+
+        $graficas = [];
+        foreach (self::GRAFICAS_PDF as $clave) {
+            $imagen = $request->input("graficas.$clave");
+            // Solo se aceptan JPEG/PNG en base64 y de tamaño razonable (máx. ~3 MB por gráfica)
+            if (is_string($imagen) && strlen($imagen) < 4_000_000
+                && preg_match('#^data:image/(jpeg|png);base64,[A-Za-z0-9+/=]+$#', $imagen)) {
+                $graficas[$clave] = $imagen;
+            }
+        }
+
+        $datos['graficas']      = $graficas;
+        $datos['logo']          = $this->logoParaPdf();
+        $datos['generadoEn']    = now(Vehicle::TZ_OPERACION);
+        $datos['generadoPor']   = $request->user()?->name;
+        $datos['nombreCategoria'] = $datos['categoriaFiltro'] ? $datos['categorias']->firstWhere('id', $datos['categoriaFiltro'])?->name : null;
+
+        $archivo = 'reporte_flashcar_' . $datos['desde']->format('Y-m-d') . '_' . $datos['hasta']->format('Y-m-d')
+            . ($datos['nombreCategoria'] ? '_' . Str::slug($datos['nombreCategoria']) : '') . '.pdf';
+
+        $pdf = Pdf::loadView('reportes.pdf', $datos)->setPaper('letter', 'portrait');
+
+        // Número de página en el pie (counter(pages) de CSS no funciona en Dompdf): se escribe al final
+        $dompdf = $pdf->getDomPDF();
+        $dompdf->render();
+        $lienzo = $dompdf->getCanvas();
+        $lienzo->page_text(
+            $lienzo->get_width() - 76, $lienzo->get_height() - 29,
+            'Página {PAGE_NUM} de {PAGE_COUNT}',
+            $dompdf->getFontMetrics()->getFont('DejaVu Sans'), 6, [0.42, 0.46, 0.49]
+        );
+
+        return $pdf->download($archivo);
+    }
+
+    /** Logo del header (webp) convertido a PNG en base64 para Dompdf; null si no se puede. */
+    private function logoParaPdf(): ?string
+    {
+        try {
+            $ruta = public_path('img/logo.webp');
+            if (!is_file($ruta)) {
+                return null;
+            }
+            $png = (new ImageManager(new Driver()))->read($ruta)->scaleDown(width: 400)->toPng();
+
+            return 'data:image/png;base64,' . base64_encode((string) $png);
+        } catch (\Throwable $e) {
+            report($e);
+            return null;
+        }
+    }
+
+    /** Todos los datos del reporte (KPIs, rankings y series) según los filtros de la query string. */
+    private function datosReporte(Request $request): array
     {
         $periodo = $request->query('periodo', '30d');
 
@@ -159,7 +232,7 @@ class ReporteController extends Controller
 
         $series = $this->construirSeries($rentasPeriodo, $desde, $hasta, $flotaPorDia, $vehiculoDias, $solicitudesNoAtendidas, $devengado['porDia'], $hoy);
 
-        return view('reportes.index', [
+        return [
             'periodo'              => $periodo,
             'categorias'           => $categorias,
             'categoriaFiltro'      => $categoriaFiltro,
@@ -200,7 +273,7 @@ class ReporteController extends Controller
             'utilizacionAnterior'  => $utilizacionAnterior,
             'variacionUtilizacion' => $variacionUtilizacion,
             'series'               => $series,
-        ]);
+        ];
     }
 
     /**
