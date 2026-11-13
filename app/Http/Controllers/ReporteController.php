@@ -79,6 +79,13 @@ class ReporteController extends Controller
         $archivo = 'reporte_flashcar_' . $datos['desde']->format('Y-m-d') . '_' . $datos['hasta']->format('Y-m-d')
             . ($datos['nombreCategoria'] ? '_' . Str::slug($datos['nombreCategoria']) : '') . '.pdf';
 
+        // Dompdf busca base_path('public'), pero en el servidor la carpeta pública está fuera de Laravel
+        // (/home/.../flashcar.rentadeautos.site) y truena con "Cannot resolve public path". El PDF no carga
+        // archivos (logo y gráficas van en base64), así que basta con una carpeta que exista.
+        $carpetaPublica = collect([public_path(), $request->server('DOCUMENT_ROOT'), base_path()])
+            ->first(fn ($ruta) => $ruta && realpath($ruta) !== false);
+        config(['dompdf.public_path' => $carpetaPublica]);
+
         $pdf = Pdf::loadView('reportes.pdf', $datos)->setPaper('letter', 'portrait');
 
         // Número de página en el pie (counter(pages) de CSS no funciona en Dompdf): se escribe al final
@@ -141,8 +148,10 @@ class ReporteController extends Controller
     private function logoParaPdf(): ?string
     {
         try {
-            $ruta = public_path('img/logo.webp');
-            if (!is_file($ruta)) {
+            // En el servidor la carpeta pública está fuera de Laravel: se busca también en DOCUMENT_ROOT
+            $ruta = collect([public_path('img/logo.webp'), rtrim((string) request()->server('DOCUMENT_ROOT'), '/') . '/img/logo.webp'])
+                ->first(fn ($r) => is_file($r));
+            if (!$ruta) {
                 return null;
             }
             $png = (new ImageManager(new Driver()))->read($ruta)->scaleDown(width: 400)->toPng();
