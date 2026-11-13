@@ -76,16 +76,13 @@
                 </div>
             </form>
 
-            {{-- Descarga en PDF con los filtros ya aplicados (query string); las gráficas se mandan como imagen desde JS --}}
-            <form method="POST" action="{{ route('reportes.pdf', request()->query(), false) }}" id="formReportePdf" class="col-12 d-flex justify-content-end px-2 pb-2">
-                @csrf
-                @foreach(['ocupacion', 'utilizacion', 'ingresos', 'demanda'] as $clave)
-                    <input type="hidden" name="graficas[{{ $clave }}]" id="pdf_grafica_{{ $clave }}">
-                @endforeach
-                <button type="submit" class="boton_link_lg rounded" id="boton_reporte_pdf" style="width:auto; padding:0 14px;" title="Descargar el reporte con los filtros aplicados">
+            {{-- Descarga en PDF con los filtros ya aplicados (query string); las gráficas se dibujan en el servidor --}}
+            <div class="col-12 d-flex justify-content-end px-2 pb-2">
+                <a href="{{ route('reportes.pdf', request()->query(), false) }}" class="boton_link_lg rounded link_decoration_none display_flex_center_center"
+                   style="width:auto; padding:0 14px;" title="Descargar el reporte con los filtros aplicados">
                     <i class="bi bi-file-earmark-pdf-fill me-1"></i>Descargar PDF
-                </button>
-            </form>
+                </a>
+            </div>
         </div>
 
         {{-- ===== KPIs (izquierda) + TOP 5 (derecha) ===== --}}
@@ -432,7 +429,7 @@
     const ejePorcentaje = { y: { beginAtZero: true, min: 0, max: 100, ticks: { callback: (v) => v + '%' } } };
     const leyendaAbajo  = { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } };
 
-    const graficaOcupacion = new Chart(document.getElementById('graficaOcupacion'), {
+    new Chart(document.getElementById('graficaOcupacion'), {
         type: 'line',
         data: {
             labels: etiquetas,
@@ -471,7 +468,7 @@
         },
     });
 
-    const graficaUtilizacion = new Chart(document.getElementById('graficaUtilizacion'), {
+    new Chart(document.getElementById('graficaUtilizacion'), {
         type: 'line',
         data: {
             labels: etiquetas,
@@ -498,7 +495,7 @@
         },
     });
 
-    const graficaIngresos = new Chart(document.getElementById('graficaIngresos'), {
+    new Chart(document.getElementById('graficaIngresos'), {
         type: 'line',
         data: {
             labels: etiquetas,
@@ -527,7 +524,7 @@
         },
     });
 
-    const graficaDemanda = new Chart(document.getElementById('graficaDemanda'), {
+    new Chart(document.getElementById('graficaDemanda'), {
         type: 'line',
         data: {
             labels: etiquetas,
@@ -570,42 +567,6 @@
             plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } },
             scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
         },
-    });
-
-    // PDF: cada gráfica se manda como JPEG con fondo blanco (Dompdf no ejecuta JavaScript).
-    // Se reduce a máx. 1000 px de ancho y JPEG para que el envío pese poco: si el POST rebasa el
-    // límite del servidor, PHP descarta el formulario completo (incluido el token CSRF).
-    const graficasPdf = { ocupacion: graficaOcupacion, utilizacion: graficaUtilizacion, ingresos: graficaIngresos, demanda: graficaDemanda };
-
-    function graficaComoImagen(grafica) {
-        const origen = grafica.canvas;
-        const escala = Math.min(1, 1000 / origen.width);
-        const lienzo = document.createElement('canvas');
-        lienzo.width  = Math.round(origen.width * escala);
-        lienzo.height = Math.round(origen.height * escala);
-        const ctx = lienzo.getContext('2d');
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, lienzo.width, lienzo.height);
-        ctx.drawImage(origen, 0, 0, lienzo.width, lienzo.height);
-        return lienzo.toDataURL('image/jpeg', 0.9);
-    }
-
-    document.getElementById('formReportePdf').addEventListener('submit', () => {
-        Object.entries(graficasPdf).forEach(([clave, grafica]) => {
-            try {
-                document.getElementById('pdf_grafica_' + clave).value = graficaComoImagen(grafica);
-            } catch (e) {
-                document.getElementById('pdf_grafica_' + clave).value = '';
-            }
-        });
-        // La respuesta es una descarga (la página no cambia): se bloquea el botón unos segundos
-        const boton = document.getElementById('boton_reporte_pdf');
-        boton.disabled = true;
-        boton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Generando…';
-        setTimeout(() => {
-            boton.disabled = false;
-            boton.innerHTML = '<i class="bi bi-file-earmark-pdf-fill me-1"></i>Descargar PDF';
-        }, 6000);
     });
 
     // Top 5: alternar vehículos/categorías y criterio sin recargar

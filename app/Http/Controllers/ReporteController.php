@@ -7,10 +7,12 @@ use App\Models\Renta;
 use App\Models\SolicitudNoAtendida;
 use App\Models\Vehicle;
 use App\Models\VehiculoDisponibilidad;
+use App\Support\GraficaPdf;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -39,34 +41,36 @@ class ReporteController extends Controller
         'no_atendida' => 'Más demanda no atendida (días)',
     ];
 
-    // Gráficas que el navegador manda como imagen JPEG/PNG (base64) al descargar el PDF
-    private const GRAFICAS_PDF = ['ocupacion', 'utilizacion', 'ingresos', 'demanda'];
-
     public function index(Request $request)
     {
         return view('reportes.index', $this->datosReporte($request));
     }
 
     /**
-     * Descarga el reporte en PDF con los mismos filtros (periodo y categoría, en la query string)
-     * y los mismos cálculos que la pantalla. Dompdf no ejecuta JavaScript, así que las gráficas
-     * de Chart.js llegan del navegador como imágenes JPEG en base64 (campos graficas[clave]).
+     * Descarga el reporte en PDF (GET) con los mismos filtros (periodo y categoría, en la query string)
+     * y los mismos cálculos que la pantalla. Dompdf no ejecuta JavaScript, así que las gráficas se
+     * dibujan en el servidor con GraficaPdf. Antes se mandaban desde el navegador por POST, pero en
+     * el servidor de producción ese POST llegaba convertido en GET.
      */
     public function pdf(Request $request)
     {
+        try {
+            return $this->generarPdf($request);
+        } catch (\Throwable $e) {
+            // Se registra en storage/logs/laravel.log y se avisa en pantalla (solo admins ven Reportes)
+            Log::error('Error al generar el PDF de reportes', ['error' => $e->getMessage(), 'archivo' => $e->getFile() . ':' . $e->getLine()]);
+
+            return redirect()->route('reportes.index', $request->query())
+                ->with('error', 'No se pudo generar el PDF: ' . $e->getMessage());
+        }
+    }
+
+    /** Arma y descarga el PDF (ver pdf()). */
+    private function generarPdf(Request $request)
+    {
         $datos = $this->datosReporte($request);
 
-        $graficas = [];
-        foreach (self::GRAFICAS_PDF as $clave) {
-            $imagen = $request->input("graficas.$clave");
-            // Solo se aceptan JPEG/PNG en base64 y de tamaño razonable (máx. ~3 MB por gráfica)
-            if (is_string($imagen) && strlen($imagen) < 4_000_000
-                && preg_match('#^data:image/(jpeg|png);base64,[A-Za-z0-9+/=]+$#', $imagen)) {
-                $graficas[$clave] = $imagen;
-            }
-        }
-
-        $datos['graficas']      = $graficas;
+        $datos['graficas']      = $this->graficasParaPdf($datos['series']);
         $datos['logo']          = $this->logoParaPdf();
         $datos['generadoEn']    = now(Vehicle::TZ_OPERACION);
         $datos['generadoPor']   = $request->user()?->name;
@@ -88,6 +92,49 @@ class ReporteController extends Controller
         );
 
         return $pdf->download($archivo);
+    }
+
+    /**
+     * Las 4 gráficas de tendencia dibujadas en el servidor (GraficaPdf, GD) con los mismos datos y
+     * colores que las de Chart.js en pantalla. Si una falla, el PDF sale con "Gráfica no disponible".
+     */
+    private function graficasParaPdf(array $series): array
+    {
+        $porcentaje = fn ($v) => round($v) . '%';
+        $moneda     = fn ($v) => '$' . number_format($v);
+        $etiquetas  = $series['etiquetas'];
+
+        $definiciones = [
+            'ocupacion' => fn () => GraficaPdf::linea($etiquetas, [
+                ['etiqueta' => 'Ocupación', 'datos' => $series['ocupacion'], 'color' => '#f0b429', 'relleno' => true],
+                ['etiqueta' => 'Promedio del periodo (' . $series['ocupacionPromedio'] . '%)', 'datos' => array_fill(0, count($etiquetas), $series['ocupacionPromedio']),
+                 'color' => '#6c757d', 'punteada' => true, 'puntos' => false, 'grosor' => 1.5],
+            ], ['max' => 100, 'formato' => $porcentaje]),
+            'utilizacion' => fn () => GraficaPdf::linea($etiquetas, [
+                ['etiqueta' => 'Utilización acumulada', 'datos' => $series['utilizacionAcumulada'], 'color' => '#28a745', 'relleno' => true],
+            ], ['max' => 100, 'formato' => $porcentaje, 'leyenda' => false]),
+            'ingresos' => fn () => GraficaPdf::linea($etiquetas, [
+                ['etiqueta' => 'Ingreso devengado', 'datos' => $series['ingresos'], 'color' => '#6f42c1', 'relleno' => true],
+                ['etiqueta' => 'Ventas (por fecha de reserva)', 'datos' => $series['ventas'], 'color' => '#f0b429', 'punteada' => true],
+            ], ['formato' => $moneda]),
+            'demanda' => fn () => GraficaPdf::linea($etiquetas, [
+                ['etiqueta' => 'Demanda recibida', 'datos' => $series['demanda'], 'color' => '#0d6efd'],
+                ['etiqueta' => 'Rentas concretadas', 'datos' => $series['concretadas'], 'color' => '#28a745'],
+                ['etiqueta' => 'No atendida', 'datos' => $series['noAtendida'], 'color' => '#dc3545', 'punteada' => true],
+            ]),
+        ];
+
+        $graficas = [];
+        foreach ($definiciones as $clave => $dibujar) {
+            try {
+                $graficas[$clave] = $dibujar();
+            } catch (\Throwable $e) {
+                report($e);
+                $graficas[$clave] = null;
+            }
+        }
+
+        return $graficas;
     }
 
     /** Logo del header (webp) convertido a PNG en base64 para Dompdf; null si no se puede. */
