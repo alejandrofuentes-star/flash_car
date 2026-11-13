@@ -68,21 +68,18 @@
                     </select>
                 </div>
 
-                <div class="col-12 col-sm-6 col-md-2 px-1 my-1 d-flex align-items-center" style="gap:8px;">
+                <div class="col-12 col-sm-12 col-md-4 col-lg-4 px-1 my-1 d-flex align-items-center flex-wrap" style="gap:8px;">
                     <button type="submit" class="boton_link_lg rounded" title="Aplicar filtros"><i class="bi bi-funnel-fill me-1"></i>Aplicar</button>
+                    {{-- Descarga en PDF con los filtros ya aplicados (query string); las gráficas se dibujan en el servidor --}}
+                    <a href="{{ route('reportes.pdf', request()->query(), false) }}" class="boton_link_lg rounded link_decoration_none display_flex_center_center"
+                       style="width:auto; padding:0 14px;" title="Descargar el reporte con los filtros aplicados">
+                        <i class="bi bi-file-earmark-pdf-fill me-1"></i>Descargar PDF
+                    </a>
                     @if($periodo !== '30d' || $categoriaFiltro)
                         <a href="{{ route('reportes.index') }}" class="boton_link_sm b_sm rounded link_decoration_none display_flex_center_center" title="Limpiar filtros"><i class="bi bi-x-lg"></i></a>
                     @endif
                 </div>
             </form>
-
-            {{-- Descarga en PDF con los filtros ya aplicados (query string); las gráficas se dibujan en el servidor --}}
-            <div class="col-12 d-flex justify-content-end px-2 pb-2">
-                <a href="{{ route('reportes.pdf', request()->query(), false) }}" class="boton_link_lg rounded link_decoration_none display_flex_center_center"
-                   style="width:auto; padding:0 14px;" title="Descargar el reporte con los filtros aplicados">
-                    <i class="bi bi-file-earmark-pdf-fill me-1"></i>Descargar PDF
-                </a>
-            </div>
         </div>
 
         {{-- ===== KPIs (izquierda) + TOP 5 (derecha) ===== --}}
