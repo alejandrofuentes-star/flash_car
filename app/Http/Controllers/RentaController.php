@@ -42,6 +42,13 @@ class RentaController extends Controller
             ->groupBy('category_id')
             ->map(fn($vs) => $vs->first()->image_path);
 
+        // Máximo de pasajeros por categoría = plazas del auto activo más grande (límite del formulario)
+        $maxPasajeros = Vehicle::where('active', 1)
+            ->whereIn('category_id', $categories->pluck('id'))
+            ->groupBy('category_id')
+            ->selectRaw('category_id, MAX(passengers) as max_pasajeros')
+            ->pluck('max_pasajeros', 'category_id');
+
         $states = \App\Models\State::with('deliveryPoints')
             ->where('active', true)
             ->orderBy('name')
@@ -51,7 +58,7 @@ class RentaController extends Controller
         $anticipoTipo      = SiteSetting::get('anticipo_tipo', 'fijo');
         $anticipoMonto     = (float) SiteSetting::get('anticipo_monto', '0');
 
-        return view('catalogo.create_renta_general', compact('categories', 'firstVehicleImages', 'states', 'pagoTarjetaActivo', 'anticipoTipo', 'anticipoMonto'));
+        return view('catalogo.create_renta_general', compact('categories', 'firstVehicleImages', 'maxPasajeros', 'states', 'pagoTarjetaActivo', 'anticipoTipo', 'anticipoMonto'));
     }
 
     public function create($vehicle_id)
@@ -170,11 +177,43 @@ class RentaController extends Controller
         }
     }
 
+    // Plazas del auto más grande entre los activos de la categoría (null si no tiene autos activos)
+    private function maxPasajerosCategoria($categoryId): ?int
+    {
+        $max = Vehicle::where('category_id', $categoryId)->where('active', 1)->max('passengers');
+
+        return $max ? (int) $max : null;
+    }
+
+    // Solo autos con plazas suficientes, empezando por el más chico que alcance
+    // (así los autos grandes quedan libres para grupos grandes)
+    private function conPlazas($query, $pasajeros)
+    {
+        return $query
+            ->when((int) $pasajeros > 0, fn ($q) => $q->where('passengers', '>=', (int) $pasajeros))
+            ->orderBy('passengers')
+            ->orderBy('id');
+    }
+
+    // Mensaje si los pasajeros superan las plazas del auto; null si caben (o el auto no tiene plazas capturadas)
+    private function excedePlazas(Vehicle $vehicle, $pasajeros): ?string
+    {
+        return (int) $vehicle->passengers > 0 && (int) $pasajeros > (int) $vehicle->passengers
+            ? __('form.passengers_max', ['max' => (int) $vehicle->passengers])
+            : null;
+    }
+
     public function createPaymentIntent(Request $request)
     {
         // Formulario general: resolver vehículo a partir de categoría (misma lógica que store())
         if (!$request->filled('vehicle_id') && $request->filled('category_id')) {
-            $vehicleResuelto = Vehicle::where('category_id', $request->category_id)
+            // Si ningún auto de la categoría alcanza para esos pasajeros no es falta de disponibilidad
+            $maxCategoria = $this->maxPasajerosCategoria($request->category_id);
+            if ($maxCategoria && (int) $request->input('num_pasajeros') > $maxCategoria) {
+                return response()->json(['error' => __('form.passengers_max_category', ['max' => $maxCategoria])], 422);
+            }
+
+            $vehicleResuelto = $this->conPlazas(Vehicle::where('category_id', $request->category_id), $request->input('num_pasajeros'))
                 ->when(
                     $request->filled(['fecha_entrega', 'hora_entrega', 'fecha_devolucion', 'hora_devolucion']),
                     fn($q) => $q->libreEntre(...$this->rangoRenta($request->all())),
@@ -215,6 +254,11 @@ class RentaController extends Controller
         $vehicle = Vehicle::with('category')->find($validated['vehicle_id']);
         if (!$vehicle || !$vehicle->category) {
             return response()->json(['error' => 'No se encontró un vehículo disponible para calcular el costo.'], 422);
+        }
+
+        // Los pasajeros deben caber en el auto (se valida antes de cobrar)
+        if ($error = $this->excedePlazas($vehicle, $validated['num_pasajeros'] ?? null)) {
+            return response()->json(['error' => $error], 422);
         }
 
         // Se valida antes de cobrar: el auto no puede tener otra renta que se cruce con esas fechas
@@ -297,16 +341,29 @@ class RentaController extends Controller
 
         // Formulario general: resolver vehículo a partir de categoría
         if ($esFormularioGeneral) {
-            // Preferir un auto libre en esas fechas; si el pago ya se cobró (tarjeta) y en el inter se
-            // ocupó, se asigna cualquier auto activo de la categoría para no perder la renta pagada.
+            $pasajeros    = $request->input('num_pasajeros');
+            $maxCategoria = $this->maxPasajerosCategoria($request->category_id);
+
+            // Sin tarjeta se rechaza aquí si ningún auto de la categoría alcanza. Con tarjeta ya se
+            // validó en createPaymentIntent() antes de cobrar, así que no se pierde la renta pagada.
+            if (SiteSetting::get('pago_tarjeta', '1') !== '1' && $maxCategoria && (int) $pasajeros > $maxCategoria) {
+                return back()
+                    ->withErrors(['num_pasajeros' => __('form.passengers_max_category', ['max' => $maxCategoria])])
+                    ->withInput();
+            }
+
+            // Preferir un auto libre en esas fechas con plazas suficientes; si el pago ya se cobró (tarjeta)
+            // y en el inter se ocupó, se asigna cualquier auto activo de la categoría para no perder la renta
+            // pagada (prefiriendo uno donde quepan). Con tarjeta, más abajo se usa el auto validado al cobrar.
             $vehicle = $request->filled(['fecha_entrega', 'hora_entrega', 'fecha_devolucion', 'hora_devolucion'])
-                ? Vehicle::where('category_id', $request->category_id)->libreEntre(...$this->rangoRenta($request->all()))->first()
+                ? $this->conPlazas(Vehicle::where('category_id', $request->category_id), $pasajeros)
+                    ->libreEntre(...$this->rangoRenta($request->all()))->first()
                 : null;
             if (!$vehicle && SiteSetting::get('pago_tarjeta', '1') === '1') {
-                $vehicle = Vehicle::where('category_id', $request->category_id)
+                $activos = fn () => Vehicle::where('category_id', $request->category_id)
                     ->where('available', 1)
-                    ->where('active', 1)
-                    ->first();
+                    ->where('active', 1);
+                $vehicle = $this->conPlazas($activos(), $pasajeros)->first() ?? $activos()->first();
             }
             if (!$vehicle) {
                 if ($request->filled(['fecha_entrega', 'fecha_devolucion'])) {
@@ -392,6 +449,13 @@ class RentaController extends Controller
         if (SiteSetting::get('pago_tarjeta', '1') !== '1' && !$this->cumpleAnticipacion($validated)) {
             return back()
                 ->withErrors(['hora_entrega' => $this->mensajeAnticipacion()])
+                ->withInput();
+        }
+
+        // Sin tarjeta: los pasajeros deben caber en el auto (con tarjeta se validó antes de cobrar)
+        if (SiteSetting::get('pago_tarjeta', '1') !== '1' && ($error = $this->excedePlazas($vehicle, $validated['num_pasajeros']))) {
+            return back()
+                ->withErrors(['num_pasajeros' => $error])
                 ->withInput();
         }
 

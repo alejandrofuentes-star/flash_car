@@ -83,7 +83,7 @@
                                     </div>
                                     <div class="col-12 col-md-6 fila_form_f_b py-2">
                                         <label class="label_form_f_b fs-6 p-1"><b>{{ __('form.passengers') }}</b></label>
-                                        <input class="input_form_f_b fs-6 p-1" type="number" name="num_pasajeros" value="{{ old('num_pasajeros') }}" min="1" max="{{ $vehicle->passengers }}" placeholder="Máx: {{ $vehicle->passengers }}" required>
+                                        <input class="input_form_f_b fs-6 p-1" type="number" name="num_pasajeros" value="{{ old('num_pasajeros') }}" min="1" max="{{ $vehicle->passengers }}" placeholder="Máx: {{ $vehicle->passengers }}" data-msg-max="{{ __('form.passengers_max') }}" required>
                                     </div>
                                     <div class="col-12 col-md-6 fila_form_f_b py-2">
                                         <label class="label_form_f_b fs-6 p-1"><b>{{ __('form.city') }}</b></label>

@@ -216,6 +216,7 @@ resources/views/
 - Cada país tiene validación de dígitos mínimos/máximos (ej. Francia=9, México=10, USA=10)
 - Etapa 3 (pagos) está comentada con `{{-- --}}` — NO eliminar, se integrará después
 - Campo oculto `<input type="hidden" name="metodo_pago" value="pendiente">` cubre la etapa 3
+- Pasajeros (sesión 2026-11-19): no pueden superar las plazas (`passengers`) del auto. Formulario de un auto: `max` del input = plazas del auto. Formulario general: `max` = plazas del auto activo más grande de la categoría (`$maxPasajeros` de `createGeneral()`, se aplica al elegir categoría). `validarEtapa1()` lo revisa (mensaje en `data-msg-max`). Servidor: `excedePlazas()` / `maxPasajerosCategoria()` en `createPaymentIntent()` y en `store()` sin tarjeta; al asignar auto por categoría, `conPlazas()` toma solo autos donde quepan, empezando por el más chico. Si hay autos con plazas pero ninguno libre, cuenta como demanda no atendida (como antes).
 - Anticipación mínima de la entrega: `Renta::HORAS_ANTICIPACION` (8 h, hora de operación). Servidor: `RentaController::cumpleAnticipacion()` en `createPaymentIntent()` y en `store()` sin tarjeta (con tarjeta no se rechaza porque ya se cobró). JS: `formulario_renta.js` revisa al cambiar fecha u hora y en `validarEtapa2()` (el atributo `min` no bloquea nada por el `novalidate`); la vista pasa horas y mensaje en `window.flashCarAnticipacion`. No aplica a la edición desde admin.
 
 ## Slider admin — vista previa JS

@@ -102,6 +102,8 @@
     "form.email": "Correo Electrónico *",
     "form.email_ph": "Ej: correo@ejemplo.com",
     "form.passengers": "No. de Pasajeros *",
+    "form.passengers_max": "Este vehículo admite máximo :max pasajeros.",
+    "form.passengers_max_category": "Esta categoría admite máximo :max pasajeros.",
     "form.city": "Ciudad *",
     "form.city_placeholder": "-- Selecciona una ciudad --",
     "form.category": "Categoría",

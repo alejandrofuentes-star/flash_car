@@ -82,7 +82,7 @@
                                     </div>
                                     <div class="col-12 col-md-6 fila_form_f_b py-2">
                                         <label class="label_form_f_b fs-6 p-1"><b>{{ __('form.passengers') }}</b></label>
-                                        <input class="input_form_f_b fs-6 p-1" type="number" name="num_pasajeros" id="num_pasajeros" value="{{ old('num_pasajeros') }}" min="1" max="9" placeholder="Máx: —" required>
+                                        <input class="input_form_f_b fs-6 p-1" type="number" name="num_pasajeros" id="num_pasajeros" value="{{ old('num_pasajeros') }}" min="1" placeholder="Máx: —" data-msg-max="{{ __('form.passengers_max_category') }}" required>
                                     </div>
                                     <div class="col-12 col-md-6 fila_form_f_b py-2">
                                         <label class="label_form_f_b fs-6 p-1"><b>{{ __('form.city') }}</b></label>
@@ -463,11 +463,12 @@ window.flashCarAnticipo = {
 
 {{-- Datos de categorías para actualización dinámica --}}
 @php
-$categoriasJson = $categories->map(function($c) use ($firstVehicleImages) {
+$categoriasJson = $categories->map(function($c) use ($firstVehicleImages, $maxPasajeros) {
     $imgPath = $firstVehicleImages[$c->id] ?? null;
     return [
         'id'            => $c->id,
         'name'          => $c->name,
+        'max_pasajeros' => isset($maxPasajeros[$c->id]) ? (int) $maxPasajeros[$c->id] : null,
         'precio_dia'    => (float) $c->price_per_day,
         'precio_semana' => (float) $c->price_per_week,
         'precio_mes'    => (float) $c->price_per_month,
@@ -491,6 +492,14 @@ document.getElementById('select_categoria').addEventListener('change', function 
     const cat = categoriasData.find(x => x.id === id);
     const ph  = document.getElementById('sidebar_placeholder');
     const cdv = document.getElementById('sidebar_categoria_info');
+
+    // Límite de pasajeros = plazas del auto más grande de la categoría (lo revisa validarEtapa1)
+    const inputPasajeros = document.getElementById('num_pasajeros');
+    if (inputPasajeros) {
+        const max = cat && cat.max_pasajeros ? cat.max_pasajeros : '';
+        inputPasajeros.max         = max;
+        inputPasajeros.placeholder = 'Máx: ' + (max || '—');
+    }
 
     if (!cat) {
         ph.style.display  = '';

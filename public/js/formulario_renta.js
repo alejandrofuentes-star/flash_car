@@ -284,7 +284,17 @@ function validarEtapa1() {
     if (!emailOk) { marcarError(correo); valido = false; } else limpiarError(correo);
 
     const pasajeros = document.querySelector('input[name="num_pasajeros"]');
-    if (!pasajeros?.value || parseInt(pasajeros.value) < 1) { marcarError(pasajeros); valido = false; } else limpiarError(pasajeros);
+    // El max del input (plazas del auto, o del auto más grande de la categoría) no lo aplica el navegador
+    // por el novalidate del form: se revisa aquí. El servidor vuelve a validar.
+    const maxPasajeros = parseInt(pasajeros?.max);
+    if (!pasajeros?.value || parseInt(pasajeros.value) < 1) { marcarError(pasajeros); valido = false; }
+    else if (maxPasajeros > 0 && parseInt(pasajeros.value) > maxPasajeros) {
+        marcarError(pasajeros);
+        valido = false;
+        const msg = (pasajeros.dataset.msgMax || 'Máximo :max pasajeros.').replace(':max', maxPasajeros);
+        if (typeof mostrarErrorFecha === 'function') mostrarErrorFecha(msg); else alert(msg);
+    }
+    else limpiarError(pasajeros);
 
     const ciudad = document.getElementById('select_estado');
     if (!ciudad?.value) { marcarError(ciudad); valido = false; } else limpiarError(ciudad);
