@@ -123,6 +123,9 @@ class StripeWebhookController extends Controller
                 'payment_intent_id' => $intent->id,
                 'monto_anticipo'    => ($intent->amount ?? 0) / 100,
             ]);
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            // store() registró la renta de este pago al mismo tiempo (índice único de payment_intent_id)
+            return Renta::where('payment_intent_id', $intent->id)->first();
         } catch (\Throwable $e) {
             \Log::error('Stripe webhook: fallo al recuperar renta desde metadata', [
                 'payment_intent_id' => $intent->id,

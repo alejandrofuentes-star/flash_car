@@ -12,6 +12,7 @@ use App\Models\SolicitudNoAtendida;
 use App\Models\Vehicle;
 use App\Services\RentaPricingCalculator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -292,8 +293,10 @@ class RentaController extends Controller
 
     public function store(Request $request)
     {
+        $esFormularioGeneral = !$request->filled('vehicle_id') && $request->filled('category_id');
+
         // Formulario general: resolver vehículo a partir de categoría
-        if (!$request->filled('vehicle_id') && $request->filled('category_id')) {
+        if ($esFormularioGeneral) {
             // Preferir un auto libre en esas fechas; si el pago ya se cobró (tarjeta) y en el inter se
             // ocupó, se asigna cualquier auto activo de la categoría para no perder la renta pagada.
             $vehicle = $request->filled(['fecha_entrega', 'hora_entrega', 'fecha_devolucion', 'hora_devolucion'])
@@ -335,6 +338,46 @@ class RentaController extends Controller
             'payment_intent_id'  => SiteSetting::get('pago_tarjeta', '1') === '1' ? 'required|string' : 'nullable',
         ]);
 
+        // Pago con tarjeta: el pago debe estar cobrado, no haber generado ya otra renta y corresponder
+        // a estos mismos datos (los que se usaron en createPaymentIntent() para calcular el cobro).
+        if (SiteSetting::get('pago_tarjeta', '1') === '1') {
+            try {
+                Stripe::setApiKey(config('services.stripe.secret'));
+                $intent = PaymentIntent::retrieve($validated['payment_intent_id']);
+            } catch (\Exception $e) {
+                return back()->withErrors(['pago' => 'No se pudo verificar el pago: ' . $e->getMessage()]);
+            }
+
+            if ($intent->status !== 'succeeded') {
+                return back()->withErrors(['pago' => 'El pago no fue completado. Intenta de nuevo.']);
+            }
+
+            // Un pago genera una sola renta. Si ya existe (doble envío, o el webhook la recuperó antes
+            // de que llegara este submit) no se duplica y el cliente ve la confirmación normal.
+            if (Renta::where('payment_intent_id', $intent->id)->exists()) {
+                return $this->redirigirRentaRegistrada();
+            }
+
+            if (!$this->coincideConPago($intent, $validated, $esFormularioGeneral ? (int) $request->input('category_id') : null)) {
+                Log::warning('Renta rechazada: los datos enviados no coinciden con el pago', [
+                    'payment_intent_id' => $intent->id,
+                    'enviado'           => Arr::only($validated, ['vehicle_id', 'fecha_entrega', 'hora_entrega', 'fecha_devolucion', 'hora_devolucion']),
+                    'metadata'          => isset($intent->metadata) ? $intent->metadata->toArray() : null,
+                ]);
+                return back()
+                    ->withErrors(['pago' => 'Los datos de la reservación no coinciden con el pago realizado. Contáctanos para completar tu renta.'])
+                    ->withInput();
+            }
+
+            // Formulario general: se usa el auto que se validó libre al calcular el cobro
+            $vehiculoDelPago = $esFormularioGeneral ? (int) ($intent->metadata['vehicle_id'] ?? 0) : 0;
+            if ($vehiculoDelPago && Vehicle::where('category_id', $request->input('category_id'))->whereKey($vehiculoDelPago)->exists()) {
+                $validated['vehicle_id'] = $vehiculoDelPago;
+            }
+
+            $validated['monto_anticipo'] = $intent->amount / 100;
+        }
+
         // total_dias/costo_total nunca se confían del navegador: se recalculan en servidor
         // a partir de fechas/horas y el precio real de la categoría (incluye la tolerancia de 2h).
         $vehicle = Vehicle::with('category')->find($validated['vehicle_id']);
@@ -374,23 +417,18 @@ class RentaController extends Controller
         $validated['costo_total'] = $calculo['costo_total'];
         $validated += $calculo['precios'];
 
-        if (SiteSetting::get('pago_tarjeta', '1') === '1') {
-            try {
-                Stripe::setApiKey(config('services.stripe.secret'));
-                $intent = PaymentIntent::retrieve($validated['payment_intent_id']);
-                if ($intent->status !== 'succeeded') {
-                    return back()->withErrors(['pago' => 'El pago no fue completado. Intenta de nuevo.']);
-                }
-                $validated['monto_anticipo'] = $intent->amount / 100;
-            } catch (\Exception $e) {
-                return back()->withErrors(['pago' => 'No se pudo verificar el pago: ' . $e->getMessage()]);
+        try {
+            $renta = DB::transaction(function () use ($validated) {
+                $validated['id_flash_car'] = (Renta::lockForUpdate()->max('id_flash_car') ?? 66624) + 1;
+                return Renta::create($validated);
+            });
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            // El índice único de payment_intent_id frenó un duplicado simultáneo (webhook o doble envío)
+            if (!empty($validated['payment_intent_id'])) {
+                return $this->redirigirRentaRegistrada();
             }
+            throw $e;
         }
-
-        $renta = DB::transaction(function () use ($validated) {
-            $validated['id_flash_car'] = (Renta::lockForUpdate()->max('id_flash_car') ?? 66624) + 1;
-            return Renta::create($validated);
-        });
         $renta->load('vehicle');
 
         SiteStat::addOne('total_reservations');
@@ -408,9 +446,48 @@ class RentaController extends Controller
             \Log::error('Error enviando correo admin de renta: ' . $e->getMessage());
         }
 
+        return $this->redirigirRentaRegistrada();
+    }
+
+    private function redirigirRentaRegistrada()
+    {
         return redirect()->route('inicio')
             ->with('success', '¡Tu solicitud de renta fue enviada correctamente! Pronto nos pondremos en contacto contigo.')
             ->with('reserva_ok', true);
+    }
+
+    /**
+     * true si fechas/horas y auto (o categoría, en el formulario general) enviados a store() son los
+     * mismos que createPaymentIntent() guardó en la metadata del PaymentIntent, con los que se calculó
+     * el cobro. Evita usar un pago para registrar otra renta distinta (otras fechas, otro auto).
+     */
+    private function coincideConPago($intent, array $validated, ?int $categoriaFormulario): bool
+    {
+        $meta = $intent->metadata ?? null;
+        if (!$meta) {
+            return false;
+        }
+
+        try {
+            foreach (['fecha_entrega', 'fecha_devolucion'] as $campo) {
+                if (empty($meta[$campo])
+                    || Carbon::parse($meta[$campo])->format('Y-m-d') !== Carbon::parse($validated[$campo])->format('Y-m-d')) {
+                    return false;
+                }
+            }
+        } catch (\Throwable $e) {
+            return false;
+        }
+
+        foreach (['hora_entrega', 'hora_devolucion'] as $campo) {
+            if (substr((string) ($meta[$campo] ?? ''), 0, 5) !== substr((string) $validated[$campo], 0, 5)) {
+                return false;
+            }
+        }
+
+        return $categoriaFormulario
+            ? (int) ($meta['category_id'] ?? 0) === $categoriaFormulario
+            : (int) ($meta['vehicle_id'] ?? 0) === (int) $validated['vehicle_id'];
     }
 
     public function index(Request $request)
