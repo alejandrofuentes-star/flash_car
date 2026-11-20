@@ -620,6 +620,16 @@ document.getElementById('select_categoria').addEventListener('change', function 
         telHint.textContent    = r.min === r.max ? t(tTelRequired, {n: r.min}) : t(tTelRange, {min: r.min, max: r.max});
     }
 
+    // Mantiene el hidden 'telefono' siempre al día. El submit del pago con tarjeta se registra antes
+    // que el de este script y lee el formulario de inmediato: si el teléfono solo se armaba en el submit,
+    // el PaymentIntent se creaba sin teléfono y el webhook no podía recuperar la renta.
+    function sincronizarTelefono() {
+        const digits = inputNum.value.replace(/\D/g, '');
+        document.getElementById('telefono_completo').value = digits
+            ? '+' + iti.getSelectedCountryData().dialCode + digits
+            : '';
+    }
+
     function validarTelefono() {
         const r      = getReglas();
         const digits = inputNum.value.replace(/\D/g, '');
@@ -629,6 +639,7 @@ document.getElementById('select_categoria').addEventListener('change', function 
             return false;
         }
         telError.style.display = 'none';
+        sincronizarTelefono();
         return true;
     }
 
@@ -640,15 +651,15 @@ document.getElementById('select_categoria').addEventListener('change', function 
             : t(tTelCount, {cur: this.value.length, max: r.max});
         if (this.value.length > 0) validarTelefono();
         else telError.style.display = 'none';
+        sincronizarTelefono();
     });
 
-    inputNum.addEventListener('countrychange', actualizarHint);
+    inputNum.addEventListener('countrychange', function () { actualizarHint(); sincronizarTelefono(); });
     iti.promise.then(actualizarHint);
 
     document.getElementById('formRenta').addEventListener('submit', function (e) {
         if (!validarTelefono()) { e.preventDefault(); inputNum.focus(); return; }
-        const codigo = '+' + iti.getSelectedCountryData().dialCode;
-        document.getElementById('telefono_completo').value = codigo + inputNum.value;
+        sincronizarTelefono();
     });
 </script>
 

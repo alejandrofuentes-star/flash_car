@@ -191,7 +191,8 @@ class RentaController extends Controller
             'vehicle_id'       => 'required|integer|exists:vehicles,id',
             'category_id'      => 'nullable|integer|exists:categories,id',
             'nombre_completo'  => 'required|string|max:150',
-            'telefono'         => 'nullable|string|max:20',
+            // Requerido antes de cobrar: store() y la recuperación por webhook lo exigen
+            'telefono'         => 'required|string|max:20',
             'correo'           => 'required|email|max:100',
             'ciudad'           => 'nullable|string|max:100',
             'fecha_entrega'    => 'required|date',
