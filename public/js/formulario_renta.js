@@ -254,10 +254,45 @@ window.addEventListener('load', function () {
             if (etapaActual === 2 && !validarEtapa2()) {
                 e.preventDefault();
             }
+
+            // Sin pago con tarjeta: bloquear los botones mientras store() guarda y manda los correos
+            // (tarda unos segundos) para que un segundo clic no cree una renta duplicada.
+            // El pago con tarjeta ya se protege con el modal "Procesando". Este listener corre después
+            // del de teléfono, así que si ese canceló el envío no se bloquea nada.
+            if (!e.defaultPrevented && (window.flashCarUltimaEtapa || 3) === 2) {
+                bloquearEnvio(formRenta);
+            }
+        });
+
+        // Si el cliente regresa con "Atrás" y el navegador restaura la página desde caché,
+        // los botones vendrían desactivados: se reactivan.
+        window.addEventListener('pageshow', function (ev) {
+            if (ev.persisted) desbloquearEnvio(formRenta);
         });
     }
 
 });
+
+// Desactiva todos los botones de envío del formulario y muestra "Enviando..." con spinner.
+// Se desactivan durante el evento submit: el envío en curso sigue normalmente.
+function bloquearEnvio(form) {
+    const texto = window.flashCarTextoEnviando || 'Enviando...';
+    form.querySelectorAll('button[type="submit"]').forEach(function (btn) {
+        if (btn.disabled) return;
+        btn.dataset.textoOriginal = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>' + texto;
+    });
+}
+
+function desbloquearEnvio(form) {
+    form.querySelectorAll('button[type="submit"]').forEach(function (btn) {
+        if (btn.dataset.textoOriginal === undefined) return;
+        btn.innerHTML = btn.dataset.textoOriginal;
+        delete btn.dataset.textoOriginal;
+        btn.disabled = false;
+    });
+}
 
 // Etapas del formulario
 let etapaActual = 1;

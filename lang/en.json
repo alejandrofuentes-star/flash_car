@@ -146,6 +146,7 @@
     "form.pay_submit": "Pay and Submit Request",
     "form.processing": "Processing payment",
     "form.processing_wait": "Don't close this window...",
+    "form.sending": "Sending reservation...",
 
     "form.advance_title": "Card payment",
     "form.advance_now": "Advance to pay now",

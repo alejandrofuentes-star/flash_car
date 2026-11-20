@@ -314,7 +314,8 @@
 @include('layout.burbujas')
 @include('layout.footer')
 <script>window.flashCarUltimaEtapa = {{ $pagoTarjetaActivo ? 3 : 2 }};
-window.flashCarAnticipacion = { horas: {{ \App\Models\Renta::HORAS_ANTICIPACION }}, mensaje: @json(__('form.min_anticipation', ['horas' => \App\Models\Renta::HORAS_ANTICIPACION])) };</script>
+window.flashCarAnticipacion = { horas: {{ \App\Models\Renta::HORAS_ANTICIPACION }}, mensaje: @json(__('form.min_anticipation', ['horas' => \App\Models\Renta::HORAS_ANTICIPACION])) };
+window.flashCarTextoEnviando = @json(__('form.sending'));</script>
 @if($pagoTarjetaActivo)
 <script>
 window.flashCarAnticipo = {
