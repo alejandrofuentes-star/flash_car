@@ -86,6 +86,36 @@ class AppServiceProvider extends ServiceProvider
                     });
                 $notificaciones = $notificaciones->concat($vencidas);
 
+                // Rentas del mismo auto que se cruzan en fechas (incluye las horas de preparación).
+                // FlashCar acepta la reserva aunque el auto esté ocupado; esto avisa al personal para
+                // reasignar el auto a tiempo. La clave incluye las fechas: si se mueven y siguen
+                // cruzándose, vuelve a avisar. Urgente si el cruce empieza hoy, mañana o ya empezó.
+                $empalmadas = Renta::empalmadas()
+                    ->map(function ($par) use ($hoy) {
+                        [$anterior, $nueva] = [$par['anterior'], $par['nueva']];
+                        $inicio = Carbon::parse(
+                            max($anterior->fecha_entrega->toDateString(), $nueva->fecha_entrega->toDateString()),
+                            Vehicle::TZ_OPERACION
+                        )->startOfDay();
+                        $fechas = fn ($r) => $r->fecha_entrega->format('d/m') . '–' . $r->fecha_devolucion->format('d/m');
+                        $auto   = $nueva->vehicle
+                            ? $nueva->vehicle->name . ($nueva->vehicle->plate_number ? " ({$nueva->vehicle->plate_number})" : '')
+                            : 'Auto #' . $nueva->vehicle_id;
+
+                        return [
+                            'clave'   => "renta_empalmada:{$anterior->id}:{$nueva->id}:"
+                                . $anterior->fecha_entrega->toDateString() . ':' . $anterior->fecha_devolucion->toDateString() . ':'
+                                . $nueva->fecha_entrega->toDateString() . ':' . $nueva->fecha_devolucion->toDateString(),
+                            'icono'   => 'bi-intersect',
+                            'titulo'  => 'Renta empalmada: reasignar auto',
+                            'detalle' => "{$auto} · #{$nueva->id} {$nueva->nombre_completo} ({$fechas($nueva)})"
+                                . " choca con #{$anterior->id} {$anterior->nombre_completo} ({$fechas($anterior)})",
+                            'urgente' => $inicio->lte($hoy->copy()->addDay()),
+                            'url'     => route('rentas.show', $nueva->id),
+                        ];
+                    });
+                $notificaciones = $notificaciones->concat($empalmadas);
+
                 $leidas = NotificacionLeida::where('user_id', Auth::id())
                     ->whereIn('clave', $notificaciones->pluck('clave'))
                     ->pluck('clave')

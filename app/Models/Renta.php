@@ -119,4 +119,48 @@ class Renta extends Model
                 ->orWhere(fn ($q) => $q->whereDate('fecha_devolucion', $ahora->toDateString())
                     ->where('hora_devolucion', '<', $ahora->format('H:i:s'))));
     }
+
+    /**
+     * Pares de rentas del mismo auto que se cruzan (contando Vehicle::HORAS_PREPARACION después de cada
+     * devolución), ambas en Vehicle::ESTADOS_OCUPAN. FlashCar acepta reservas aunque el auto ya esté
+     * ocupado y las reacomoda después: esto solo alimenta el aviso de la campana, no bloquea nada.
+     * Se omiten los pares cuyo cruce ya quedó en el pasado (la primera en terminar ya se devolvió
+     * y pasó su preparación).
+     *
+     * @return \Illuminate\Support\Collection<int, array{anterior: Renta, nueva: Renta}>
+     *         'nueva' es la registrada después (id mayor): normalmente la que hay que reacomodar.
+     */
+    public static function empalmadas(): \Illuminate\Support\Collection
+    {
+        $horas   = (int) Vehicle::HORAS_PREPARACION;
+        $estados = Vehicle::ESTADOS_OCUPAN;
+        $ahora   = now(Vehicle::TZ_OPERACION)->format('Y-m-d H:i:s');
+        $marca   = fn ($t) => "TIMESTAMP({$t}.fecha_entrega, {$t}.hora_entrega)";
+        $fin     = fn ($t) => "TIMESTAMP({$t}.fecha_devolucion, {$t}.hora_devolucion)";
+
+        $pares = \Illuminate\Support\Facades\DB::table('rentas as a')
+            ->join('rentas as b', function ($j) {
+                $j->on('a.vehicle_id', '=', 'b.vehicle_id')->whereColumn('a.id', '<', 'b.id');
+            })
+            ->whereIn('a.estado', $estados)
+            ->whereIn('b.estado', $estados)
+            ->whereRaw("{$marca('a')} < {$fin('b')} + INTERVAL {$horas} HOUR")
+            ->whereRaw("{$marca('b')} < {$fin('a')} + INTERVAL {$horas} HOUR")
+            ->whereRaw("LEAST({$fin('a')}, {$fin('b')}) + INTERVAL {$horas} HOUR > ?", [$ahora])
+            ->get(['a.id as anterior', 'b.id as nueva']);
+
+        if ($pares->isEmpty()) {
+            return collect();
+        }
+
+        $rentas = static::with('vehicle:id,name,plate_number')
+            ->whereIn('id', $pares->pluck('anterior')->merge($pares->pluck('nueva'))->unique())
+            ->get()
+            ->keyBy('id');
+
+        return $pares
+            ->map(fn ($p) => ['anterior' => $rentas[$p->anterior] ?? null, 'nueva' => $rentas[$p->nueva] ?? null])
+            ->filter(fn ($p) => $p['anterior'] && $p['nueva'])
+            ->values();
+    }
 }
