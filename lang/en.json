@@ -162,6 +162,7 @@
     "form.tel_error_exact": "The number must have exactly :n digits",
     "form.tel_error_range": "The number must have between :min and :max digits",
     "form.date_past": "The delivery date cannot be in the past.",
+    "form.min_anticipation": "Delivery must be booked at least :horas hours in advance.",
     "form.date_reset": "The return date was reset, please select a date after the delivery date.",
     "form.date_order": "The return date must be after the delivery date.",
 

@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Renta extends Model
 {
+    // Horas mínimas entre el momento de reservar y la entrega del auto (formulario público).
+    // Se valida en RentaController (createPaymentIntent / store) y en public/js/formulario_renta.js.
+    public const HORAS_ANTICIPACION = 8;
+
     // Motivos de cancelación. 'falta_disponibilidad' cuenta como demanda no atendida en reportes.
     public const MOTIVOS_CANCELACION = [
         'falta_disponibilidad' => 'Falta de disponibilidad (no había auto)',

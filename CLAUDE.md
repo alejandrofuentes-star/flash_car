@@ -214,6 +214,7 @@ resources/views/
 - Cada país tiene validación de dígitos mínimos/máximos (ej. Francia=9, México=10, USA=10)
 - Etapa 3 (pagos) está comentada con `{{-- --}}` — NO eliminar, se integrará después
 - Campo oculto `<input type="hidden" name="metodo_pago" value="pendiente">` cubre la etapa 3
+- Anticipación mínima de la entrega: `Renta::HORAS_ANTICIPACION` (8 h, hora de operación). Servidor: `RentaController::cumpleAnticipacion()` en `createPaymentIntent()` y en `store()` sin tarjeta (con tarjeta no se rechaza porque ya se cobró). JS: `formulario_renta.js` revisa al cambiar fecha u hora y en `validarEtapa2()` (el atributo `min` no bloquea nada por el `novalidate`); la vista pasa horas y mensaje en `window.flashCarAnticipacion`. No aplica a la edición desde admin.
 
 ## Slider admin — vista previa JS
 El panel del slider (`slider/index.blade.php`) tiene una vista previa en tiempo real al seleccionar imágenes:

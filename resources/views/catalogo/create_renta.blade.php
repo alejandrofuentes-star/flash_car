@@ -1,4 +1,4 @@
-﻿@extends('layout.layouts')
+@extends('layout.layouts')
 
 @section('title', 'Rentar - ' . $vehicle->name)
 
@@ -313,7 +313,8 @@
 </div>
 @include('layout.burbujas')
 @include('layout.footer')
-<script>window.flashCarUltimaEtapa = {{ $pagoTarjetaActivo ? 3 : 2 }};</script>
+<script>window.flashCarUltimaEtapa = {{ $pagoTarjetaActivo ? 3 : 2 }};
+window.flashCarAnticipacion = { horas: {{ \App\Models\Renta::HORAS_ANTICIPACION }}, mensaje: @json(__('form.min_anticipation', ['horas' => \App\Models\Renta::HORAS_ANTICIPACION])) };</script>
 @if($pagoTarjetaActivo)
 <script>
 window.flashCarAnticipo = {

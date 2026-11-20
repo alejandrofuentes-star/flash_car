@@ -96,38 +96,74 @@ function calcularCosto() {
     }
 }
 
-// Configurar mínimo de 8 horas de anticipación para fecha y hora de entrega
+// Horas mínimas de anticipación para la entrega (las define la vista con Renta::HORAS_ANTICIPACION;
+// el servidor vuelve a validar, esto solo evita que el cliente avance con una hora inválida)
+function horasAnticipacion() {
+    return (window.flashCarAnticipacion && window.flashCarAnticipacion.horas) || 8;
+}
+
+// Fecha ('Y-m-d') y hora ('H:i') mínimas de entrega, en hora local del navegador.
+// Se recalcula en cada uso porque el tiempo avanza mientras el cliente llena el formulario.
+function minimoEntrega() {
+    const minima = new Date(Date.now() + horasAnticipacion() * 60 * 60 * 1000);
+    const fecha  = minima.getFullYear() + '-' +
+        String(minima.getMonth() + 1).padStart(2, '0') + '-' +
+        String(minima.getDate()).padStart(2, '0');
+    const hora   = String(minima.getHours()).padStart(2, '0') + ':' + String(minima.getMinutes()).padStart(2, '0');
+    return { fecha, hora };
+}
+
+// true si la fecha + hora de entrega elegidas cumplen la anticipación mínima
+function entregaConAnticipacion() {
+    const fecha = document.getElementById('fecha_entrega')?.value;
+    const hora  = document.querySelector('input[name="hora_entrega"]')?.value;
+    if (!fecha || !hora) return true; // los vacíos los marca validarEtapa2
+    const min = minimoEntrega();
+    return fecha > min.fecha || (fecha === min.fecha && hora.slice(0, 5) >= min.hora);
+}
+
+function avisarAnticipacion() {
+    const msg = (window.flashCarAnticipacion && window.flashCarAnticipacion.mensaje)
+        || ('La entrega debe ser con al menos ' + horasAnticipacion() + ' horas de anticipación.');
+    if (typeof mostrarErrorFecha === 'function') mostrarErrorFecha(msg); else alert(msg);
+}
+
+// Configurar mínimo de horas de anticipación para fecha y hora de entrega
 function configurarMinEntrega() {
     const fechaInput = document.getElementById('fecha_entrega');
     const horaInput  = document.querySelector('input[name="hora_entrega"]');
 
     if (!fechaInput || !horaInput) return;
 
-    const ahora  = new Date();
-    const minima = new Date(ahora.getTime() + 8 * 60 * 60 * 1000);
-
-    const fechaMin = minima.toISOString().split('T')[0];
-    const horaMin  = String(minima.getHours()).padStart(2, '0') + ':' + String(minima.getMinutes()).padStart(2, '0');
-
     // Establecer fecha mínima
-    fechaInput.min = fechaMin;
+    fechaInput.min = minimoEntrega().fecha;
 
     // Si ya tiene una fecha seleccionada menor a la mínima, limpiarla
-    if (fechaInput.value && fechaInput.value < fechaMin) {
+    if (fechaInput.value && fechaInput.value < fechaInput.min) {
         fechaInput.value = '';
         horaInput.value  = '';
     }
 
+    // Al cambiar la hora, revisar la anticipación (antes solo se revisaba al cambiar la fecha)
+    horaInput.addEventListener('change', function () {
+        if (this.value && !entregaConAnticipacion()) {
+            this.value = '';
+            avisarAnticipacion();
+        }
+    });
+
     // Al cambiar fecha de entrega, validar hora mínima
     fechaInput.addEventListener('change', function() {
-        if (this.value === fechaMin) {
-            horaInput.min = horaMin;
-            // Si la hora elegida es menor a la mínima, limpiarla
-            if (horaInput.value && horaInput.value < horaMin) {
-                horaInput.value = '';
-            }
-        } else {
-            horaInput.min = '';
+        const min = minimoEntrega();
+        fechaInput.min = min.fecha;
+        if (this.value && this.value < min.fecha) {
+            this.value = '';
+            avisarAnticipacion();
+        }
+        horaInput.min = this.value === min.fecha ? min.hora : '';
+        if (horaInput.value && !entregaConAnticipacion()) {
+            horaInput.value = '';
+            avisarAnticipacion();
         }
 
         // Actualizar mínimo de fecha devolución
@@ -174,6 +210,13 @@ function validarEtapa2() {
         if (!campo?.value.trim()) { marcarError(campo); valido = false; } else limpiarError(campo);
     });
 
+    // El form tiene novalidate, así que el atributo min del input de hora no bloquea nada: se revisa aquí
+    if (valido && !entregaConAnticipacion()) {
+        marcarError(campos[1]);
+        avisarAnticipacion();
+        valido = false;
+    }
+
     return valido;
 }
 
@@ -205,6 +248,10 @@ window.addEventListener('load', function () {
     if (formRenta) {
         formRenta.addEventListener('submit', function (e) {
             if (etapaActual === 3 && !validarEtapa3()) {
+                e.preventDefault();
+            }
+            // Sin pago con tarjeta se envía desde la etapa 2: revisar fechas y anticipación antes
+            if (etapaActual === 2 && !validarEtapa2()) {
                 e.preventDefault();
             }
         });

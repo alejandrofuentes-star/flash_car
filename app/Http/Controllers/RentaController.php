@@ -83,6 +83,23 @@ class RentaController extends Controller
         ];
     }
 
+    // true si la entrega pedida cumple Renta::HORAS_ANTICIPACION respecto a ahora (hora de operación)
+    private function cumpleAnticipacion(array $datos): bool
+    {
+        try {
+            $entrega = Carbon::parse($this->rangoRenta($datos)[0], Vehicle::TZ_OPERACION);
+        } catch (\Throwable $e) {
+            return false;
+        }
+
+        return $entrega->gte(now(Vehicle::TZ_OPERACION)->addHours(Renta::HORAS_ANTICIPACION));
+    }
+
+    private function mensajeAnticipacion(): string
+    {
+        return __('form.min_anticipation', ['horas' => Renta::HORAS_ANTICIPACION]);
+    }
+
     /**
      * Registra una solicitud rechazada por falta de auto libre en las fechas pedidas (demanda no
      * atendida para reportes). Los reintentos del mismo cliente (correo) para la misma categoría,
@@ -188,6 +205,11 @@ class RentaController extends Controller
 
         // El monto a cobrar nunca se confía del navegador: se recalcula en servidor a
         // partir de fechas/horas y el precio real de la categoría (incluye tolerancia de 2h).
+        // Anticipación mínima de la entrega: se valida antes de cobrar
+        if (!$this->cumpleAnticipacion($validated)) {
+            return response()->json(['error' => $this->mensajeAnticipacion()], 422);
+        }
+
         $vehicle = Vehicle::with('category')->find($validated['vehicle_id']);
         if (!$vehicle || !$vehicle->category) {
             return response()->json(['error' => 'No se encontró un vehículo disponible para calcular el costo.'], 422);
@@ -318,6 +340,14 @@ class RentaController extends Controller
         if (!$vehicle || !$vehicle->category) {
             return back()
                 ->withErrors(['vehicle_id' => 'El vehículo no tiene una categoría con precios configurados.'])
+                ->withInput();
+        }
+
+        // Sin pago con tarjeta se valida aquí la anticipación mínima. Con tarjeta ya se validó en
+        // createPaymentIntent() y el cobro ya se hizo, así que no se rechaza (pudieron pasar minutos).
+        if (SiteSetting::get('pago_tarjeta', '1') !== '1' && !$this->cumpleAnticipacion($validated)) {
+            return back()
+                ->withErrors(['hora_entrega' => $this->mensajeAnticipacion()])
                 ->withInput();
         }
 

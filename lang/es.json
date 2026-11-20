@@ -162,6 +162,7 @@
     "form.tel_error_exact": "El número debe tener exactamente :n dígitos",
     "form.tel_error_range": "El número debe tener entre :min y :max dígitos",
     "form.date_past": "La fecha de entrega no puede ser anterior a hoy.",
+    "form.min_anticipation": "La entrega debe reservarse con al menos :horas horas de anticipación.",
     "form.date_reset": "La fecha de devolución fue reiniciada, selecciona una fecha posterior a la entrega.",
     "form.date_order": "La fecha de devolución debe ser posterior a la fecha de entrega.",
 
